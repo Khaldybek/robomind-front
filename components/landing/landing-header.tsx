@@ -3,14 +3,8 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { LANDING_NAV_LINKS } from "@/components/landing/landing-nav";
 import { LocaleSwitcher } from "@/components/locale-switcher";
-
-const NAV = [
-  { href: "#landing-courses", key: "navCourses" as const },
-  { href: "#landing-visual", key: "navVisual" as const },
-  { href: "#landing-faq", key: "navFaq" as const },
-  { href: "#landing-start", key: "navStart" as const },
-];
 
 export function LandingHeader() {
   const t = useTranslations("HomePage");
@@ -43,13 +37,13 @@ export function LandingHeader() {
           className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-base font-semibold sm:flex-1 sm:justify-center sm:text-lg"
           aria-label={t("navAria")}
         >
-          {NAV.map(({ href, key }) => (
+          {LANDING_NAV_LINKS.map(({ href, msgKey }) => (
             <a
-              key={key}
+              key={href}
               href={href}
               className="text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.45)] underline-offset-4 transition-colors hover:text-ds-primary hover:underline"
             >
-              {t(key)}
+              {t(msgKey)}
             </a>
           ))}
         </nav>

@@ -99,7 +99,12 @@
     "ctaBottomLead": "Ученик — в свой кабинет, школа и администраторы — в свои.",
     "ctaStudent": "Я ученик — войти",
     "ctaSchoolAdmin": "Админ школы",
-    "ctaSuperAdmin": "Супер-админ"
+    "ctaSuperAdmin": "Супер-админ",
+    "footerTagline": "Онлайн-робототехника для 4–7 классов: квесты, уроки и награды в браузере.",
+    "footerNavAria": "Разделы в подвале",
+    "footerLinkLogin": "Вход",
+    "footerLinkRegister": "Регистрация",
+    "footerCopyright": "© {year} Robomind. Все права защищены."
   },
   "CourseCatalog": {
     "badge": "Что можно изучать",

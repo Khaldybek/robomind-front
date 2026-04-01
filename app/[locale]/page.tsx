@@ -1,6 +1,7 @@
 import { Link } from "@/i18n/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CourseCatalogSection } from "@/components/landing/course-catalog-section";
+import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingHeroFullscreen } from "@/components/landing/landing-hero-fullscreen";
 import { LandingHeroRobots } from "@/components/landing/landing-hero-robots";
@@ -172,6 +173,8 @@ export default async function Home({
           </div>
         </section>
       </main>
+
+      <LandingFooter />
     </div>
   );
 }
