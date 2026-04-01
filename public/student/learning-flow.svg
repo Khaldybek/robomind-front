@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="440" viewBox="0 0 640 440" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="lgBg" x1="50" y1="40" x2="590" y2="390" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#26262A"/>
+      <stop offset="1" stop-color="#4A4A52"/>
+    </linearGradient>
+    <linearGradient id="lgAccent" x1="90" y1="110" x2="300" y2="270" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF2E1F"/>
+      <stop offset="1" stop-color="#FF7B6F"/>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="16" width="608" height="408" rx="30" fill="url(#lgBg)"/>
+  <rect x="52" y="60" width="180" height="112" rx="18" fill="url(#lgAccent)" fill-opacity="0.88"/>
+  <rect x="52" y="188" width="180" height="78" rx="14" fill="#FFF" fill-opacity="0.14"/>
+  <rect x="52" y="282" width="180" height="90" rx="14" fill="#FFF" fill-opacity="0.1"/>
+
+  <rect x="260" y="60" width="320" height="56" rx="14" fill="#FFF" fill-opacity="0.2"/>
+  <rect x="260" y="130" width="280" height="40" rx="12" fill="#FFF" fill-opacity="0.14"/>
+  <rect x="260" y="182" width="300" height="42" rx="12" fill="#FFF" fill-opacity="0.12"/>
+
+  <rect x="260" y="246" width="140" height="126" rx="16" fill="#FFF" fill-opacity="0.16"/>
+  <rect x="412" y="246" width="168" height="126" rx="16" fill="#FFF" fill-opacity="0.1"/>
+  <circle cx="538" cy="98" r="44" fill="#FF2E1F" fill-opacity="0.24"/>
+  <circle cx="120" cy="344" r="30" fill="#FFF" fill-opacity="0.08"/>
+</svg>
