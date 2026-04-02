@@ -132,10 +132,10 @@ export async function CourseCatalogSection() {
               );
             })
           : demo.map((item, idx) => (
-              <li key={item.title}>
+              <li key={item.title} className="border-blue-300">
                 <Link
                   href="/register"
-                  className="group block overflow-hidden rounded-ds-card border border-ds-gray-border bg-ds-white shadow-sm transition-shadow hover:shadow-md"
+                  className="group block overflow-hidden rounded-ds-card border-2 border-blue-300 bg-ds-white shadow-sm transition-shadow hover:shadow-md"
                 >
                   <CourseCardImage
                     course={

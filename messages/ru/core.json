@@ -9,7 +9,7 @@
     "kk": "Қазақша"
   },
   "HomePage": {
-    "navBrand": "Robomind",
+    "navBrand": "Roboschool",
     "navAria": "Разделы страницы",
     "navCourses": "Курсы",
     "navVisual": "Анимации",
@@ -120,19 +120,19 @@
       {
         "title": " LEGO Mindstorms EV3",
         "description": "Собери первого бота: датчики, моторы и первая программа — от нуля до «вау, оно поехало!»",
-        "image": "/student/hero-robot.svg",
+        "image": "/urok1.jpeg",
         "alt": "Робот и детали"
       },
       {
         "title": "Логика и алгоритмы",
         "description": "Думаем как инженер: циклы, условия и отладка — чтобы робот делал то, что ты задумал.",
-        "image": "/student/learning-flow.svg",
+        "image": "/img.png",
         "alt": "Схема шагов"
       },
       {
         "title": "Команда и соревнования",
         "description": "Совместные задачи и подготовка к олимпиадам — в своём темпе и без стресса.",
-        "image": "/student/hero-robot.svg",
+        "image": "/img_1.png",
         "alt": "Командный проект"
       }
     ]

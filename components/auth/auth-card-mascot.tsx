@@ -12,7 +12,7 @@ export function AuthCardMascot() {
       aria-hidden
     >
       <Image
-        src="/child.png"
+        src="/chilm.jpeg"
         alt=""
         width={320}
         height={420}

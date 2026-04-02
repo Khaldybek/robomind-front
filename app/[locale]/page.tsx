@@ -80,37 +80,6 @@ export default async function Home({
       <main className="ds-container relative z-[1] py-10 lg:py-16">
         <CourseCatalogSection />
 
-        <section
-          id="landing-visual"
-          className="mt-12 scroll-mt-24 lg:mt-16"
-          aria-labelledby="landing-visual-block-title"
-        >
-          <div className="mb-8 text-center">
-            <h2
-              id="landing-visual-block-title"
-              className="ds-text-h2 text-ds-black"
-            >
-              {t("visualBlockTitle")}
-            </h2>
-            <p className="mx-auto mt-2 max-w-xl text-sm text-ds-gray-text">
-              {t("visualBlockLead")}
-            </p>
-          </div>
-          <div className="overflow-visible rounded-[30px] border border-white/90 bg-white/55 p-3 shadow-[0_22px_80px_-24px_rgba(91,124,255,0.18)] backdrop-blur-md sm:p-4 lg:p-5">
-            <LandingHeroRobots bubbleText={t("heroBubble")} />
-          </div>
-          <div className="mt-10">
-            <LandingThemeMotifs
-              labels={[
-                t("motifCode"),
-                t("motifLogic"),
-                t("motifLaunch"),
-                t("motifBuild"),
-                t("motifCircuit"),
-              ]}
-            />
-          </div>
-        </section>
 
         <section className="st-card-in mt-10 overflow-hidden rounded-[30px] border-2 border-blue-300 p-5 shadow-[0_16px_55px_-26px_rgba(0,0,0,0.18)] backdrop-blur-sm lg:p-8">
           <div className="st-marquee-track">
@@ -127,14 +96,14 @@ export default async function Home({
 
         <section
           id="landing-faq"
-          className="mt-12 scroll-mt-24 rounded-[36px] border border-white/75 bg-blue-300 p-6 shadow-[0_18px_70px_-30px_rgba(0,0,0,0.16)] backdrop-blur-sm lg:p-8"
+          className="mt-12 scroll-mt-24 rounded-[36px] border-2 border-blue-300 p-6 shadow-[0_18px_70px_-30px_rgba(0,0,0,0.16)] backdrop-blur-sm lg:p-8"
         >
           <h2 className="ds-text-h2 text-ds-black">{t("faqTitle")}</h2>
           <div className="mt-4 space-y-3">
             {faq.map((item) => (
               <details
                 key={item.q}
-                className="rounded-xl border border-ds-gray-border/80 bg-white/85 px-4 py-3"
+                className="rounded-xl border border-blue-300 bg-white/85 px-4 py-3"
               >
                 <summary className="cursor-pointer text-sm font-medium text-ds-black">
                   {item.q}
