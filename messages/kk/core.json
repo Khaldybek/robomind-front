@@ -6,7 +6,9 @@
   "LocaleSwitcher": {
     "label": "Тіл / Язык",
     "ru": "Русский",
-    "kk": "Қазақша"
+    "kk": "Қазақша",
+    "shortKk": "Қаз",
+    "shortRu": "RU"
   },
   "HomePage": {
     "navBrand": "Robomind",
@@ -99,7 +101,12 @@
     "ctaBottomLead": "Оқушы — өз кабинетіне, мектеп пен әкімшілер — өздеріне.",
     "ctaStudent": "Мен оқушымын — кіру",
     "ctaSchoolAdmin": "Мектеп әкімшісі",
-    "ctaSuperAdmin": "Админ"
+    "ctaSuperAdmin": "Админ",
+    "footerTagline": "4–7 сыныптарға арналған онлайн-робототехника: квестер, сабақтар және сыйлықтар браузерде.",
+    "footerNavAria": "Төменгі бөлім сілтемелері",
+    "footerLinkLogin": "Кіру",
+    "footerLinkRegister": "Тіркелу",
+    "footerCopyright": "© {year} Robomind. Барлық құқықтар қорғалған."
   },
   "CourseCatalog": {
     "badge": "Не оқуға болады",

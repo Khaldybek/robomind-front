@@ -3,7 +3,8 @@
     "loading": "Жүктелуде…",
     "loggingOut": "Шығу…",
     "checkingAuth": "Кіру тексерілуде…",
-    "apiEnvMissing": ".env.local файлында NEXT_PUBLIC_API_BASE_URL көрсетіңіз"
+    "apiEnvMissing": ".env.local файлында NEXT_PUBLIC_API_BASE_URL көрсетіңіз",
+    "close": "Жабу"
   },
   "AdminModuleHomework": {
     "backToCourseModules": "← Курс модульдеріне",
@@ -228,7 +229,18 @@
     "modulesEmpty": "Модульдер тізімі бос немесе эндпоинт әлі бапталмаған.",
     "courseFallback": "Курс {id}",
     "moduleFallback": "Модуль {id}",
-    "aiAssistant": "Курс бойынша ЖИ көмекшісі"
+    "aiAssistant": "Курс бойынша ЖИ көмекшісі",
+    "lessonsLoading": "Сабақтар жүктелуде…",
+    "lessonsEmpty": "Бұл модульде әлі сабақ жоқ.",
+    "lessonsError": "Сабақтарды жүктеу сәтсіз аяқталды",
+    "lessonsLockedLabel": "Әлі қолжетімсіз",
+    "openModule": "Бүкіл модульді ашу",
+    "lessonTypeVideo": "Бейне",
+    "lessonTypeFile": "Файл",
+    "lessonTypeText": "Мәтін",
+    "lessonTypeLivestream": "Тікелей эфир",
+    "lessonTypeLink": "Сілтеме",
+    "lessonTypeMaterial": "Материал"
   },
   "StudentModule": {
     "backToCourse": "Курсқа оралу",
@@ -245,13 +257,18 @@
     "aiChat": "Көмекшіге сұрау",
     "contentEmpty": "Әлі бос",
     "lessonFallback": "Модуль {id}",
-    "lessonHint": "Қадамдарды ретімен қара — алдымен біріншісін, содан кейін екіншісін.",
+    "lessonHint": "Төмен қарап қадамнан қадамға өт немесе жолақтан таңда — ыңғайлы іздеу.",
+    "stepsNavLabel": "Сабақ қадамдары",
+    "stepsNavHint": "Қадамды бас — сол бөлімге ауысады. Айналдырғанда белгілі қадам жарықталады.",
     "stepLabel": "{n}-қадам",
     "nextTitle": "Келесі не істейміз",
     "emptyHint": "Материалдар жақында пайда болады. Ал мұнда жұмыңды жүктеп немесе тесттен өте аласың, егер мұғалім қосқан болса."
   },
   "StudentHomework": {
     "title": "Үй тапсырмасы",
+    "openModal": "Ашу",
+    "statusSubmitted": "Жұмыс жіберілді",
+    "statusPending": "Әлі жібермедің",
     "hint": "Жұмысыңның файлын тірке. Жаңа файл жүктесең, ескісі өзгереді — мұғалім қайта тексереді.",
     "loading": "Тапсырманы жүктейміз…",
     "currentTitle": "Жібергенің",
@@ -272,6 +289,7 @@
     "sizeMB": "МБ"
   },
   "StudentAiChat": {
+    "modalBadge": "Ақылды көмекші",
     "title": "Сабақ көмекшісі",
     "lead": "Тапсырма немесе түсіндіру туралы сұра — жауап осы модульге байланысты.",
     "placeholder": "Сұрағыңды жаз…",
@@ -280,7 +298,10 @@
     "empty": "Түсініксіз жерді жаз — көмекші мұнда жауап береді.",
     "error": "Хабарлама жіберілмеді",
     "openFull": "Чатты толық бетте ашу",
-    "moduleContext": "Контекст: осы модуль"
+    "moduleContext": "Контекст: осы модуль",
+    "fabLabel": "ЖИ көмекші",
+    "bubbleYou": "Сен",
+    "bubbleAssistant": "Көмекші"
   },
   "StudentQuizReview": {
     "backToLesson": "Сабаққа",

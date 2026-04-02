@@ -1,15 +1,42 @@
 import type { CourseSummary } from "@/lib/api/types";
 import { resolvePublicFileUrl } from "@/lib/env";
 
-/** Путь/URL обложки с бэка (`thumbnailUrl` или `thumbnail_url`). */
+/** Путь/URL обложки с бэка (`thumbnailUrl`, `thumbnail_url`, иногда `thumbnail`). */
 export function pickCourseThumbnailRaw(c: CourseSummary): string | undefined {
+  const r = c as Record<string, unknown>;
   const raw =
     c.thumbnailUrl ??
-    (typeof (c as Record<string, unknown>).thumbnail_url === "string"
-      ? ((c as Record<string, unknown>).thumbnail_url as string)
-      : undefined);
-  const s = raw?.trim();
+    (typeof r.thumbnail_url === "string" ? r.thumbnail_url : undefined) ??
+    (typeof r.thumbnail === "string" ? r.thumbnail : undefined);
+  const s = typeof raw === "string" ? raw.trim() : "";
   return s || undefined;
+}
+
+/**
+ * Приводит ответ бэка к полям, которые ждёт UI (`title`, `thumbnailUrl`).
+ */
+export function normalizeCourseSummary(c: CourseSummary): CourseSummary {
+  const r = c as Record<string, unknown>;
+  const titleCandidates = [
+    c.title,
+    c.name,
+    r.courseTitle,
+    r.course_title,
+    r.name,
+  ];
+  let title: string | undefined;
+  for (const v of titleCandidates) {
+    if (typeof v === "string" && v.trim()) {
+      title = v.trim();
+      break;
+    }
+  }
+  const thumb = pickCourseThumbnailRaw(c);
+  return {
+    ...c,
+    ...(title ? { title } : {}),
+    ...(thumb ? { thumbnailUrl: thumb } : {}),
+  };
 }
 
 /** Абсолютный URL для `<img src>` или `null`, если обложки нет. */

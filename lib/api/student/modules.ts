@@ -2,7 +2,7 @@ import { apiFetch, parseJsonSafe, throwIfNotOk } from "@/lib/api/client";
 import { STUDENT_ROUTES } from "@/lib/api/routes";
 import type { CourseModuleSummary } from "@/lib/api/types";
 
-function normalizeModuleList(raw: unknown): CourseModuleSummary[] {
+export function normalizeModuleList(raw: unknown): CourseModuleSummary[] {
   if (!Array.isArray(raw)) return [];
   return raw.map((x) => {
     if (x && typeof x === "object" && "id" in x) {
@@ -102,6 +102,14 @@ export async function fetchCourseModules(
     Array.isArray((data as { items: unknown }).items)
   ) {
     return normalizeModuleList((data as { items: unknown }).items);
+  }
+  if (
+    data &&
+    typeof data === "object" &&
+    "modules" in data &&
+    Array.isArray((data as { modules: unknown }).modules)
+  ) {
+    return normalizeModuleList((data as { modules: unknown }).modules);
   }
   return [];
 }

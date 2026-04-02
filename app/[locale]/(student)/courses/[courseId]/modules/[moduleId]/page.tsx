@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
@@ -9,7 +9,8 @@ import {
   type ModuleContentItem,
 } from "@/lib/api/student/modules";
 import { CourseAiChat } from "@/components/student/course-ai-chat";
-import { ModuleHomeworkPanel } from "@/components/student/module-homework-panel";
+import { ModuleLessonStepsNav } from "@/components/student/module-lesson-steps-nav";
+import { ModuleHomeworkLessonBlock } from "@/components/student/module-homework-panel";
 import { ModuleFileAttachment } from "@/components/student/module-file-attachment";
 import { ModuleVideoPlayer } from "@/components/student/module-video-player";
 import { isApiConfigured, resolvePublicFileUrl } from "@/lib/env";
@@ -68,11 +69,37 @@ export default function ModuleLessonPage() {
       .finally(() => setLoading(false));
   }, [moduleId]);
 
-  const sorted = [...content].sort(
-    (a, b) => Number(a.order ?? 0) - Number(b.order ?? 0),
+  const sorted = useMemo(
+    () =>
+      [...content].sort(
+        (a, b) => Number(a.order ?? 0) - Number(b.order ?? 0),
+      ),
+    [content],
   );
   const lessonTitle =
     sorted[0]?.title ?? t("lessonFallback", { id: moduleId });
+
+  const stepNavItems = useMemo(
+    () =>
+      sorted.map((item, index) => ({
+        id: String(item.id),
+        step: index + 1,
+        title: item.title ?? item.type ?? t("contentFallback"),
+      })),
+    [sorted, t],
+  );
+
+  useEffect(() => {
+    if (loading || sorted.length === 0 || typeof window === "undefined") return;
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+    const el = document.getElementById(hash);
+    if (!el) return;
+    const timer = window.setTimeout(() => {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+    return () => window.clearTimeout(timer);
+  }, [loading, moduleId, content]);
 
   function renderItemBody(item: ModuleContentItem, rawVideo: string | null) {
     const showVideo = shouldShowVideoPlayer(item) && rawVideo;
@@ -209,13 +236,13 @@ export default function ModuleLessonPage() {
   }
 
   const nextBlock = !loading && !error && (
-    <div className="student-module-kid-next mt-10 space-y-8 px-4 py-8 sm:px-8">
-      <h2 className="text-center text-xl font-bold text-ds-black sm:text-2xl">
+    <div className="student-module-kid-next mt-8 space-y-5 px-3 py-5 sm:mt-10 sm:space-y-6 sm:px-5 sm:py-6">
+      <h2 className="text-center text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
         {t("nextTitle")}
       </h2>
-      <div className="mx-auto mt-6 grid max-w-5xl gap-8 lg:grid-cols-2 lg:items-start">
+      <div className="mx-auto mt-4 grid max-w-5xl gap-5 sm:gap-6 lg:grid-cols-2 lg:items-start">
         <div className="min-w-0">
-          <ModuleHomeworkPanel moduleId={moduleId} />
+          <ModuleHomeworkLessonBlock moduleId={moduleId} />
         </div>
         <div className="min-w-0">
           <CourseAiChat
@@ -225,7 +252,7 @@ export default function ModuleLessonPage() {
           />
         </div>
       </div>
-      <div className="flex justify-center">
+      <div className="flex justify-center pt-1">
         <Link
           href={`/courses/${encodeURIComponent(courseId)}/modules/${encodeURIComponent(moduleId)}/quiz`}
           className="ui-btn ui-btn--1 student-module-kid-cta w-full max-w-md sm:w-auto"
@@ -254,10 +281,14 @@ export default function ModuleLessonPage() {
           <h1 className="mt-3 text-2xl font-extrabold leading-tight tracking-tight text-ds-black sm:text-3xl">
             {lessonTitle}
           </h1>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ds-gray-dark-2 sm:text-xl">
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ds-gray-dark-2 sm:text-lg">
             {t("lessonHint")}
           </p>
         </header>
+
+        {!loading && !error && stepNavItems.length > 1 && (
+          <ModuleLessonStepsNav items={stepNavItems} />
+        )}
 
         {loading && (
           <p className="mt-8 text-lg text-ds-gray-text">{tc("loading")}</p>
@@ -272,38 +303,39 @@ export default function ModuleLessonPage() {
         )}
 
         {!loading && sorted.length > 0 && (
-          <ol className="mt-10 list-none space-y-8 p-0">
+          <ol className="mt-2 list-none space-y-6 p-0 sm:mt-4 sm:space-y-8">
             {sorted.map((item, index) => {
               const rawVideo = videoSourceRaw(item);
               const step = index + 1;
               const blockTitle =
                 item.title ?? item.type ?? t("contentFallback");
               return (
-                <li key={item.id}>
-                  <div className="student-module-kid-step-card p-5 sm:p-8">
-                    <div className="flex flex-col gap-5 sm:flex-row sm:gap-6">
-                      <div className="flex items-center gap-4 sm:block sm:text-center">
+                <li
+                  key={item.id}
+                  id={`content-${item.id}`}
+                  className="scroll-mt-36 sm:scroll-mt-40"
+                >
+                  <article className="rounded-2xl border border-slate-200/75 bg-white/95 p-5 shadow-sm sm:p-7">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:gap-6">
+                      <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-center sm:gap-2 sm:pt-0.5">
                         <div
-                          className="student-module-kid-step-num"
-                          aria-label={t("stepLabel", { n: step })}
+                          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-teal-600 text-lg font-bold text-white shadow-md shadow-teal-500/20"
+                          aria-hidden
                         >
                           {step}
                         </div>
-                        <p className="text-sm font-bold uppercase tracking-wide text-ds-primary sm:hidden">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-teal-700/90 sm:text-center sm:text-[10px]">
                           {t("stepLabel", { n: step })}
-                        </p>
+                        </span>
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="mb-2 hidden text-sm font-bold uppercase tracking-wide text-ds-primary sm:block">
-                          {t("stepLabel", { n: step })}
-                        </p>
-                        <h2 className="text-xl font-bold leading-snug text-ds-black sm:text-2xl">
+                        <h2 className="text-lg font-bold leading-snug text-slate-900 sm:text-xl">
                           {blockTitle}
                         </h2>
-                        {renderItemBody(item, rawVideo)}
+                        <div className="mt-4">{renderItemBody(item, rawVideo)}</div>
                       </div>
                     </div>
-                  </div>
+                  </article>
                 </li>
               );
             })}

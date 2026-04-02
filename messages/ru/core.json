@@ -6,7 +6,9 @@
   "LocaleSwitcher": {
     "label": "Тіл / Язык",
     "ru": "Русский",
-    "kk": "Қазақша"
+    "kk": "Қазақша",
+    "shortKk": "Қаз",
+    "shortRu": "RU"
   },
   "HomePage": {
     "navBrand": "Roboschool",

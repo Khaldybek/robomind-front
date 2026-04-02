@@ -1,124 +1,88 @@
 "use client";
 
-import { useId } from "react";
+import { Languages } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 
-function GlobeIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
-        stroke="currentColor"
-        strokeWidth="1.75"
-      />
-      <path
-        d="M2 12h20M12 2a15.3 15.3 0 0 0 4 10 15.3 15.3 0 0 0-4 10 15.3 15.3 0 0 0-4-10 15.3 15.3 0 0 0 4-10Z"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 type LocaleSwitcherProps = {
   className?: string;
-  /** Тёмный фон (например сайдбар super-admin) */
+  /** Тёмный фон (например шапка super-admin) */
   tone?: "default" | "onDark";
-  /** Текст «Тіл / Язык» или иконка глобуса + aria-label */
+  /**
+   * @deprecated Раньше «текст / иконка» — теперь везде единый вид: иконка + переключатель.
+   * Оставлено для совместимости с существующими вызовами.
+   */
   labelMode?: "text" | "icon";
 };
 
 /**
  * Переключение kk ↔ ru с сохранением текущего пути.
+ * Иконка «Languages» + сегменты Қаз / RU.
  */
 export function LocaleSwitcher({
   className,
   tone = "default",
-  labelMode = "text",
+  labelMode: _labelMode,
 }: LocaleSwitcherProps) {
-  const id = useId();
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations("LocaleSwitcher");
 
   const isDark = tone === "onDark";
-  const iconOnly = labelMode === "icon";
 
-  function onChange(next: string) {
+  function onSelect(next: string) {
     if (next === locale) return;
     router.replace(pathname, { locale: next as (typeof routing.locales)[number] });
   }
 
-  const selectClass =
-    isDark
-      ? "min-h-9 min-w-[9.5rem] w-full max-w-full cursor-pointer rounded-lg border border-white/25 bg-white/10 px-3 py-1.5 text-sm text-white shadow-sm outline-none transition-colors hover:bg-white/[0.14] focus-visible:ring-2 focus-visible:ring-ds-primary/60 sm:w-auto"
-      : "min-h-9 min-w-[9rem] max-w-full flex-1 cursor-pointer rounded-lg border border-slate-400/55 bg-white px-2.5 py-1.5 text-sm text-ds-black shadow-sm outline-none transition-colors hover:border-slate-500/70 focus-visible:border-ds-primary focus-visible:ring-2 focus-visible:ring-ds-primary/30 sm:min-w-[9.5rem] sm:flex-none";
+  const iconWrap = isDark
+    ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/[0.08] text-white shadow-sm"
+    : "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/90 bg-gradient-to-br from-white to-slate-50 text-slate-700 shadow-sm ring-1 ring-slate-200/60";
 
-  const iconWrapClass = isDark
-    ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/25 bg-white/10 text-white"
-    : "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-400/55 bg-white text-ds-black";
+  const track = isDark
+    ? "inline-flex rounded-full border border-white/18 bg-black/25 p-0.5 shadow-inner"
+    : "inline-flex rounded-full border border-slate-200/80 bg-slate-100/90 p-0.5 shadow-inner";
+
+  const btnBase =
+    "min-w-[3.25rem] rounded-full px-3 py-1.5 text-xs font-semibold tracking-wide transition-all duration-200 sm:min-w-[3.5rem] sm:px-3.5 sm:text-[13px]";
+
+  const btnActive = isDark
+    ? "bg-white text-slate-900 shadow-md"
+    : "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/80";
+
+  const btnIdle = isDark
+    ? "text-white/65 hover:bg-white/10 hover:text-white"
+    : "text-slate-500 hover:bg-white/60 hover:text-slate-900";
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-2 ds-text-caption ${className ?? ""}`}
+      className={`flex flex-wrap items-center gap-2 sm:gap-2.5 ${className ?? ""}`}
+      role="group"
+      aria-label={t("label")}
     >
-      {iconOnly ? (
-        <div className="flex min-w-0 max-w-full items-center gap-1.5 sm:max-w-none">
-          <span className={iconWrapClass} title={t("label")}>
-            <GlobeIcon className="h-[1.15rem] w-[1.15rem]" />
-          </span>
-          <select
-            id={id}
-            value={locale}
-            onChange={(e) => onChange(e.target.value)}
-            className={selectClass}
-            aria-label={t("label")}
-          >
-            {routing.locales.map((loc) => (
-              <option key={loc} value={loc}>
-                {t(loc)}
-              </option>
-            ))}
-          </select>
-        </div>
-      ) : (
-        <>
-          <label
-            htmlFor={id}
-            className={
-              isDark
-                ? "shrink-0 font-medium text-white/92"
-                : "shrink-0 font-medium text-ds-black"
-            }
-          >
-            {t("label")}
-          </label>
-          <select
-            id={id}
-            value={locale}
-            onChange={(e) => onChange(e.target.value)}
-            className={selectClass}
-          >
-            {routing.locales.map((loc) => (
-              <option key={loc} value={loc}>
-                {t(loc)}
-              </option>
-            ))}
-          </select>
-        </>
-      )}
+      <span className={iconWrap} title={t("label")}>
+        <Languages className="h-[1.1rem] w-[1.1rem]" strokeWidth={2} aria-hidden />
+      </span>
+      <div className={track}>
+        {routing.locales.map((loc) => {
+          const active = locale === loc;
+          const short = loc === "kk" ? t("shortKk") : t("shortRu");
+          return (
+            <button
+              key={loc}
+              type="button"
+              onClick={() => onSelect(loc)}
+              className={`${btnBase} ${active ? btnActive : btnIdle}`}
+              aria-pressed={active}
+              aria-current={active ? "true" : undefined}
+            >
+              {short}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

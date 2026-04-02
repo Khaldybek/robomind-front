@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { ReactNode } from "react";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { StudentAiAssistantFab } from "@/components/student/student-ai-assistant-fab";
 
 export function StudentShell({ children }: { children: ReactNode }) {
   const t = useTranslations("StudentShell");
@@ -65,6 +66,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       <main className="ds-main__router relative z-[1]">{children}</main>
+      <StudentAiAssistantFab />
     </div>
   );
 }

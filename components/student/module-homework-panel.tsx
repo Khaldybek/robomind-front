@@ -1,10 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ClipboardList, Upload, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   fetchModuleHomework,
   postModuleHomework,
+  type ModuleHomeworkGetResponse,
   type ModuleHomeworkSubmission,
 } from "@/lib/api/student/homework";
 import { isApiConfigured, resolvePublicFileUrl } from "@/lib/env";
@@ -23,7 +25,16 @@ function formatSize(
   return `${(n / (1024 * 1024)).toFixed(1)} ${unitMB}`;
 }
 
-export function ModuleHomeworkPanel({ moduleId }: { moduleId: string }) {
+type ModuleHomeworkPanelProps = {
+  moduleId: string;
+  /** Внутри модалки: без своего заголовка и без внешней «карточки» */
+  embeddedInModal?: boolean;
+};
+
+export function ModuleHomeworkPanel({
+  moduleId,
+  embeddedInModal = false,
+}: ModuleHomeworkPanelProps) {
   const t = useTranslations("StudentHomework");
   const locale = useLocale();
   const [submission, setSubmission] = useState<ModuleHomeworkSubmission | null>(
@@ -77,11 +88,15 @@ export function ModuleHomeworkPanel({ moduleId }: { moduleId: string }) {
     }
   }
 
+  const shellClass = embeddedInModal
+    ? "border-0 bg-transparent p-0 shadow-none ring-0"
+    : "rounded-2xl border border-teal-200/55 bg-gradient-to-br from-teal-50/40 via-white to-sky-50/40 px-4 py-4 shadow-sm ring-1 ring-teal-100/50 sm:px-5 sm:py-5";
+
   if (loading || available === false) {
     if (loading) {
       return (
-        <section className="rounded-[var(--ds-radius-mobile-block)] border-2 border-ds-primary/20 bg-white/90 px-5 py-6 shadow-sm">
-          <p className="text-lg text-ds-gray-text">{t("loading")}</p>
+        <section className={shellClass}>
+          <p className="text-sm text-slate-600">{t("loading")}</p>
         </section>
       );
     }
@@ -112,24 +127,34 @@ export function ModuleHomeworkPanel({ moduleId }: { moduleId: string }) {
     : null;
 
   return (
-    <section className="rounded-[var(--ds-radius-mobile-block)] border-2 border-ds-primary/25 bg-gradient-to-br from-white to-ds-gray-light/50 px-5 py-6 shadow-md sm:px-7 sm:py-8">
-      <div className="flex items-start gap-3">
-        <span className="text-3xl" aria-hidden>
-          📝
-        </span>
-        <div>
-          <h2 className="text-xl font-extrabold text-ds-black sm:text-2xl">
-            {t("title")}
-          </h2>
-          <p className="student-module-kid-prose mt-2 text-ds-gray-dark-2">
-            {t("hint")}
-          </p>
+    <section className={shellClass}>
+      {!embeddedInModal && (
+        <div className="flex items-start gap-2.5 sm:gap-3">
+          <span
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-800 shadow-sm ring-1 ring-teal-200/60 sm:h-11 sm:w-11"
+            aria-hidden
+          >
+            <ClipboardList
+              className="h-5 w-5 sm:h-[1.35rem] sm:w-[1.35rem]"
+              strokeWidth={2}
+            />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-base font-bold leading-tight tracking-tight text-slate-900 sm:text-lg">
+              {t("title")}
+            </h2>
+            <p className="mt-1 text-xs leading-relaxed text-slate-600 sm:text-sm">
+              {t("hint")}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {error && (
         <p
-          className="mt-4 rounded-2xl border-2 border-ds-error/25 bg-red-50 px-4 py-3 text-base text-ds-error"
+          className={`rounded-xl border border-red-200/80 bg-red-50/90 px-3 py-2 text-sm text-red-800 ${
+            embeddedInModal ? "mt-0" : "mt-3"
+          }`}
           role="alert"
         >
           {error}
@@ -137,23 +162,29 @@ export function ModuleHomeworkPanel({ moduleId }: { moduleId: string }) {
       )}
 
       {submission && (
-        <div className="mt-6 rounded-2xl border-2 border-ds-gray-border bg-white px-4 py-5 sm:px-5">
-          <p className="text-base font-bold text-ds-black">{t("currentTitle")}</p>
+        <div
+          className={`rounded-xl border border-slate-200/80 bg-white/90 px-3 py-3 shadow-sm sm:px-4 sm:py-3.5 ${
+            embeddedInModal ? "mt-0" : "mt-3"
+          }`}
+        >
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            {t("currentTitle")}
+          </p>
           {fileHref ? (
             <a
               href={fileHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 inline-flex text-lg font-semibold text-ds-primary underline"
+              className="mt-1.5 inline-flex text-sm font-semibold text-teal-700 underline decoration-teal-300 underline-offset-2 hover:text-teal-900"
             >
               {displayName ?? t("download")}
             </a>
           ) : (
-            <span className="mt-2 block text-lg text-ds-gray-text">
+            <span className="mt-1.5 block text-sm text-slate-600">
               {displayName ?? "—"}
             </span>
           )}
-          <p className="mt-1 text-base text-ds-gray-text">
+          <p className="mt-0.5 text-xs text-slate-500">
             {submission.mimeType ?? ""}
             {submission.sizeBytes !== undefined
               ? ` · ${formatSize(
@@ -165,51 +196,56 @@ export function ModuleHomeworkPanel({ moduleId }: { moduleId: string }) {
               : ""}
           </p>
           {submission.studentComment ? (
-            <p className="student-module-kid-prose mt-4 text-ds-black">
-              <span className="font-semibold text-ds-gray-text">
+            <p className="student-module-kid-prose mt-2 text-sm text-slate-800">
+              <span className="font-medium text-slate-500">
                 {t("commentFromYou")}:{" "}
               </span>
               {submission.studentComment}
             </p>
           ) : null}
           {submission.points != null ? (
-            <div className="mt-5 rounded-2xl bg-ds-gray-light/90 px-4 py-4">
-              <p className="text-lg font-bold text-ds-black">
+            <div className="mt-3 rounded-lg border border-emerald-200/70 bg-emerald-50/80 px-3 py-2.5">
+              <p className="text-sm font-bold text-emerald-950">
                 {t("gradeTitle")}: {submission.points} /{" "}
                 {submission.maxPoints ?? 100}
               </p>
               {submission.feedback ? (
-                <p className="student-module-kid-prose mt-2 text-ds-gray-dark-2">
+                <p className="student-module-kid-prose mt-1.5 text-sm text-emerald-900/90">
                   {submission.feedback}
                 </p>
               ) : null}
               {gradedAtFmt ? (
-                <p className="mt-2 text-sm text-ds-gray-text">{gradedAtFmt}</p>
+                <p className="mt-1.5 text-xs text-emerald-800/80">
+                  {gradedAtFmt}
+                </p>
               ) : null}
             </div>
           ) : (
-            <p className="mt-4 text-lg text-ds-gray-text">{t("notGraded")}</p>
+            <p className="mt-2 text-sm text-slate-500">{t("notGraded")}</p>
           )}
         </div>
       )}
 
-      <form onSubmit={onSubmit} className="mt-6 space-y-5">
+      <form
+        onSubmit={onSubmit}
+        className="mt-4 space-y-3"
+      >
         <div>
-          <label className="block text-base font-bold text-ds-black">
+          <label className="block text-xs font-semibold text-slate-700 sm:text-sm">
             {t("fileLabel")}
           </label>
           <input
             type="file"
-            className="ds-input mt-2 block w-full py-3 text-base file:mr-4 file:rounded-xl file:border-0 file:bg-ds-primary file:px-4 file:py-3 file:text-sm file:font-bold file:text-white"
+            className="ds-input mt-1.5 block w-full rounded-xl border-slate-200/90 py-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-teal-600 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:bg-teal-700"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
         </div>
         <div>
-          <label className="block text-base font-bold text-ds-black">
+          <label className="block text-xs font-semibold text-slate-700 sm:text-sm">
             {t("commentLabel")}
           </label>
           <textarea
-            className="ds-input mt-2 min-h-[100px] w-full text-lg"
+            className="ds-input mt-1.5 min-h-[4.5rem] w-full rounded-xl border-slate-200/90 py-2 text-sm leading-relaxed"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder={t("commentPlaceholder")}
@@ -217,12 +253,152 @@ export function ModuleHomeworkPanel({ moduleId }: { moduleId: string }) {
         </div>
         <button
           type="submit"
-          className="ui-btn ui-btn--1 student-module-kid-cta w-full sm:w-auto"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 disabled:opacity-50 sm:w-auto"
           disabled={sending || !file}
         >
+          <Upload className="h-4 w-4" strokeWidth={2} aria-hidden />
           {sending ? t("submitting") : submission ? t("replace") : t("submit")}
         </button>
       </form>
     </section>
+  );
+}
+
+/** Карточка на странице урока + модальное окно с полной формой домашки */
+export function ModuleHomeworkLessonBlock({ moduleId }: { moduleId: string }) {
+  const t = useTranslations("StudentHomework");
+  const tc = useTranslations("Common");
+  const [open, setOpen] = useState(false);
+  const [meta, setMeta] = useState<ModuleHomeworkGetResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const prevOpen = useRef(open);
+
+  useEffect(() => {
+    if (!isApiConfigured() || !moduleId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    fetchModuleHomework(moduleId)
+      .then(setMeta)
+      .catch(() =>
+        setMeta({ submission: null, homeworkAvailable: false }),
+      )
+      .finally(() => setLoading(false));
+  }, [moduleId]);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  useEffect(() => {
+    if (prevOpen.current && !open && moduleId && isApiConfigured()) {
+      fetchModuleHomework(moduleId).then(setMeta).catch(() => {});
+    }
+    prevOpen.current = open;
+  }, [open, moduleId]);
+
+  if (loading) {
+    return (
+      <div className="rounded-2xl border border-teal-200/50 bg-gradient-to-br from-teal-50/50 to-sky-50/30 px-4 py-4 shadow-sm ring-1 ring-teal-100/40 sm:px-5 sm:py-5">
+        <p className="text-sm text-slate-600">{t("loading")}</p>
+      </div>
+    );
+  }
+
+  if (!meta?.homeworkAvailable) return null;
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="w-full rounded-2xl border border-teal-200/60 bg-gradient-to-br from-teal-50/50 via-white to-sky-50/40 px-4 py-4 text-left shadow-sm ring-1 ring-teal-100/50 transition hover:border-teal-300/80 hover:shadow-md sm:px-5 sm:py-4"
+      >
+        <div className="flex items-center gap-3">
+          <span
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-800 ring-1 ring-teal-200/60"
+            aria-hidden
+          >
+            <ClipboardList className="h-5 w-5" strokeWidth={2} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold text-slate-900 sm:text-base">
+              {t("title")}
+            </p>
+            <p className="mt-0.5 line-clamp-2 text-xs text-slate-600 sm:text-sm">
+              {t("hint")}
+            </p>
+            {meta.submission ? (
+              <p className="mt-2 text-xs font-medium text-emerald-700">
+                {t("statusSubmitted")}
+              </p>
+            ) : (
+              <p className="mt-2 text-xs font-medium text-amber-700">
+                {t("statusPending")}
+              </p>
+            )}
+          </div>
+          <span className="shrink-0 rounded-full bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white sm:text-sm">
+            {t("openModal")}
+          </span>
+        </div>
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 z-[100] flex animate-in fade-in duration-200 items-end justify-center p-4 pb-28 sm:items-center sm:pb-4">
+          <button
+            type="button"
+            className="absolute inset-0 bg-slate-900/50 backdrop-blur-[3px]"
+            aria-label={tc("close")}
+            onClick={() => setOpen(false)}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="student-homework-modal-title"
+            className="relative z-[101] flex max-h-[min(92vh,720px)] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-white/70 bg-white shadow-[0_25px_50px_-12px_rgba(15,23,42,0.35)] ring-1 ring-slate-200/80"
+          >
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200/80 bg-gradient-to-br from-teal-50/60 via-white to-sky-50/30 px-4 py-3 sm:px-5 sm:py-4">
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                <span
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-teal-100 text-teal-800 ring-1 ring-teal-200/60"
+                  aria-hidden
+                >
+                  <ClipboardList className="h-6 w-6" strokeWidth={2} />
+                </span>
+                <div className="min-w-0">
+                  <h2
+                    id="student-homework-modal-title"
+                    className="text-lg font-bold leading-tight text-slate-900 sm:text-xl"
+                  >
+                    {t("title")}
+                  </h2>
+                  <p className="mt-0.5 line-clamp-2 text-xs text-slate-600 sm:text-sm">
+                    {t("hint")}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                onClick={() => setOpen(false)}
+                aria-label={tc("close")}
+              >
+                <X className="h-5 w-5" strokeWidth={2} />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-5 sm:py-5">
+              <ModuleHomeworkPanel moduleId={moduleId} embeddedInModal />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

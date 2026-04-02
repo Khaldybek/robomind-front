@@ -3,7 +3,8 @@
     "loading": "Загрузка…",
     "loggingOut": "Выход…",
     "checkingAuth": "Проверка входа…",
-    "apiEnvMissing": "Укажите NEXT_PUBLIC_API_BASE_URL в .env.local"
+    "apiEnvMissing": "Укажите NEXT_PUBLIC_API_BASE_URL в .env.local",
+    "close": "Закрыть"
   },
   "AdminModuleHomework": {
     "backToCourseModules": "← К модулям курса",
@@ -228,7 +229,18 @@
     "modulesEmpty": "Список модулей пуст или эндпоинт ещё не настроен.",
     "courseFallback": "Курс {id}",
     "moduleFallback": "Модуль {id}",
-    "aiAssistant": "ИИ-ассистент по курсу"
+    "aiAssistant": "ИИ-ассистент по курсу",
+    "lessonsLoading": "Загрузка уроков…",
+    "lessonsEmpty": "В этом модуле пока нет уроков.",
+    "lessonsError": "Не удалось загрузить уроки",
+    "lessonsLockedLabel": "Пока недоступно",
+    "openModule": "Открыть весь модуль",
+    "lessonTypeVideo": "Видео",
+    "lessonTypeFile": "Файл",
+    "lessonTypeText": "Текст",
+    "lessonTypeLivestream": "Прямой эфир",
+    "lessonTypeLink": "Ссылка",
+    "lessonTypeMaterial": "Материал"
   },
   "StudentModule": {
     "backToCourse": "Назад к курсу",
@@ -245,13 +257,18 @@
     "aiChat": "Спросить помощника",
     "contentEmpty": "Пока ничего нет",
     "lessonFallback": "Модуль {id}",
-    "lessonHint": "Смотри шаги по порядку — сначала первый, потом второй.",
+    "lessonHint": "Листай вниз по шагам или выбери нужный шаг в полоске ниже — так удобнее, чем искать глазами.",
+    "stepsNavLabel": "Шаги урока",
+    "stepsNavHint": "Нажми шаг — страница прокрутится к нему. При листании подсветится текущий шаг.",
     "stepLabel": "Шаг {n}",
     "nextTitle": "Что сделать дальше",
     "emptyHint": "Материалы скоро появятся. А пока можно загрузить работу или пройти тест, если учитель уже включил."
   },
   "StudentHomework": {
     "title": "Домашнее задание",
+    "openModal": "Открыть",
+    "statusSubmitted": "Работа отправлена",
+    "statusPending": "Пока без отправки",
     "hint": "Прикрепи файл с работой. Если загрузишь новый файл, старый заменится — учитель снова проверит.",
     "loading": "Загружаем задание…",
     "currentTitle": "Ты уже отправил",
@@ -272,6 +289,7 @@
     "sizeMB": "МБ"
   },
   "StudentAiChat": {
+    "modalBadge": "Умный помощник",
     "title": "Помощник по уроку",
     "lead": "Спроси про задание или объяснение — ответ с учётом этого модуля.",
     "placeholder": "Напиши вопрос…",
@@ -280,7 +298,10 @@
     "empty": "Напиши, что непонятно — помощник ответит здесь.",
     "error": "Не получилось отправить сообщение",
     "openFull": "Открыть чат на всю страницу",
-    "moduleContext": "Контекст: этот модуль"
+    "moduleContext": "Контекст: этот модуль",
+    "fabLabel": "ИИ-помощник",
+    "bubbleYou": "Вы",
+    "bubbleAssistant": "Помощник"
   },
   "StudentQuizReview": {
     "backToLesson": "К уроку",

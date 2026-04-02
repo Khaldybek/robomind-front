@@ -271,6 +271,38 @@
 ]
 ```
 
+### `GET /app/courses/:courseId`
+
+Один курс (карточка ученика). **Рекомендуемый ответ `200`:** курс и модули в одном теле:
+
+```json
+{
+  "course": {
+    "id": "uuid",
+    "title": "Название курса",
+    "description": "…",
+    "thumbnailUrl": "/api/v1/files/images/….webp",
+    "level": "beginner",
+    "ageGroup": "…"
+  },
+  "modules": [
+    {
+      "id": "uuid",
+      "title": "…",
+      "description": null,
+      "order": 0,
+      "unlockAfterModuleId": null,
+      "createdAt": "…",
+      "updatedAt": "…"
+    }
+  ]
+}
+```
+
+Допустимо и **плоское** тело (как один элемент из `GET /app/courses`), без `modules` — тогда модули запрашиваются отдельно: `GET /app/courses/:courseId/modules`.
+
+Фронт принимает обёртки `{ "data": { ... } }`, `{ "course": { ... } }` и поля-алиасы: `name` / `courseTitle` для названия, `thumbnail_url` / `thumbnail` для обложки.
+
 ### `GET /app/courses/:courseId/modules`
 
 | Вход | `courseId` — UUID в пути |
