@@ -128,7 +128,7 @@ export function SuperAdminShell({ children }: { children: ReactNode }) {
         }`}
       >
         <div className="hidden border-b border-white/10 px-5 py-5 lg:block">
-          <p className="ds-text-subtitle text-ds-white">Robomind</p>
+          <p className="ds-text-subtitle text-ds-white">{t("sidebarBrand")}</p>
           <p className="mt-0.5 ds-text-caption text-white/60">
             {t("desktopSubtitle")}
           </p>

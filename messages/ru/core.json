@@ -1,6 +1,6 @@
 {
   "Metadata": {
-    "title": "Robomind — роботы и квесты для 4–7 классов",
+    "title": "Roboschool — роботы и квесты для 4–7 классов",
     "description": "Робототехника онлайн: понятные уроки, квесты и награды для учеников младшей и средней школы"
   },
   "LocaleSwitcher": {
@@ -106,7 +106,7 @@
     "footerNavAria": "Разделы в подвале",
     "footerLinkLogin": "Вход",
     "footerLinkRegister": "Регистрация",
-    "footerCopyright": "© {year} Robomind. Все права защищены."
+    "footerCopyright": "© {year} Roboschool. Все права защищены."
   },
   "CourseCatalog": {
     "badge": "Что можно изучать",

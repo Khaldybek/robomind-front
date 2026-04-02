@@ -69,35 +69,36 @@ export function ModuleLessonStepsNav({ items }: ModuleLessonStepsNavProps) {
 
   return (
     <nav
-      className="sticky top-14 z-[15] -mx-3 mb-8 border-b border-slate-200/70 bg-white/85 px-3 py-3 shadow-sm backdrop-blur-md sm:-mx-0 sm:mb-10 sm:rounded-2xl sm:border sm:py-3.5 sm:shadow-md"
+      className="sticky top-14 z-[15] mb-8 rounded-xl border border-slate-200/70 bg-white/90 py-2.5 pl-3 pr-2 shadow-sm backdrop-blur-md sm:mb-10 sm:rounded-2xl sm:py-3"
       aria-label={t("stepsNavLabel")}
     >
-      <div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-500 sm:text-sm">
-        <List className="h-4 w-4 shrink-0 text-teal-600" strokeWidth={2} aria-hidden />
+      <div className="mb-2 flex items-center gap-1.5 px-1 text-xs text-slate-500">
+        <List className="h-3.5 w-3.5 shrink-0 text-teal-600" strokeWidth={2} aria-hidden />
         <span>{t("stepsNavHint")}</span>
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex gap-1.5 overflow-x-auto pb-0.5 pt-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {items.map(({ id, step, title }) => {
           const active = activeId === id;
           const short =
-            title.length > 42 ? `${title.slice(0, 40).trim()}…` : title;
+            title.length > 36 ? `${title.slice(0, 34).trim()}…` : title;
           return (
             <button
               key={id}
               type="button"
+              title={title}
               onClick={() => scrollToStep(id)}
-              className={`flex min-w-0 max-w-[min(100%,18rem)] shrink-0 items-center gap-2 rounded-xl border px-3 py-2 text-left text-sm transition sm:max-w-xs ${
+              className={`flex min-w-0 max-w-[min(100%,16rem)] shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-left text-[0.8125rem] transition sm:max-w-xs ${
                 active
-                  ? "border-teal-500 bg-teal-50 text-teal-950 shadow-sm ring-1 ring-teal-400/40"
-                  : "border-slate-200/90 bg-slate-50/90 text-slate-700 hover:border-teal-300/60 hover:bg-white"
+                  ? "border-teal-500/80 bg-teal-50/90 text-teal-950"
+                  : "border-transparent bg-slate-100/80 text-slate-700 hover:bg-slate-100"
               }`}
               aria-current={active ? "step" : undefined}
             >
               <span
-                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[0.6875rem] font-bold tabular-nums ${
                   active
                     ? "bg-teal-600 text-white"
-                    : "bg-white text-slate-600 ring-1 ring-slate-200"
+                    : "bg-white text-slate-600 ring-1 ring-slate-200/90"
                 }`}
               >
                 {step}

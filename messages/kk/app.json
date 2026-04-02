@@ -95,6 +95,7 @@
     "toLogin": "Кіруге"
   },
   "StudentShell": {
+    "brandName": "Roboschool",
     "brandSuffix": "Оқушы",
     "logout": "Шығу",
     "navDashboard": "Басты бет",
@@ -105,6 +106,7 @@
     "navSettings": "Баптаулар"
   },
   "SchoolAdminShell": {
+    "brandName": "Roboschool",
     "subtitle": "Мектеп әкімшісі панелі",
     "logout": "Шығу",
     "navOverview": "Шолу",
@@ -114,7 +116,8 @@
     "navDevices": "Құрылғылар"
   },
   "SuperAdminShell": {
-    "mobileBrand": "Robomind · Супер-әкімші",
+    "sidebarBrand": "Roboschool",
+    "mobileBrand": "Roboschool · Супер-әкімші",
     "menuOpen": "Мәзірді ашу",
     "menuClose": "Мәзірді жабу",
     "closeOverlay": "Мәзірді жабу",

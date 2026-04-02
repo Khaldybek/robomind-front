@@ -1,6 +1,6 @@
 {
   "Metadata": {
-    "title": "Robomind — 4–7 сынып оқушыларына арналған роботтар мен квестер",
+    "title": "Roboschool — 4–7 сынып оқушыларына арналған роботтар мен квестер",
     "description": "Робототехника онлайн: түсінікті сабақтар, квестер мен сыйлықтар бастау және орта мектеп оқушыларына"
   },
   "LocaleSwitcher": {
@@ -11,7 +11,7 @@
     "shortRu": "RU"
   },
   "HomePage": {
-    "navBrand": "Robomind",
+    "navBrand": "Roboschool",
     "navAria": "Бет бөлімдері",
     "navCourses": "Курстар",
     "navVisual": "Анимациялар",
@@ -106,7 +106,7 @@
     "footerNavAria": "Төменгі бөлім сілтемелері",
     "footerLinkLogin": "Кіру",
     "footerLinkRegister": "Тіркелу",
-    "footerCopyright": "© {year} Robomind. Барлық құқықтар қорғалған."
+    "footerCopyright": "© {year} Roboschool. Барлық құқықтар қорғалған."
   },
   "CourseCatalog": {
     "badge": "Не оқуға болады",

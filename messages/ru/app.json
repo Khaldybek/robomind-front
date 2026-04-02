@@ -95,6 +95,7 @@
     "toLogin": "Ко входу"
   },
   "StudentShell": {
+    "brandName": "Roboschool",
     "brandSuffix": "Ученик",
     "logout": "Выйти",
     "navDashboard": "Дашборд",
@@ -105,6 +106,7 @@
     "navSettings": "Настройки"
   },
   "SchoolAdminShell": {
+    "brandName": "Roboschool",
     "subtitle": "Панель администратора школы",
     "logout": "Выйти",
     "navOverview": "Обзор",
@@ -114,7 +116,8 @@
     "navDevices": "Устройства"
   },
   "SuperAdminShell": {
-    "mobileBrand": "Robomind · Супер-админ",
+    "sidebarBrand": "Roboschool",
+    "mobileBrand": "Roboschool · Супер-админ",
     "menuOpen": "Открыть меню",
     "menuClose": "Закрыть меню",
     "closeOverlay": "Закрыть меню",

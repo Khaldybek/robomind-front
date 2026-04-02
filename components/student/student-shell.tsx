@@ -38,7 +38,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-ds-primary font-semibold text-white shadow-lg shadow-ds-primary/20">
               R
             </span>
-            Robomind · {t("brandSuffix")}
+            {t("brandName")} · {t("brandSuffix")}
           </Link>
           <nav className="flex flex-wrap items-center gap-1.5 lg:gap-2">
             <LocaleSwitcher className="mr-1 hidden sm:flex" />

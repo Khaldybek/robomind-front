@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
-/** Логотип Robomind над формами входа / регистрации */
+/** Логотип бренда (alt из HomePage.navBrand) над формами входа / регистрации */
 export function AuthBrandLogo() {
   const t = useTranslations("HomePage");
 

@@ -1443,25 +1443,66 @@ body {
   }
 }
 
-/* Страница урока модуля — дружелюбный вид для младших классов */
+/* Страница урока модуля — спокойный светлый фон */
 .student-module-kid-page {
   background: linear-gradient(
-    185deg,
-    #fff8f5 0%,
-    var(--ds-gray-page) 38%,
-    #eef6ff 100%
+    180deg,
+    #f8fafc 0%,
+    #f1f5f9 42%,
+    #f8fafc 100%
   );
 }
 
 .student-module-kid-hero {
-  border-radius: var(--ds-radius-card-lg);
+  border-radius: 1.25rem;
   background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(255, 242, 238, 0.9) 100%
+    165deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(240, 253, 250, 0.35) 55%,
+    rgba(255, 255, 255, 0.96) 100%
   );
-  box-shadow: 0 8px 28px rgba(38, 38, 38, 0.08);
-  border: 2px solid rgba(255, 46, 31, 0.12);
+  box-shadow:
+    0 1px 0 rgba(15, 23, 42, 0.04),
+    0 12px 40px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+/* Тело шага: чуть уже строка для чтения */
+.lesson-step-prose {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+  color: rgb(51 65 85);
+}
+
+.lesson-step-prose p {
+  margin-bottom: 0.875rem;
+}
+
+.lesson-step-prose p:last-child {
+  margin-bottom: 0;
+}
+
+.lesson-step-prose ul,
+.lesson-step-prose ol {
+  margin: 0.65rem 0 0.875rem;
+  padding-left: 1.25rem;
+}
+
+.lesson-step-prose li {
+  margin: 0.4rem 0;
+}
+
+.lesson-step-prose a {
+  color: var(--ds-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (min-width: 640px) {
+  .lesson-step-prose {
+    font-size: 1.125rem;
+  }
 }
 
 .student-module-kid-step-card {

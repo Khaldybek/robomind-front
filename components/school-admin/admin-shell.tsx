@@ -59,7 +59,7 @@ export function SchoolAdminShell({ children }: { children: ReactNode }) {
               </div>
               <div className="min-w-0">
                 <span className="ds-text-subtitle block truncate text-ds-black">
-                  Robomind
+                  {t("brandName")}
                 </span>
                 <span className="ds-text-caption block text-ds-gray-text">
                   {t("subtitle")}

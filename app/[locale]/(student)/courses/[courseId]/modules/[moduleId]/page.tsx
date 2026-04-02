@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
+import { ArrowLeft, BookOpen } from "lucide-react";
 import {
   fetchModuleContent,
   type ModuleContentItem,
@@ -46,7 +47,7 @@ function shouldShowVideoPlayer(item: ModuleContentItem): boolean {
 }
 
 const kidProseHtml =
-  "student-module-kid-prose max-w-none [&_a]:font-semibold [&_li]:pl-1 [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6";
+  "lesson-step-prose max-w-3xl [&_a]:font-semibold [&_li]:pl-1 [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6";
 
 export default function ModuleLessonPage() {
   const t = useTranslations("StudentModule");
@@ -119,11 +120,11 @@ export default function ModuleLessonPage() {
                 <div className="mt-5">
                   {item.content.trim().startsWith("<") ? (
                     <div
-                      className={`${kidProseHtml} text-ds-black`}
+                      className={`${kidProseHtml} text-slate-800`}
                       dangerouslySetInnerHTML={{ __html: item.content }}
                     />
                   ) : (
-                    <p className="student-module-kid-prose whitespace-pre-wrap text-ds-black">
+                    <p className="lesson-step-prose max-w-3xl whitespace-pre-wrap text-slate-800">
                       {item.content}
                     </p>
                   )}
@@ -154,11 +155,11 @@ export default function ModuleLessonPage() {
               item.content.trim() &&
               (item.content.trim().startsWith("<") ? (
                 <div
-                  className={`${kidProseHtml} mt-5 text-ds-black`}
+                  className={`${kidProseHtml} mt-5 text-slate-800`}
                   dangerouslySetInnerHTML={{ __html: item.content }}
                 />
               ) : (
-                <p className="student-module-kid-prose mt-5 whitespace-pre-wrap text-ds-black">
+                <p className="lesson-step-prose mt-5 max-w-3xl whitespace-pre-wrap text-slate-800">
                   {item.content}
                 </p>
               ))}
@@ -177,11 +178,11 @@ export default function ModuleLessonPage() {
           typeof item.content === "string" &&
           (item.content.trim().startsWith("<") ? (
             <div
-              className={`${kidProseHtml} mt-5 text-ds-black`}
+              className={`${kidProseHtml} mt-5 text-slate-800`}
               dangerouslySetInnerHTML={{ __html: item.content }}
             />
           ) : (
-            <p className="student-module-kid-prose mt-5 whitespace-pre-wrap text-ds-black">
+            <p className="lesson-step-prose mt-5 max-w-3xl whitespace-pre-wrap text-slate-800">
               {item.content}
             </p>
           ))}
@@ -204,7 +205,7 @@ export default function ModuleLessonPage() {
           )}
 
         {(item.type === "livestream" || item.livestreamUrl) && (
-          <p className="student-module-kid-prose mt-5 text-ds-gray-dark-2">
+          <p className="lesson-step-prose mt-5 max-w-3xl text-slate-600">
             <span className="font-semibold text-ds-black">{t("livestream")}</span>{" "}
             {String(item.livestreamStartsAt ?? "—")}
             {item.livestreamUrl ? (
@@ -236,8 +237,8 @@ export default function ModuleLessonPage() {
   }
 
   const nextBlock = !loading && !error && (
-    <div className="student-module-kid-next mt-8 space-y-5 px-3 py-5 sm:mt-10 sm:space-y-6 sm:px-5 sm:py-6">
-      <h2 className="text-center text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
+    <div className="student-module-kid-next mt-12 space-y-5 px-4 py-6 sm:mt-14 sm:space-y-6 sm:px-6 sm:py-7">
+      <h2 className="text-center text-base font-semibold tracking-tight text-slate-800 sm:text-lg">
         {t("nextTitle")}
       </h2>
       <div className="mx-auto mt-4 grid max-w-5xl gap-5 sm:gap-6 lg:grid-cols-2 lg:items-start">
@@ -264,26 +265,34 @@ export default function ModuleLessonPage() {
   );
 
   return (
-    <div className="student-module-kid-page min-h-screen pb-16 pt-6 sm:pb-20 sm:pt-10">
+    <div className="student-module-kid-page min-h-screen pb-16 pt-5 sm:pb-20 sm:pt-8">
       <div className="ds-container max-w-6xl">
+        <div className="mx-auto max-w-3xl">
         <Link
           href={`/courses/${encodeURIComponent(courseId)}`}
-          className="mb-6 inline-flex items-center gap-2 rounded-full border-2 border-ds-gray-border bg-white/90 px-4 py-2.5 text-base font-semibold text-ds-primary shadow-sm transition-colors hover:border-ds-primary/40 hover:bg-white"
+          className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition-colors hover:text-teal-700"
         >
-          <span aria-hidden>←</span>
+          <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden />
           {t("backToCourse")}
         </Link>
 
-        <header className="student-module-kid-hero px-5 py-6 sm:px-8 sm:py-8">
-          <p className="text-3xl sm:text-4xl" aria-hidden>
-            🤖
-          </p>
-          <h1 className="mt-3 text-2xl font-extrabold leading-tight tracking-tight text-ds-black sm:text-3xl">
-            {lessonTitle}
-          </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ds-gray-dark-2 sm:text-lg">
-            {t("lessonHint")}
-          </p>
+        <header className="student-module-kid-hero px-5 py-7 sm:px-8 sm:py-9">
+          <div className="flex items-start gap-4">
+            <span
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-teal-500/10 text-teal-700 ring-1 ring-teal-600/15"
+              aria-hidden
+            >
+              <BookOpen className="h-5 w-5" strokeWidth={2} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl font-semibold leading-snug tracking-tight text-slate-900 sm:text-[1.65rem]">
+                {lessonTitle}
+              </h1>
+              <p className="mt-3 max-w-2xl text-[0.9375rem] leading-relaxed text-slate-600 sm:text-base">
+                {t("lessonHint")}
+              </p>
+            </div>
+          </div>
         </header>
 
         {!loading && !error && stepNavItems.length > 1 && (
@@ -303,7 +312,7 @@ export default function ModuleLessonPage() {
         )}
 
         {!loading && sorted.length > 0 && (
-          <ol className="mt-2 list-none space-y-6 p-0 sm:mt-4 sm:space-y-8">
+          <ol className="mt-6 list-none divide-y divide-slate-200/80 p-0 sm:mt-8">
             {sorted.map((item, index) => {
               const rawVideo = videoSourceRaw(item);
               const step = index + 1;
@@ -313,28 +322,16 @@ export default function ModuleLessonPage() {
                 <li
                   key={item.id}
                   id={`content-${item.id}`}
-                  className="scroll-mt-36 sm:scroll-mt-40"
+                  className="scroll-mt-36 py-10 first:pt-8 sm:scroll-mt-40 sm:py-12 sm:first:pt-10"
                 >
-                  <article className="rounded-2xl border border-slate-200/75 bg-white/95 p-5 shadow-sm sm:p-7">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:gap-6">
-                      <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-center sm:gap-2 sm:pt-0.5">
-                        <div
-                          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-teal-600 text-lg font-bold text-white shadow-md shadow-teal-500/20"
-                          aria-hidden
-                        >
-                          {step}
-                        </div>
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-teal-700/90 sm:text-center sm:text-[10px]">
-                          {t("stepLabel", { n: step })}
-                        </span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h2 className="text-lg font-bold leading-snug text-slate-900 sm:text-xl">
-                          {blockTitle}
-                        </h2>
-                        <div className="mt-4">{renderItemBody(item, rawVideo)}</div>
-                      </div>
-                    </div>
+                  <article>
+                    <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-teal-700/85">
+                      {t("stepLabel", { n: step })}
+                    </p>
+                    <h2 className="mt-2 text-xl font-semibold leading-snug text-slate-900 sm:text-[1.35rem]">
+                      {blockTitle}
+                    </h2>
+                    <div className="mt-5">{renderItemBody(item, rawVideo)}</div>
                   </article>
                 </li>
               );
@@ -343,15 +340,16 @@ export default function ModuleLessonPage() {
         )}
 
         {!loading && !error && sorted.length === 0 && (
-          <div className="student-module-kid-step-card mt-10 p-6 sm:p-8">
-            <p className="text-xl font-semibold text-ds-black">
+          <div className="mt-10 rounded-2xl border border-slate-200/80 bg-white/90 p-6 shadow-sm sm:p-8">
+            <p className="text-lg font-semibold text-slate-900">
               {t("contentEmpty")}
             </p>
-            <p className="student-module-kid-prose mt-3 text-ds-gray-dark-2">
+            <p className="lesson-step-prose mt-3 text-slate-600">
               {t("emptyHint")}
             </p>
           </div>
         )}
+        </div>
 
         {nextBlock}
       </div>

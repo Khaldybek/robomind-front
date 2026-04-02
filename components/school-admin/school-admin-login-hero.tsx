@@ -25,7 +25,7 @@ export function SchoolAdminLoginHero() {
           Управляйте учениками и доступами к курсам — в одном месте
         </h2>
         <p className="mt-4 max-w-md text-pretty text-sm leading-relaxed text-white/70">
-          Robomind помогает школе запускать цифровое обучение: курсы, прогресс,
+          Roboschool помогает школе запускать цифровое обучение: курсы, прогресс,
           уведомления и безопасность устройств — без лишней бюрократики.
         </p>
         <ul className="mt-8 space-y-3 text-sm text-white/85">
