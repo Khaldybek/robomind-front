@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Bot, ExternalLink, Sparkles, X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { AiChatScrollArea } from "@/components/student/course-ai-chat";
 import { useStudentAiChat } from "@/components/student/use-student-ai-chat";
@@ -21,6 +21,8 @@ function parseModuleId(pathname: string | null): string | null {
 
 export function StudentAiAssistantFab() {
   const pathname = usePathname();
+  const locale = useLocale();
+  const aiLang = locale === "ru" ? "ru" : "kk";
   const t = useTranslations("StudentAiChat");
   const tc = useTranslations("Common");
   const [open, setOpen] = useState(false);
@@ -33,7 +35,12 @@ export function StudentAiAssistantFab() {
     [pathname],
   );
 
-  const chat = useStudentAiChat({ moduleId: moduleId ?? undefined, courseId });
+  const chat = useStudentAiChat({
+    moduleId: moduleId ?? undefined,
+    courseId,
+    mode: courseId != null ? "course" : "module",
+    language: aiLang,
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -89,9 +96,11 @@ export function StudentAiAssistantFab() {
                   <p className="mt-1.5 text-sm leading-snug text-slate-600">
                     {t("lead")}
                   </p>
-                  {moduleId ? (
+                  {courseId ? (
                     <p className="mt-2 inline-flex items-center rounded-full bg-ds-primary/10 px-2.5 py-1 text-xs font-medium text-ds-primary">
-                      {t("moduleContext")}
+                      {moduleId
+                        ? t("courseWideContext")
+                        : t("courseContext")}
                     </p>
                   ) : null}
                 </div>

@@ -19,6 +19,8 @@ export const STUDENT_ROUTES = {
   PROFILE: "/app/student/profile",
   PROFILE_ME: "/app/me",
   USER_ME: "/app/users/me",
+  USER_ME_AVATAR: "/app/users/me/avatar",
+  USER_ME_PROFILE: "/app/users/me/profile",
   USER_ME_DASHBOARD: "/app/users/me/dashboard",
   USER_ME_PROGRESS: "/app/users/me/progress",
   USER_ME_CERTIFICATES: "/app/users/me/certificates",
@@ -55,6 +57,10 @@ export const STUDENT_ROUTES = {
     `/app/districts/${encodeURIComponent(districtId)}/schools`,
 
   AI_CHAT: "/app/ai/chat",
+  /** Чат в профиле ученика без moduleId */
+  AI_CHAT_PROFILE: "/app/ai/chat-profile",
+  /** Чат по всему курсу (контекст всех опубликованных модулей) */
+  AI_CHAT_COURSE: "/app/ai/chat-course",
   AI_RECOMMENDATIONS: "/app/ai/recommendations",
   AI_GRADE_TEXT: "/app/ai/grade-text",
 

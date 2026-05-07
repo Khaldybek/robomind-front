@@ -62,6 +62,134 @@ export async function fetchUserDashboard(): Promise<StudentDashboardResponse | n
   return data as StudentDashboardResponse;
 }
 
+export type ProfilePerformance = {
+  coursesCount?: number;
+  certificatesCount?: number;
+  totalModules?: number;
+  modulesCompleted?: number;
+  modulesInProgress?: number;
+  overallProgressPercent?: number;
+  totalQuizAttempts?: number;
+  averageQuizPercent?: number;
+  [key: string]: unknown;
+};
+
+export type ProfileCourseItem = {
+  id: string;
+  title?: string;
+  name?: string;
+  thumbnailUrl?: string | null;
+  level?: string;
+  ageGroup?: string;
+  progressPercent?: number;
+  totalModules?: number;
+  completedModules?: number;
+  modulesInProgress?: number;
+  description?: string;
+  [key: string]: unknown;
+};
+
+/** Расширенный профиль: GET /app/users/me/profile */
+export type StudentProfileFull = StudentMeResponse & {
+  certificates?: CertificateItem[];
+  courses?: ProfileCourseItem[];
+  performance?: ProfilePerformance;
+};
+
+function unwrapEnvelope(raw: unknown): Record<string, unknown> | null {
+  if (raw == null || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  if (o.data && typeof o.data === "object") {
+    return o.data as Record<string, unknown>;
+  }
+  return o;
+}
+
+function num(raw: unknown, fallback = 0): number {
+  if (raw == null || raw === "") return fallback;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function parsePerformance(o: Record<string, unknown>): ProfilePerformance {
+  const p =
+    o.performance && typeof o.performance === "object"
+      ? (o.performance as Record<string, unknown>)
+      : o;
+  const out: ProfilePerformance = {};
+  const setIf = (key: keyof ProfilePerformance, raw: unknown) => {
+    if (raw == null || raw === "") return;
+    const v = num(raw);
+    if (Number.isFinite(v)) out[key] = v as never;
+  };
+  setIf("coursesCount", p.coursesCount ?? p.courses_count);
+  setIf("certificatesCount", p.certificatesCount ?? p.certificates_count);
+  setIf("totalModules", p.totalModules ?? p.total_modules);
+  setIf("modulesCompleted", p.modulesCompleted ?? p.modules_completed);
+  setIf("modulesInProgress", p.modulesInProgress ?? p.modules_in_progress);
+  setIf("totalQuizAttempts", p.totalQuizAttempts ?? p.total_quiz_attempts);
+  setIf("averageQuizPercent", p.averageQuizPercent ?? p.average_quiz_percent);
+  const ovp = p.overallProgressPercent ?? p.overall_progress_percent;
+  if (ovp != null && ovp !== "") {
+    const v = num(ovp);
+    if (Number.isFinite(v)) {
+      out.overallProgressPercent = Math.min(100, Math.max(0, v));
+    }
+  }
+  return out;
+}
+
+/**
+ * GET /app/users/me/profile — профиль, курсы с прогрессом, сертификаты, performance.
+ * При 404 возвращает null (вызывающий может подставить fetchUserMe).
+ */
+export async function fetchUserProfileMe(): Promise<StudentProfileFull | null> {
+  const res = await apiFetch(STUDENT_ROUTES.USER_ME_PROFILE);
+  if (res.status === 404) return null;
+  await throwIfNotOk(res);
+  const raw = await parseJsonSafe<unknown>(res);
+  const root = unwrapEnvelope(raw);
+  if (!root) return null;
+
+  const certsRaw = root.certificates;
+  const certificates = Array.isArray(certsRaw)
+    ? certsRaw.map(normalizeCertificate).filter((c) => c.id)
+    : [];
+
+  const coursesRaw = root.courses;
+  const courses = Array.isArray(coursesRaw)
+    ? (coursesRaw as ProfileCourseItem[]).filter(
+        (c) => c && typeof c === "object" && typeof c.id === "string",
+      )
+    : [];
+
+  const performance = parsePerformance(root);
+
+  const base: StudentMeResponse = {
+    id: String(root.id ?? ""),
+    email: (root.email as string | undefined) ?? undefined,
+    firstName: (root.firstName ?? root.first_name) as string | undefined,
+    lastName: (root.lastName ?? root.last_name) as string | undefined,
+    patronymic: (root.patronymic ?? null) as string | null,
+    iin: (root.iin as string | undefined) ?? undefined,
+    role: (root.role as string | undefined) ?? undefined,
+    schoolId: (root.schoolId ?? root.school_id ?? null) as string | null,
+    school: (root.school as StudentMeResponse["school"]) ?? null,
+    avatarUrl: (root.avatarUrl ?? root.avatar_url ?? null) as string | null,
+    isActive: root.isActive as boolean | undefined,
+    createdAt: root.createdAt as string | undefined,
+    updatedAt: root.updatedAt as string | undefined,
+  };
+
+  return {
+    ...root,
+    ...base,
+    certificates,
+    courses,
+    performance,
+  } as StudentProfileFull;
+}
+
 export async function patchUserMe(
   body: Record<string, unknown>,
 ): Promise<StudentMeResponse | null> {
@@ -71,6 +199,37 @@ export async function patchUserMe(
   });
   await throwIfNotOk(res);
   return parseJsonSafe<StudentMeResponse>(res);
+}
+
+function extractAvatarUrlFromResponse(json: unknown): string | null {
+  if (!json || typeof json !== "object") return null;
+  const o = json as Record<string, unknown>;
+  const data = o.data;
+  const pick = (x: Record<string, unknown>) => {
+    const u = x.avatarUrl ?? x.avatar_url;
+    return typeof u === "string" && u.trim() ? u.trim() : null;
+  };
+  if (data && typeof data === "object") {
+    const u = pick(data as Record<string, unknown>);
+    if (u) return u;
+  }
+  return pick(o);
+}
+
+/**
+ * POST /app/users/me/avatar — multipart, поле `file`.
+ * Возвращает новый `avatarUrl` из тела ответа, если бэкенд его отдаёт; иначе `null` (тогда обновите профиль через GET).
+ */
+export async function postUserAvatar(file: File): Promise<string | null> {
+  const body = new FormData();
+  body.append("file", file, file.name);
+  const res = await apiFetch(STUDENT_ROUTES.USER_ME_AVATAR, {
+    method: "POST",
+    body,
+  });
+  await throwIfNotOk(res);
+  const json = await parseJsonSafe<unknown>(res);
+  return extractAvatarUrlFromResponse(json);
 }
 
 export type ProgressEntry = {

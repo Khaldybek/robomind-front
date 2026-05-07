@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { apiAuthLogoutAll } from "@/lib/api/auth-api";
@@ -16,8 +17,15 @@ import {
 } from "@/lib/api/super-admin/notifications";
 import { isApiConfigured } from "@/lib/env";
 
+type CardDef = {
+  href: string;
+  labelKey: "cardUsers" | "cardCourses" | "cardViolations" | "cardUnread";
+  v: number;
+};
+
 export default function Page() {
   const router = useRouter();
+  const t = useTranslations("SuperAdminDashboard");
   const [stats, setStats] = useState({
     users: 0,
     courses: 0,
@@ -43,32 +51,33 @@ export default function Page() {
       .catch((e: Error) => setErr(e.message));
   }, []);
 
-  const cards = [
-    { href: "/super-admin/users", label: "Пользователи", v: stats.users },
-    { href: "/super-admin/courses", label: "Курсы", v: stats.courses },
-    {
-      href: "/super-admin/device-violations",
-      label: "Нарушения устройств",
-      v: stats.violations,
-    },
-    {
-      href: "/super-admin/notifications",
-      label: "Непрочитанные",
-      v: stats.unread,
-    },
-  ];
+  const cards: CardDef[] = useMemo(
+    () => [
+      { href: "/super-admin/users", labelKey: "cardUsers", v: stats.users },
+      { href: "/super-admin/courses", labelKey: "cardCourses", v: stats.courses },
+      {
+        href: "/super-admin/device-violations",
+        labelKey: "cardViolations",
+        v: stats.violations,
+      },
+      {
+        href: "/super-admin/notifications",
+        labelKey: "cardUnread",
+        v: stats.unread,
+      },
+    ],
+    [stats],
+  );
 
   return (
     <div className="max-w-5xl space-y-8">
       <header>
-        <h1 className="ds-text-h2 text-ds-black">Обзор панели</h1>
-        <p className="mt-2 ds-text-caption text-ds-gray-text">
-          Краткая статистика по платформе и быстрые переходы.
-        </p>
+        <h1 className="ds-text-h2 text-ds-black">{t("title")}</h1>
+        <p className="mt-2 ds-text-caption text-ds-gray-text">{t("lead")}</p>
       </header>
       {err && (
         <p className="rounded-lg border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
-          {err} — проверьте токен
+          {err} {t("tokenHint")}
         </p>
       )}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -78,7 +87,7 @@ export default function Page() {
             href={c.href}
             className="block rounded-ds-card border border-ds-gray-border bg-ds-white px-4 py-4 shadow-sm transition-all hover:border-ds-primary/40 hover:shadow-md"
           >
-            <p className="ds-text-caption text-ds-gray-text">{c.label}</p>
+            <p className="ds-text-caption text-ds-gray-text">{t(c.labelKey)}</p>
             <p className="mt-1 text-[28px] font-medium leading-none text-ds-black">
               {c.v ?? "—"}
             </p>
@@ -86,9 +95,10 @@ export default function Page() {
         ))}
       </div>
       <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
-        <h2 className="ds-text-h3 text-ds-black">Сессия</h2>
+        <h2 className="ds-text-h3 text-ds-black">{t("sessionTitle")}</h2>
         <p className="mb-4 mt-1 ds-text-caption text-ds-gray-text">
           <code className="text-ds-black">POST /auth/logout-all</code>
+          {t("sessionLead")}
         </p>
         <button
           type="button"
@@ -108,7 +118,7 @@ export default function Page() {
             })();
           }}
         >
-          Выйти на всех устройствах
+          {t("logoutAllDevices")}
         </button>
       </section>
     </div>

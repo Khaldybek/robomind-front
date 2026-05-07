@@ -1,7 +1,7 @@
 "use client";
 
 import { Bot, Loader2, MessageCircle, Send, Sparkles } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { isApiConfigured } from "@/lib/env";
 import {
@@ -231,7 +231,14 @@ export function CourseAiChat({
 }) {
   const t = useTranslations("StudentAiChat");
   const tm = useTranslations("StudentModule");
-  const chat = useStudentAiChat({ moduleId, courseId });
+  const locale = useLocale();
+  const aiLang = locale === "ru" ? "ru" : "kk";
+  const chat = useStudentAiChat({
+    moduleId,
+    courseId,
+    mode: "course",
+    language: aiLang,
+  });
 
   const appearance: AiChatAppearance = variant;
 
@@ -257,9 +264,13 @@ export function CourseAiChat({
             </p>
             {moduleId ? (
               <p className="mt-1.5 inline-flex rounded-full bg-sky-100/90 px-2 py-0.5 text-[11px] font-medium text-sky-900">
-                {t("moduleContext")}
+                {t("courseWideContext")}
               </p>
-            ) : null}
+            ) : (
+              <p className="mt-1.5 inline-flex rounded-full bg-sky-100/90 px-2 py-0.5 text-[11px] font-medium text-sky-900">
+                {t("courseContext")}
+              </p>
+            )}
           </div>
         </div>
         <AiChatScrollArea appearance="embedded" {...chat} />
@@ -285,9 +296,13 @@ export function CourseAiChat({
       <p className="mt-2 ds-text-body text-ds-gray-text">{t("lead")}</p>
       {moduleId ? (
         <p className="mt-1 text-sm font-medium text-ds-primary">
-          {t("moduleContext")}
+          {t("courseWideContext")}
         </p>
-      ) : null}
+      ) : (
+        <p className="mt-1 text-sm font-medium text-ds-primary">
+          {t("courseContext")}
+        </p>
+      )}
       <AiChatScrollArea appearance="page" {...chat} />
     </div>
   );

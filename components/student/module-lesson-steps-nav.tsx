@@ -69,7 +69,7 @@ export function ModuleLessonStepsNav({ items }: ModuleLessonStepsNavProps) {
 
   return (
     <nav
-      className="sticky top-14 z-[15] mb-8 rounded-xl border border-slate-200/70 bg-white/90 py-2.5 pl-3 pr-2 shadow-sm backdrop-blur-md sm:mb-10 sm:rounded-2xl sm:py-3"
+      className="sticky top-14 z-[15] mt-6 mb-8 w-full rounded-2xl border border-slate-200/70 bg-white/95 py-2.5 pl-3 pr-2 shadow-[0_12px_40px_-20px_rgba(15,23,42,0.1)] backdrop-blur-md sm:mb-10 sm:rounded-3xl sm:py-3"
       aria-label={t("stepsNavLabel")}
     >
       <div className="mb-2 flex items-center gap-1.5 px-1 text-xs text-slate-500">

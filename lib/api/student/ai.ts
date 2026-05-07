@@ -43,6 +43,41 @@ export type AiChatResponse = {
   [key: string]: unknown;
 };
 
+export type PostAiChatProfileBody = {
+  language?: "ru" | "kk";
+  messages: AiChatMessage[];
+};
+
+/** POST /app/ai/chat-profile — чат в профиле без привязки к модулю */
+export async function postAiChatProfile(
+  payload: PostAiChatProfileBody,
+): Promise<AiChatResponse | null> {
+  const res = await apiFetch(STUDENT_ROUTES.AI_CHAT_PROFILE, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  await throwIfNotOk(res);
+  return parseJsonSafe<AiChatResponse>(res);
+}
+
+export type PostAiChatCourseBody = {
+  courseId: string;
+  messages: AiChatMessage[];
+  language?: "ru" | "kk";
+};
+
+/** POST /app/ai/chat-course — чат с учётом всего курса (модули и контент) */
+export async function postAiChatCourse(
+  payload: PostAiChatCourseBody,
+): Promise<AiChatResponse | null> {
+  const res = await apiFetch(STUDENT_ROUTES.AI_CHAT_COURSE, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  await throwIfNotOk(res);
+  return parseJsonSafe<AiChatResponse>(res);
+}
+
 export async function postAiChat(
   payload: PostAiChatBody | LegacyAiChatBody,
 ): Promise<AiChatResponse | null> {

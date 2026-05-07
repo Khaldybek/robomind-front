@@ -47,7 +47,7 @@ function shouldShowVideoPlayer(item: ModuleContentItem): boolean {
 }
 
 const kidProseHtml =
-  "lesson-step-prose max-w-3xl [&_a]:font-semibold [&_li]:pl-1 [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6";
+  "lesson-step-prose w-full max-w-none [&_a]:font-semibold [&_li]:pl-1 [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6";
 
 export default function ModuleLessonPage() {
   const t = useTranslations("StudentModule");
@@ -124,7 +124,7 @@ export default function ModuleLessonPage() {
                       dangerouslySetInnerHTML={{ __html: item.content }}
                     />
                   ) : (
-                    <p className="lesson-step-prose max-w-3xl whitespace-pre-wrap text-slate-800">
+                    <p className="lesson-step-prose w-full max-w-none whitespace-pre-wrap text-slate-800">
                       {item.content}
                     </p>
                   )}
@@ -159,7 +159,7 @@ export default function ModuleLessonPage() {
                   dangerouslySetInnerHTML={{ __html: item.content }}
                 />
               ) : (
-                <p className="lesson-step-prose mt-5 max-w-3xl whitespace-pre-wrap text-slate-800">
+                <p className="lesson-step-prose mt-5 w-full max-w-none whitespace-pre-wrap text-slate-800">
                   {item.content}
                 </p>
               ))}
@@ -182,7 +182,7 @@ export default function ModuleLessonPage() {
               dangerouslySetInnerHTML={{ __html: item.content }}
             />
           ) : (
-            <p className="lesson-step-prose mt-5 max-w-3xl whitespace-pre-wrap text-slate-800">
+            <p className="lesson-step-prose mt-5 w-full max-w-none whitespace-pre-wrap text-slate-800">
               {item.content}
             </p>
           ))}
@@ -205,7 +205,7 @@ export default function ModuleLessonPage() {
           )}
 
         {(item.type === "livestream" || item.livestreamUrl) && (
-          <p className="lesson-step-prose mt-5 max-w-3xl text-slate-600">
+          <p className="lesson-step-prose mt-5 w-full max-w-none text-slate-600">
             <span className="font-semibold text-ds-black">{t("livestream")}</span>{" "}
             {String(item.livestreamStartsAt ?? "—")}
             {item.livestreamUrl ? (
@@ -237,11 +237,11 @@ export default function ModuleLessonPage() {
   }
 
   const nextBlock = !loading && !error && (
-    <div className="student-module-kid-next mt-12 space-y-5 px-4 py-6 sm:mt-14 sm:space-y-6 sm:px-6 sm:py-7">
+    <div className="student-module-kid-next mt-10 space-y-5 px-5 py-7 sm:mt-12 sm:space-y-6 sm:px-8 sm:py-8">
       <h2 className="text-center text-base font-semibold tracking-tight text-slate-800 sm:text-lg">
         {t("nextTitle")}
       </h2>
-      <div className="mx-auto mt-4 grid max-w-5xl gap-5 sm:gap-6 lg:grid-cols-2 lg:items-start">
+      <div className="mx-auto mt-4 grid max-w-none gap-6 sm:gap-8 lg:grid-cols-2 lg:items-start">
         <div className="min-w-0">
           <ModuleHomeworkLessonBlock moduleId={moduleId} />
         </div>
@@ -256,7 +256,7 @@ export default function ModuleLessonPage() {
       <div className="flex justify-center pt-1">
         <Link
           href={`/courses/${encodeURIComponent(courseId)}/modules/${encodeURIComponent(moduleId)}/quiz`}
-          className="ui-btn ui-btn--1 student-module-kid-cta w-full max-w-md sm:w-auto"
+          className="ui-btn ui-btn--1 student-module-kid-cta w-full max-w-2xl"
         >
           {t("quiz")}
         </Link>
@@ -266,8 +266,7 @@ export default function ModuleLessonPage() {
 
   return (
     <div className="student-module-kid-page min-h-screen pb-16 pt-5 sm:pb-20 sm:pt-8">
-      <div className="ds-container max-w-6xl">
-        <div className="mx-auto max-w-3xl">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <Link
           href={`/courses/${encodeURIComponent(courseId)}`}
           className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition-colors hover:text-teal-700"
@@ -276,7 +275,7 @@ export default function ModuleLessonPage() {
           {t("backToCourse")}
         </Link>
 
-        <header className="student-module-kid-hero px-5 py-7 sm:px-8 sm:py-9">
+        <header className="student-module-kid-hero px-6 py-8 sm:px-8 sm:py-9">
           <div className="flex items-start gap-4">
             <span
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-teal-500/10 text-teal-700 ring-1 ring-teal-600/15"
@@ -288,7 +287,7 @@ export default function ModuleLessonPage() {
               <h1 className="text-2xl font-semibold leading-snug tracking-tight text-slate-900 sm:text-[1.65rem]">
                 {lessonTitle}
               </h1>
-              <p className="mt-3 max-w-2xl text-[0.9375rem] leading-relaxed text-slate-600 sm:text-base">
+              <p className="mt-3 max-w-none text-[0.9375rem] leading-relaxed text-slate-600 sm:text-base">
                 {t("lessonHint")}
               </p>
             </div>
@@ -312,7 +311,7 @@ export default function ModuleLessonPage() {
         )}
 
         {!loading && sorted.length > 0 && (
-          <ol className="mt-6 list-none divide-y divide-slate-200/80 p-0 sm:mt-8">
+          <ol className="mt-6 list-none space-y-6 p-0 sm:mt-8 sm:space-y-8">
             {sorted.map((item, index) => {
               const rawVideo = videoSourceRaw(item);
               const step = index + 1;
@@ -322,9 +321,9 @@ export default function ModuleLessonPage() {
                 <li
                   key={item.id}
                   id={`content-${item.id}`}
-                  className="scroll-mt-36 py-10 first:pt-8 sm:scroll-mt-40 sm:py-12 sm:first:pt-10"
+                  className="scroll-mt-36 sm:scroll-mt-40"
                 >
-                  <article>
+                  <article className="rounded-2xl border border-slate-200/70 bg-white p-6 shadow-[0_16px_48px_-24px_rgba(15,23,42,0.12)] ring-1 ring-slate-100/80 sm:rounded-3xl sm:p-8 lg:p-10">
                     <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-teal-700/85">
                       {t("stepLabel", { n: step })}
                     </p>
@@ -340,7 +339,7 @@ export default function ModuleLessonPage() {
         )}
 
         {!loading && !error && sorted.length === 0 && (
-          <div className="mt-10 rounded-2xl border border-slate-200/80 bg-white/90 p-6 shadow-sm sm:p-8">
+          <div className="mt-10 rounded-3xl border border-slate-200/80 bg-white p-6 shadow-[0_16px_48px_-24px_rgba(15,23,42,0.1)] sm:p-8">
             <p className="text-lg font-semibold text-slate-900">
               {t("contentEmpty")}
             </p>
@@ -349,7 +348,6 @@ export default function ModuleLessonPage() {
             </p>
           </div>
         )}
-        </div>
 
         {nextBlock}
       </div>

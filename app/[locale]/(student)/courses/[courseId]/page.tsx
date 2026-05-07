@@ -118,11 +118,11 @@ export default function CourseDetailPage() {
   }
 
   return (
-    <div>
-      <div className="ds-container pt-10 lg:pt-14">
+    <div className="min-h-[calc(100vh-4rem)] bg-[linear-gradient(180deg,#dbeafe_0%,#e8f2fc_42%,#f0f7fc_100%)] pb-12 sm:pb-16">
+      <div className="ds-container pt-4 sm:pt-5 lg:pt-6">
         <Link
           href="/courses"
-          className="ds-text-caption mb-6 inline-block text-ds-primary hover:underline"
+          className="ds-text-caption mb-3 inline-block text-ds-primary hover:underline"
         >
           {t("backToCourses")}
         </Link>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { ReactNode } from "react";
@@ -9,6 +10,7 @@ import { StudentAiAssistantFab } from "@/components/student/student-ai-assistant
 
 export function StudentShell({ children }: { children: ReactNode }) {
   const t = useTranslations("StudentShell");
+  const tHome = useTranslations("HomePage");
   const pathname = usePathname();
 
   const nav = useMemo(
@@ -29,16 +31,20 @@ export function StudentShell({ children }: { children: ReactNode }) {
       <div className="st-orb st-orb--a" aria-hidden />
       <div className="st-orb st-orb--b" aria-hidden />
       <div className="st-grid-mask" aria-hidden />
-      <header className="sticky top-0 z-20 border-b border-white/60 bg-white/72 px-4 py-3 backdrop-blur-xl lg:px-6 lg:py-4">
+      <header className="sticky top-0 z-20 border-b border-white/60 bg-white/72 px-4 py-3 sm:py-3.5 backdrop-blur-xl md:py-3 lg:px-6 lg:py-3.5">
         <div className="ds-container flex max-w-none flex-wrap items-center justify-between gap-4">
           <Link
             href="/dashboard"
-            className="ds-text-subtitle flex items-center gap-2 text-ds-black"
+            className="inline-flex min-w-0 shrink-0 items-center"
           >
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-ds-primary font-semibold text-white shadow-lg shadow-ds-primary/20">
-              R
-            </span>
-            {t("brandName")} · {t("brandSuffix")}
+            <Image
+              src="/logo.png"
+              alt={`${tHome("navBrand")} · ${t("brandSuffix")}`}
+              width={390}
+              height={75}
+              className="h-12 w-auto max-w-[min(19rem,76vw)] object-contain object-left sm:h-14 sm:max-w-[min(24rem,62vw)] md:h-16 md:max-w-[min(28rem,50vw)] lg:max-w-[min(30rem,44vw)]"
+              priority
+            />
           </Link>
           <nav className="flex flex-wrap items-center gap-1.5 lg:gap-2">
             <LocaleSwitcher className="mr-1 hidden sm:flex" />

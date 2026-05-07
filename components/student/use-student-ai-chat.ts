@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   postAiChat,
+  postAiChatCourse,
+  postAiChatProfile,
   type AiChatResponse,
 } from "@/lib/api/student/ai";
 import { ApiRequestError } from "@/lib/api/types";
@@ -34,8 +36,12 @@ export type StudentAiChatMessage = { role: string; text: string };
 export function useStudentAiChat(opts: {
   moduleId?: string;
   courseId?: string | null;
+  /** `profile` — `/app/ai/chat-profile`; `course` — `/app/ai/chat-course`; иначе `/app/ai/chat` */
+  mode?: "module" | "profile" | "course";
+  /** Для `profile` и `course` — подсказка языка ответа (`ru` | `kk`) */
+  language?: "ru" | "kk";
 }) {
-  const { moduleId, courseId } = opts;
+  const { moduleId, courseId, mode = "module", language } = opts;
   const t = useTranslations("StudentAiChat");
   const [messages, setMessages] = useState<StudentAiChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -46,7 +52,7 @@ export function useStudentAiChat(opts: {
     setMessages([]);
     setError(null);
     setInput("");
-  }, [moduleId, courseId]);
+  }, [moduleId, courseId, mode]);
 
   const send = useCallback(async () => {
     const text = input.trim();
@@ -63,11 +69,31 @@ export function useStudentAiChat(opts: {
           role: m.role as "user" | "assistant",
           content: m.text,
         }));
-      const res = await postAiChat({
-        messages: transcript,
-        moduleId,
-        ...(courseId ? { courseId } : {}),
-      });
+      let res: AiChatResponse | null;
+      if (mode === "profile") {
+        res = await postAiChatProfile({
+          messages: transcript,
+          ...(language ? { language } : {}),
+        });
+      } else if (mode === "course") {
+        if (!courseId?.trim()) {
+          setError(t("error"));
+          setMessages((m) => m.slice(0, -1));
+          setInput(text);
+          return;
+        }
+        res = await postAiChatCourse({
+          courseId: courseId.trim(),
+          messages: transcript,
+          ...(language ? { language } : {}),
+        });
+      } else {
+        res = await postAiChat({
+          messages: transcript,
+          moduleId,
+          ...(courseId ? { courseId } : {}),
+        });
+      }
       const reply = extractReply(res);
       setMessages((m) => [...m, { role: "assistant", text: reply }]);
     } catch (e) {
@@ -76,7 +102,7 @@ export function useStudentAiChat(opts: {
     } finally {
       setPending(false);
     }
-  }, [messages, input, moduleId, courseId, t]);
+  }, [messages, input, moduleId, courseId, mode, language, t]);
 
   return {
     messages,

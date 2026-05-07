@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { apiAuthLogoutAll } from "@/lib/api/auth-api";
@@ -26,6 +27,7 @@ import {
 
 export default function SchoolAdminDashboardPage() {
   const router = useRouter();
+  const t = useTranslations("SchoolAdminDashboard");
   const [usersCount, setUsersCount] = useState<number | null>(null);
   const [usersSub, setUsersSub] = useState<string | null>(null);
   const [coursesCount, setCoursesCount] = useState<number | null>(null);
@@ -46,12 +48,15 @@ export default function SchoolAdminDashboardPage() {
         setErr(null);
         setUsersCount(s.students.total);
         setUsersSub(
-          `активных: ${s.students.active} · неактивных: ${s.students.inactive}`,
+          t("usersSub", {
+            active: s.students.active,
+            inactive: s.students.inactive,
+          }),
         );
         setCoursesCount(s.courseAccess.coursesWithAccess);
         setCoursesSub(
           s.courseAccess.activeRows > 0
-            ? `активных строк доступа: ${s.courseAccess.activeRows}`
+            ? t("coursesSub", { rows: s.courseAccess.activeRows })
             : null,
         );
         setUnread(s.unreadNotificationsForCurrentAdmin);
@@ -76,7 +81,7 @@ export default function SchoolAdminDashboardPage() {
           })
           .catch((e: Error) => setErr(e.message));
       });
-  }, []);
+  }, [t]);
 
   return (
     <div>
@@ -86,40 +91,39 @@ export default function SchoolAdminDashboardPage() {
           aria-hidden
         />
         <p className="relative text-xs font-semibold uppercase tracking-[0.2em] text-ds-primary">
-          Рабочий стол
+          {t("eyebrow")}
         </p>
         <h1 className="relative mt-2 max-w-2xl text-balance font-medium leading-tight text-ds-black [font-size:clamp(1.75rem,2.5vw,2.5rem)]">
-          Ваша школа под контролем
+          {t("title")}
         </h1>
         <p className="relative mt-4 max-w-2xl text-pretty text-sm leading-relaxed text-ds-gray-text lg:text-base">
-          Следите за учениками, выдавайте доступы к курсам и реагируйте на
-          уведомления — всё собрано на одном экране.
+          {t("lead")}
         </p>
         <div className="relative mt-6 flex flex-wrap gap-3">
           <Link
             href="/school-admin/users"
             className="inline-flex items-center rounded-full bg-ds-black px-5 py-2.5 text-sm font-medium text-white shadow-lg transition hover:bg-ds-gray-dark-2"
           >
-            Ученики
+            {t("ctaStudents")}
           </Link>
           <Link
             href="/school-admin/courses"
             className="inline-flex items-center rounded-full border border-ds-gray-border bg-white px-5 py-2.5 text-sm font-medium text-ds-black shadow-sm transition hover:border-ds-primary hover:text-ds-primary"
           >
-            Курсы и доступы
+            {t("ctaCourses")}
           </Link>
         </div>
       </section>
 
       {err && (
         <p className="ds-text-small mb-6 rounded-xl border border-ds-error/30 bg-red-50 px-4 py-3 text-ds-error">
-          {err} — проверьте токен
+          {err} {t("tokenHint")}
         </p>
       )}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SchoolAdminStatCardLink
           href="/school-admin/users"
-          label="Ученики"
+          label={t("statStudents")}
           value={usersCount ?? "—"}
           sub={usersSub}
           icon={<IconUsers className="text-ds-black" />}
@@ -127,7 +131,7 @@ export default function SchoolAdminDashboardPage() {
         />
         <SchoolAdminStatCardLink
           href="/school-admin/courses"
-          label="Курсы с доступом"
+          label={t("statCourses")}
           value={coursesCount ?? "—"}
           sub={coursesSub}
           icon={<IconBookOpen className="text-ds-black" />}
@@ -135,14 +139,14 @@ export default function SchoolAdminDashboardPage() {
         />
         <SchoolAdminStatCardLink
           href="/school-admin/notifications"
-          label="Непрочитанные"
+          label={t("statUnread")}
           value={unread ?? "—"}
           icon={<IconBell className="text-ds-black" />}
           delayMs={200}
         />
         <SchoolAdminStatCardLink
           href="/school-admin/device-violations"
-          label="Лишние устройства"
+          label={t("statDevices")}
           value={violations ?? "—"}
           icon={<IconSmartphone className="text-ds-black" />}
           delayMs={280}
@@ -150,7 +154,7 @@ export default function SchoolAdminDashboardPage() {
       </div>
       {generatedAt && (
         <p className="ds-text-caption mt-6 text-ds-gray-text">
-          Сводка на{" "}
+          {t("summaryPrefix")}{" "}
           <time dateTime={generatedAt}>
             {new Date(generatedAt).toLocaleString()}
           </time>{" "}
@@ -158,11 +162,10 @@ export default function SchoolAdminDashboardPage() {
         </p>
       )}
       <section className="mt-12 rounded-[var(--radius-ds-card)] border border-white/80 bg-white/70 p-6 shadow-[0_12px_40px_-20px_rgba(0,0,0,0.1)] backdrop-blur-sm lg:p-8">
-        <h2 className="ds-text-h3 mb-2 text-ds-black">Безопасность сессии</h2>
+        <h2 className="ds-text-h3 mb-2 text-ds-black">{t("sessionTitle")}</h2>
         <p className="ds-text-caption mb-5 max-w-xl text-ds-gray-text">
-          <code className="text-ds-black">POST /auth/logout-all</code> — завершить
-          все активные сессии (все устройства). Используйте при утере доступа к
-          аккаунту.
+          <code className="text-ds-black">POST /auth/logout-all</code>
+          {t("sessionLead")}
         </p>
         <button
           type="button"
@@ -182,7 +185,7 @@ export default function SchoolAdminDashboardPage() {
             })();
           }}
         >
-          Выйти на всех устройствах
+          {t("logoutAllDevices")}
         </button>
       </section>
     </div>
