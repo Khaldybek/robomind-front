@@ -28,12 +28,16 @@ export default function CoursesPage() {
 
   return (
     <div className="ds-container py-10 lg:py-14">
-      <h1 className="ds-text-h1 mb-8 text-ds-black">{t("title")}</h1>
+      <header className="mb-8 rounded-3xl border border-sky-200/55 bg-white/90 px-5 py-5 shadow-sm sm:px-7">
+        <h1 className="text-balance text-2xl font-bold text-slate-900 sm:text-3xl">
+          {t("title")}
+        </h1>
+      </header>
       {loading && (
-        <p className="ds-text-body text-ds-gray-text">{tc("loading")}</p>
+        <p className="text-base text-slate-600">{tc("loading")}</p>
       )}
       {error && (
-        <p className="ds-text-small text-ds-error mb-6" role="alert">
+        <p className="mb-6 text-sm text-rose-600" role="alert">
           {error}
         </p>
       )}
@@ -43,7 +47,7 @@ export default function CoursesPage() {
         ))}
       </ul>
       {!loading && !error && courses.length === 0 && (
-        <p className="ds-text-body text-ds-gray-text">{t("empty")}</p>
+        <p className="text-base text-slate-600">{t("empty")}</p>
       )}
     </div>
   );

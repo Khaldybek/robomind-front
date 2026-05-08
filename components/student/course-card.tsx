@@ -25,9 +25,9 @@ export function CourseCard({ course }: { course: CourseSummary }) {
     <li>
       <Link
         href={`/courses/${encodeURIComponent(id)}`}
-        className="group flex h-full flex-col overflow-hidden rounded-ds-card border border-ds-gray-border bg-ds-white transition-shadow hover:shadow-md"
+        className="group flex h-full flex-col overflow-hidden rounded-2xl border border-sky-200/70 bg-white shadow-[0_12px_36px_-22px_rgba(14,116,144,0.15)] transition-shadow hover:border-amber-300/80 hover:shadow-[0_18px_44px_-20px_rgba(14,165,233,0.22)]"
       >
-        <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-ds-gray-light">
+        <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-gradient-to-br from-sky-100 to-amber-50">
           {resolved ? (
             // eslint-disable-next-line @next/next/no-img-element -- URL с API (обложка)
             <img
@@ -44,19 +44,19 @@ export function CourseCard({ course }: { course: CourseSummary }) {
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           )}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-sky-900/25 via-transparent to-transparent" />
         </div>
         <div className="flex flex-1 flex-col p-5">
-          <span className="ds-text-subtitle text-ds-black group-hover:text-ds-primary">
+          <span className="text-base font-semibold text-slate-900 transition-colors group-hover:text-sky-700">
             {title}
           </span>
           {meta.length > 0 && (
-            <p className="ds-text-caption mt-2 text-ds-gray-text">
+            <p className="mt-2 text-xs font-medium text-slate-500">
               {meta.join(" · ")}
             </p>
           )}
           {desc && (
-            <span className="ds-text-caption mt-2 line-clamp-3 text-ds-gray-text">
+            <span className="mt-2 line-clamp-3 text-xs leading-relaxed text-slate-600">
               {desc}
             </span>
           )}

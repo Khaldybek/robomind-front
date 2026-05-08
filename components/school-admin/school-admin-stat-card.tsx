@@ -25,21 +25,28 @@ export function SchoolAdminStatCardLink({
     <Link
       href={href}
       style={{ animationDelay: `${delayMs}ms` }}
-      className="sa-card-in group relative block overflow-hidden rounded-[var(--radius-ds-card)] border border-white/90 bg-white/85 p-5 shadow-[0_10px_44px_-14px_rgba(0,0,0,0.14)] backdrop-blur-sm transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1 hover:border-ds-primary/35 hover:shadow-[0_20px_56px_-16px_rgba(255,46,31,0.22)]"
+      className="sa-stat-card sa-card-in group relative block overflow-hidden p-5 outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2"
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <span className="ds-text-caption font-medium uppercase tracking-wide text-ds-gray-text">
-          {label}
-        </span>
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-ds-gray-light to-ds-gray-mid text-ds-black shadow-inner transition-transform duration-300 group-hover:scale-105 group-hover:from-red-50 group-hover:to-orange-50">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            {label}
+          </p>
+          <p className="mt-3 text-3xl font-bold tabular-nums text-slate-900 sm:text-[2rem]">
+            {value}
+          </p>
+        </div>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 ring-1 ring-sky-200/80 transition-transform duration-300 group-hover:scale-105">
           {icon}
         </span>
       </div>
-      <p className="ds-text-h2 text-ds-black tabular-nums">{value}</p>
-      {sub && (
-        <p className="ds-text-caption mt-2 text-ds-gray-text">{sub}</p>
-      )}
-      <span className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-ds-primary/10 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
+      {sub ? (
+        <p className="mt-3 text-xs leading-relaxed text-slate-500">{sub}</p>
+      ) : null}
+      <span
+        className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-sky-200/30 blur-2xl transition-opacity duration-300 group-hover:bg-sky-300/40"
+        aria-hidden
+      />
     </Link>
   );
 }

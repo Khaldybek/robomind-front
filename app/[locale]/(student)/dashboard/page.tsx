@@ -151,34 +151,35 @@ export default function DashboardPage() {
 
   return (
     <div className="ds-container py-8 lg:py-12">
-      {/* Приветствие */}
-      <header className="mb-8 lg:mb-10">
-        <p className="ds-text-caption font-medium uppercase tracking-wider text-ds-primary">
+      <header className="mb-8 rounded-3xl border border-sky-200/60 bg-gradient-to-br from-white/95 via-sky-50/40 to-amber-50/35 px-5 py-6 shadow-[0_16px_48px_-28px_rgba(14,116,144,0.18)] sm:px-8 sm:py-8 lg:mb-10">
+        <p className="text-xs font-bold uppercase tracking-wider text-sky-600">
           {t("mainEyebrow")}
         </p>
-        <h1 className="ds-text-h1 mt-2 text-balance text-ds-black">
+        <h1 className="mt-2 text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
           {profileLoading
             ? t("greetingLoading")
             : name
               ? t("greetingNamed", { name })
               : t("greetingWelcome")}
         </h1>
-        <p className="mt-3 max-w-2xl ds-text-body text-ds-gray-text">
+        <p className="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-slate-600">
           {t("lead")}
         </p>
       </header>
 
-      {/* Метрики */}
       <section className="mb-8 grid gap-4 sm:grid-cols-3">
         <MetricCard
+          tone="sky"
           label={t("metricCourses")}
           value={loading ? t("metricEllipsis") : String(courses.length)}
         />
         <MetricCard
+          tone="amber"
           label={t("metricAvgProgress")}
           value={loading ? t("metricEllipsis") : `${avgProgress}%`}
         />
         <MetricCard
+          tone="violet"
           label={t("metricAi")}
           value={aiBlock != null ? t("metricYes") : t("metricDash")}
           accent={aiBlock != null}
@@ -187,31 +188,28 @@ export default function DashboardPage() {
 
       <div className="grid gap-8 lg:grid-cols-3 lg:gap-10">
         <div className="space-y-8 lg:col-span-2">
-          {/* Курсы */}
-          <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 shadow-sm sm:p-6">
-            <div className="flex flex-wrap items-end justify-between gap-3 border-b border-ds-gray-border pb-4">
-              <h2 className="ds-text-h3 text-ds-black">{t("coursesTitle")}</h2>
+          <section className="student-surface-panel rounded-3xl p-5 sm:p-6">
+            <div className="flex flex-wrap items-end justify-between gap-3 border-b border-sky-100 pb-4">
+              <h2 className="text-lg font-bold text-slate-900 sm:text-xl">
+                {t("coursesTitle")}
+              </h2>
               <Link
                 href="/courses"
-                className="ds-text-caption font-medium text-ds-primary hover:underline"
+                className="text-sm font-semibold text-sky-700 transition hover:text-sky-900 hover:underline"
               >
                 {t("allCoursesLink")}
               </Link>
             </div>
             {loadErr && (
-              <p className="ds-text-small mt-4 text-ds-error" role="alert">
+              <p className="mt-4 text-sm text-rose-600" role="alert">
                 {loadErr}
               </p>
             )}
             {loading && (
-              <p className="ds-text-body mt-6 text-ds-gray-text">
-                {tc("loading")}
-              </p>
+              <p className="mt-6 text-base text-slate-600">{tc("loading")}</p>
             )}
             {!loading && !loadErr && courses.length === 0 && (
-              <p className="ds-text-body mt-6 text-ds-gray-text">
-                {t("coursesEmpty")}
-              </p>
+              <p className="mt-6 text-base text-slate-600">{t("coursesEmpty")}</p>
             )}
             <ul className="mt-4 space-y-3">
               {courses.map((c) => {
@@ -222,24 +220,24 @@ export default function DashboardPage() {
                   <li key={id}>
                     <Link
                       href={`/courses/${encodeURIComponent(id)}`}
-                      className="block rounded-ds-card border border-ds-gray-border bg-ds-gray-light/80 p-4 transition-colors hover:border-ds-primary/40 hover:bg-ds-white"
+                      className="block rounded-2xl border border-sky-100/90 bg-gradient-to-r from-sky-50/80 to-white p-4 shadow-sm transition hover:border-amber-200 hover:from-amber-50/50 hover:shadow-md"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-2">
-                        <span className="ds-text-subtitle text-ds-black">
+                        <span className="text-base font-semibold text-slate-900">
                           {c.title ??
                             c.name ??
                             t("courseFallback", { id: `${id.slice(0, 8)}…` })}
                         </span>
-                        <span className="ds-text-caption font-medium tabular-nums text-ds-primary">
+                        <span className="text-sm font-bold tabular-nums text-sky-700">
                           {pct}%
                         </span>
                       </div>
                       <div
-                        className="mt-3 h-2 overflow-hidden rounded-full bg-ds-gray-mid"
+                        className="mt-3 h-2.5 overflow-hidden rounded-full bg-sky-100"
                         role="presentation"
                       >
                         <div
-                          className="h-full rounded-full bg-ds-primary transition-[width]"
+                          className="h-full rounded-full bg-gradient-to-r from-sky-500 via-sky-400 to-blue-600 transition-[width]"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
@@ -250,17 +248,16 @@ export default function DashboardPage() {
             </ul>
           </section>
 
-          {/* ИИ */}
-          <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 shadow-sm sm:p-6">
-            <h2 className="ds-text-h3 border-b border-ds-gray-border pb-4 text-ds-black">
+          <section className="student-surface-panel rounded-3xl p-5 sm:p-6">
+            <h2 className="border-b border-sky-100 pb-4 text-lg font-bold text-slate-900 sm:text-xl">
               {t("recommendationsTitle")}
             </h2>
             <div className="mt-4">
               {aiError && (
-                <p className="ds-text-body text-ds-gray-text">{aiError}</p>
+                <p className="text-base text-slate-600">{aiError}</p>
               )}
               {!aiError && !loading && aiBlock == null && (
-                <p className="ds-text-body text-ds-gray-text">{t("noData")}</p>
+                <p className="text-base text-slate-600">{t("noData")}</p>
               )}
               {!aiError && aiBlock != null && (
                 <AiRecommendationsContent data={aiBlock} />
@@ -269,65 +266,64 @@ export default function DashboardPage() {
           </section>
         </div>
 
-        {/* Боковая колонка */}
         <aside className="space-y-8">
           {showGamification && gamification && (
-            <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 shadow-sm">
-              <h2 className="ds-text-small font-semibold uppercase tracking-wide text-ds-gray-text">
+            <section className="student-surface-panel rounded-3xl p-5">
+              <h2 className="text-xs font-bold uppercase tracking-wide text-sky-700">
                 {t("gamificationTitle")}
               </h2>
               <dl className="mt-4 space-y-3">
-                <div className="flex items-center justify-between gap-2 border-b border-ds-gray-border pb-3">
-                  <dt className="ds-text-caption text-ds-gray-text">{t("xp")}</dt>
-                  <dd className="ds-text-body font-semibold tabular-nums text-ds-black">
+                <div className="flex items-center justify-between gap-2 border-b border-sky-100 pb-3">
+                  <dt className="text-xs font-medium text-slate-500">{t("xp")}</dt>
+                  <dd className="text-base font-semibold tabular-nums text-slate-900">
                     {String(gamification.xp)}
                   </dd>
                 </div>
-                <div className="border-b border-ds-gray-border pb-3">
+                <div className="border-b border-sky-100 pb-3">
                   <div className="flex items-center justify-between gap-2">
-                    <dt className="ds-text-caption text-ds-gray-text">
+                    <dt className="text-xs font-medium text-slate-500">
                       {t("level")}
                     </dt>
-                    <dd className="ds-text-body font-semibold tabular-nums text-ds-black">
+                    <dd className="text-base font-semibold tabular-nums text-slate-900">
                       {String(gamification.level)}
                     </dd>
                   </div>
                   {typeof levelBarPct === "number" && (
                     <div className="mt-2">
                       <div
-                        className="h-2 overflow-hidden rounded-full bg-ds-gray-mid"
+                        className="h-2.5 overflow-hidden rounded-full bg-amber-100"
                         role="progressbar"
                         aria-valuenow={levelBarPct}
                         aria-valuemin={0}
                         aria-valuemax={100}
                       >
                         <div
-                          className="h-full rounded-full bg-ds-primary transition-[width]"
+                          className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-[width]"
                           style={{ width: `${levelBarPct}%` }}
                         />
                       </div>
-                      <p className="mt-1 ds-text-caption tabular-nums text-ds-gray-text">
+                      <p className="mt-1 text-xs tabular-nums text-slate-500">
                         {t("nextLevelPct", { pct: levelBarPct })}
                       </p>
                     </div>
                   )}
                 </div>
-                <div className="flex items-center justify-between gap-2 border-b border-ds-gray-border pb-3">
-                  <dt className="ds-text-caption text-ds-gray-text">{t("streak")}</dt>
-                  <dd className="ds-text-body font-semibold tabular-nums text-ds-black">
+                <div className="flex items-center justify-between gap-2 border-b border-sky-100 pb-3">
+                  <dt className="text-xs font-medium text-slate-500">{t("streak")}</dt>
+                  <dd className="text-base font-semibold tabular-nums text-slate-900">
                     {String(gamification.streakDays)}
                   </dd>
                 </div>
                 {(rankGlobal || rankSchool) && (
-                  <div className="space-y-2 border-b border-ds-gray-border pb-3">
-                    <dt className="ds-text-caption text-ds-gray-text">
+                  <div className="space-y-2 border-b border-sky-100 pb-3">
+                    <dt className="text-xs font-medium text-slate-500">
                       {t("rankTitle")}
                     </dt>
-                    <dd className="space-y-1 ds-text-small text-ds-black">
+                    <dd className="space-y-1 text-sm text-slate-800">
                       {rankSchool && user?.schoolId ? (
                         <p>
                           {t("rankInSchool")}{" "}
-                          <span className="font-semibold tabular-nums">
+                          <span className="font-semibold tabular-nums text-sky-800">
                             {rankSchool.rank} / {rankSchool.total}
                           </span>
                         </p>
@@ -336,7 +332,7 @@ export default function DashboardPage() {
                         <p>
                           {user?.schoolId ? t("rankOnPlatform") : t("rankInRating")}
                           :{" "}
-                          <span className="font-semibold tabular-nums">
+                          <span className="font-semibold tabular-nums text-sky-800">
                             {rankGlobal.rank} / {rankGlobal.total}
                           </span>
                         </p>
@@ -346,8 +342,8 @@ export default function DashboardPage() {
                 )}
               </dl>
               {gamification.badges && gamification.badges.length > 0 && (
-                <div className="mt-4 border-t border-ds-gray-border pt-4">
-                  <p className="ds-text-caption font-medium uppercase tracking-wide text-ds-gray-text">
+                <div className="mt-4 border-t border-sky-100 pt-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-sky-700">
                     {t("badgesTitle")}
                   </p>
                   <ul className="mt-2 flex flex-wrap gap-2">
@@ -355,7 +351,7 @@ export default function DashboardPage() {
                       <li
                         key={b.key}
                         title={b.description ?? b.title}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-ds-gray-border bg-ds-gray-light/60 px-2.5 py-1.5 ds-text-small text-ds-black"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-amber-200/80 bg-amber-50/90 px-2.5 py-1.5 text-sm font-medium text-slate-800"
                       >
                         {b.icon ? (
                           <span className="text-lg leading-none" aria-hidden>
@@ -372,8 +368,8 @@ export default function DashboardPage() {
               )}
               {gamification.progressHints &&
                 gamification.progressHints.length > 0 && (
-                  <div className="mt-4 border-t border-ds-gray-border pt-4">
-                    <p className="ds-text-caption font-medium uppercase tracking-wide text-ds-gray-text">
+                  <div className="mt-4 border-t border-sky-100 pt-4">
+                    <p className="text-xs font-bold uppercase tracking-wide text-sky-700">
                       {t("nextBadgesTitle")}
                     </p>
                     <ul className="mt-2 space-y-3">
@@ -398,22 +394,22 @@ export default function DashboardPage() {
                                 </span>
                               ) : null}
                               <div className="min-w-0 flex-1">
-                                <p className="ds-text-small font-medium text-ds-black">
+                                <p className="text-sm font-semibold text-slate-900">
                                   {h.title ?? h.key}
                                 </p>
                                 {typeof h.current === "number" &&
                                 typeof h.target === "number" ? (
-                                  <p className="ds-text-caption tabular-nums text-ds-gray-text">
+                                  <p className="text-xs tabular-nums text-slate-500">
                                     {h.current} / {h.target}
                                   </p>
                                 ) : null}
                                 {typeof pct === "number" && (
                                   <div
-                                    className="mt-1 h-1.5 overflow-hidden rounded-full bg-ds-gray-mid"
+                                    className="mt-1 h-1.5 overflow-hidden rounded-full bg-sky-100"
                                     role="presentation"
                                   >
                                     <div
-                                      className="h-full rounded-full bg-ds-primary/80"
+                                      className="h-full rounded-full bg-gradient-to-r from-blue-500 to-sky-400"
                                       style={{ width: `${pct}%` }}
                                     />
                                   </div>
@@ -429,17 +425,15 @@ export default function DashboardPage() {
             </section>
           )}
 
-          <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 shadow-sm">
-            <h2 className="ds-text-h3 border-b border-ds-gray-border pb-4 text-ds-black">
+          <section className="student-surface-panel rounded-3xl p-5 sm:p-6">
+            <h2 className="border-b border-sky-100 pb-4 text-lg font-bold text-slate-900 sm:text-xl">
               {t("leaderboardTitle")}
             </h2>
-            <p className="ds-text-caption mt-2 text-ds-gray-text">
+            <p className="mt-2 text-xs text-slate-600">
               {user?.schoolId ? t("leaderboardSchool") : t("leaderboardGlobal")}
             </p>
             {leaderboard.length === 0 && (
-              <p className="ds-text-caption mt-4 text-ds-gray-text">
-                {t("leaderboardEmpty")}
-              </p>
+              <p className="mt-4 text-xs text-slate-500">{t("leaderboardEmpty")}</p>
             )}
             {leaderboard.length > 0 && (
               <ol className="mt-4 space-y-2">
@@ -450,28 +444,28 @@ export default function DashboardPage() {
                       : idx + 1;
                   const rankStyle =
                     rank === 1
-                      ? "bg-amber-100 text-amber-900"
+                      ? "bg-gradient-to-br from-amber-300 to-amber-500 text-amber-950 shadow-sm"
                       : rank === 2
-                        ? "bg-slate-200 text-slate-800"
-                      : rank === 3
-                        ? "bg-orange-100 text-orange-900"
-                        : "bg-ds-gray-light text-ds-gray-text";
+                        ? "bg-sky-200 text-sky-950"
+                        : rank === 3
+                          ? "bg-amber-100 text-amber-900 ring-1 ring-amber-300/60"
+                          : "bg-sky-50 text-slate-600 ring-1 ring-sky-100";
                   return (
                     <li
                       key={String(
                         row.userId ?? (row as { id?: string }).id ?? idx,
                       )}
-                      className="flex items-center gap-3 rounded-lg border border-ds-gray-border px-3 py-2.5"
+                      className="flex items-center gap-3 rounded-2xl border border-sky-100/90 bg-white/80 px-3 py-2.5 shadow-sm"
                     >
                       <span
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${rankStyle}`}
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${rankStyle}`}
                       >
                         {rank}
                       </span>
-                      <span className="min-w-0 flex-1 truncate ds-text-small text-ds-black">
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-800">
                         {leaderboardName(row)}
                       </span>
-                      <span className="shrink-0 ds-text-caption tabular-nums text-ds-gray-text">
+                      <span className="shrink-0 text-xs font-semibold tabular-nums text-slate-500">
                         {String(row.xp ?? (row as { points?: number }).points ?? 0)}
                         {t("xpUnit")}
                       </span>
@@ -482,15 +476,15 @@ export default function DashboardPage() {
             )}
           </section>
 
-          <nav className="rounded-ds-card border border-ds-gray-border bg-ds-gray-light/50 p-4">
-            <p className="ds-text-caption font-medium uppercase tracking-wide text-ds-gray-text">
+          <nav className="student-surface-panel--soft rounded-3xl border border-amber-200/50 p-4 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-wide text-amber-800/90">
               {t("quickLinksTitle")}
             </p>
             <ul className="mt-3 space-y-2">
               <li>
                 <Link
                   href="/courses"
-                  className="ds-text-body text-ds-primary hover:underline"
+                  className="text-base font-semibold text-sky-700 hover:text-sky-900 hover:underline"
                 >
                   {t("linkCourses")}
                 </Link>
@@ -498,7 +492,7 @@ export default function DashboardPage() {
               <li>
                 <Link
                   href="/progress"
-                  className="ds-text-body text-ds-primary hover:underline"
+                  className="text-base font-semibold text-sky-700 hover:text-sky-900 hover:underline"
                 >
                   {t("linkProgress")}
                 </Link>
@@ -506,7 +500,7 @@ export default function DashboardPage() {
               <li>
                 <Link
                   href="/certificates"
-                  className="ds-text-body text-ds-primary hover:underline"
+                  className="text-base font-semibold text-sky-700 hover:text-sky-900 hover:underline"
                 >
                   {t("linkCertificates")}
                 </Link>
@@ -514,7 +508,7 @@ export default function DashboardPage() {
               <li>
                 <Link
                   href="/settings"
-                  className="ds-text-body text-ds-primary hover:underline"
+                  className="text-base font-semibold text-sky-700 hover:text-sky-900 hover:underline"
                 >
                   {t("linkSettings")}
                 </Link>
@@ -527,27 +521,38 @@ export default function DashboardPage() {
   );
 }
 
+type MetricTone = "sky" | "amber" | "violet";
+
 function MetricCard({
   label,
   value,
   accent,
+  tone = "sky",
 }: {
   label: string;
   value: string;
   accent?: boolean;
+  tone?: MetricTone;
 }) {
+  const toneClass =
+    tone === "amber"
+      ? "border-amber-200/85 bg-gradient-to-br from-amber-50/95 to-white"
+      : tone === "violet"
+        ? "border-indigo-200/75 bg-gradient-to-br from-indigo-50/90 to-white"
+        : "border-sky-200/85 bg-gradient-to-br from-sky-50/95 to-white";
+
   return (
     <div
-      className={`rounded-ds-card border px-4 py-4 sm:px-5 sm:py-5 ${
-        accent
-          ? "border-ds-primary/35 bg-ds-primary/5"
-          : "border-ds-gray-border bg-ds-white"
+      className={`rounded-2xl border px-4 py-4 shadow-sm sm:px-5 sm:py-5 ${toneClass} ${
+        accent ? "ring-2 ring-amber-300/70 ring-offset-2 ring-offset-transparent" : ""
       }`}
     >
-      <p className="ds-text-caption uppercase tracking-wide text-ds-gray-text">
+      <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
         {label}
       </p>
-      <p className="mt-1 ds-text-h3 tabular-nums text-ds-black">{value}</p>
+      <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900 sm:text-3xl">
+        {value}
+      </p>
     </div>
   );
 }

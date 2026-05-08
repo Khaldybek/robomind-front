@@ -1,106 +1,77 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { Link, usePathname } from "@/i18n/navigation";
-import type { ReactNode } from "react";
-import { LocaleSwitcher } from "@/components/locale-switcher";
-import { useEffect, useState } from "react";
-import { fetchMySchool } from "@/lib/api/school-admin/my-school";
-import { isApiConfigured } from "@/lib/env";
-import { SchoolAdminMarketingLayout } from "@/components/school-admin/school-admin-ambient";
-
-function schoolSubtitle(
-  schoolName: string,
-  cityName: string | null,
-): string {
-  if (cityName) return `${schoolName} · ${cityName}`;
-  return schoolName;
-}
+import { usePathname } from "@/i18n/navigation";
+import { X } from "lucide-react";
+import { SchoolAdminMeProvider } from "@/components/school-admin/admin-me-context";
+import { SchoolAdminSidebar } from "@/components/school-admin/admin-sidebar";
+import { SchoolAdminTopbar } from "@/components/school-admin/admin-topbar";
 
 export function SchoolAdminShell({ children }: { children: ReactNode }) {
+  return (
+    <SchoolAdminMeProvider>
+      <SchoolAdminShellInner>{children}</SchoolAdminShellInner>
+    </SchoolAdminMeProvider>
+  );
+}
+
+function SchoolAdminShellInner({ children }: { children: ReactNode }) {
   const t = useTranslations("SchoolAdminShell");
   const pathname = usePathname();
-  const [schoolLine, setSchoolLine] = useState<string | null>(null);
-
-  const nav = useMemo(
-    () =>
-      [
-        { href: "/school-admin/dashboard", label: t("navOverview") },
-        { href: "/school-admin/users", label: t("navStudents") },
-        { href: "/school-admin/courses", label: t("navCourses") },
-        { href: "/school-admin/notifications", label: t("navNotifications") },
-        { href: "/school-admin/device-violations", label: t("navDevices") },
-      ] as const,
-    [t],
-  );
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
-    if (!isApiConfigured()) return;
-    fetchMySchool()
-      .then(({ school, city }) => {
-        const num =
-          school.number != null ? ` №${school.number}` : "";
-        setSchoolLine(
-          schoolSubtitle(`${school.name}${num}`, city?.name ?? null),
-        );
-      })
-      .catch(() => setSchoolLine(null));
-  }, []);
+    setDrawerOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDrawerOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [drawerOpen]);
 
   return (
-    <SchoolAdminMarketingLayout>
-      <div className="flex min-h-screen flex-col">
-        <header className="sticky top-0 z-20 border-b border-white/50 bg-white/75 shadow-[0_1px_0_rgba(0,0,0,0.04)] backdrop-blur-xl">
-          <div className="ds-container flex max-w-none flex-wrap items-center justify-between gap-4 py-3 lg:py-4">
-            <div className="flex min-w-0 flex-1 items-center gap-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-ds-primary to-[#e62a1c] text-lg font-bold text-white shadow-lg shadow-ds-primary/25">
-                R
-              </div>
-              <div className="min-w-0">
-                <span className="ds-text-subtitle block truncate text-ds-black">
-                  {t("brandName")}
-                </span>
-                <span className="ds-text-caption block text-ds-gray-text">
-                  {t("subtitle")}
-                </span>
-                {schoolLine && (
-                  <p className="ds-text-caption mt-0.5 truncate text-ds-primary">
-                    {schoolLine}
-                  </p>
-                )}
-              </div>
-            </div>
-            <nav className="flex max-w-full flex-wrap items-center gap-1.5 sm:gap-2">
-              <LocaleSwitcher className="mr-1" />
-              {nav.map(({ href, label }) => {
-                const active =
-                  pathname === href || pathname?.startsWith(href + "/");
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={`rounded-full px-3 py-2 text-sm font-medium transition-colors duration-200 ${
-                      active
-                        ? "bg-ds-black text-white shadow-md"
-                        : "text-ds-black/80 hover:bg-white/90 hover:text-ds-primary"
-                    }`}
-                  >
-                    {label}
-                  </Link>
-                );
-              })}
-              <Link
-                href="/school-admin/login?logout=1"
-                className="ml-1 rounded-full border border-ds-gray-border bg-white/80 px-3 py-2 text-sm font-medium text-ds-gray-text transition-colors hover:border-ds-primary hover:text-ds-primary"
-              >
-                {t("logout")}
-              </Link>
-            </nav>
+    <div className="school-admin-page min-h-screen">
+      <div className="lg:grid lg:min-h-screen lg:grid-cols-[280px_minmax(0,1fr)]">
+        <div className="hidden lg:block">
+          <div className="sa-sidebar-wrap sticky top-0 h-screen">
+            <SchoolAdminSidebar />
           </div>
-        </header>
-        <main className="ds-container flex-1 py-8 lg:py-10">{children}</main>
+        </div>
+
+        <div className="flex min-h-screen min-w-0 flex-col">
+          <SchoolAdminTopbar onOpenSidebar={() => setDrawerOpen(true)} />
+          <main className="flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+            {children}
+          </main>
+        </div>
       </div>
-    </SchoolAdminMarketingLayout>
+
+      {drawerOpen ? (
+        <div className="fixed inset-0 z-40 flex lg:hidden" role="dialog" aria-modal="true">
+          <button
+            type="button"
+            aria-label={t("closeSidebarAria")}
+            className="absolute inset-0 bg-slate-900/55 backdrop-blur-sm"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <div className="sa-sidebar-wrap relative ml-0 flex h-full w-[88vw] max-w-[320px] flex-col bg-white shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(false)}
+              aria-label={t("closeSidebarAria")}
+              className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-700 transition hover:bg-slate-200"
+            >
+              <X className="h-4 w-4" aria-hidden />
+            </button>
+            <SchoolAdminSidebar onNavigate={() => setDrawerOpen(false)} />
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }

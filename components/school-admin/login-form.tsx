@@ -122,3 +122,12 @@ export function SchoolAdminLoginForm() {
     </form>
   );
 }
+
+export function SchoolAdminLoginFormSuspenseFallback() {
+  const tc = useTranslations("Common");
+  return (
+    <p className="ds-text-body text-center text-ds-gray-text lg:text-left">
+      {tc("loading")}
+    </p>
+  );
+}

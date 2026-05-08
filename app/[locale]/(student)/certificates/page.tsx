@@ -29,12 +29,16 @@ export default function CertificatesPage() {
 
   return (
     <div className="ds-container py-10 lg:py-14">
-      <h1 className="ds-text-h1 mb-8 text-ds-black">{t("title")}</h1>
+      <header className="mb-8 rounded-3xl border border-sky-200/55 bg-white/90 px-5 py-5 shadow-sm sm:px-7">
+        <h1 className="text-balance text-2xl font-bold text-slate-900 sm:text-3xl">
+          {t("title")}
+        </h1>
+      </header>
       {loading && (
-        <p className="ds-text-body text-ds-gray-text">{tc("loading")}</p>
+        <p className="text-base text-slate-600">{tc("loading")}</p>
       )}
       {error && (
-        <p className="ds-text-small text-ds-error mb-6" role="alert">
+        <p className="mb-6 text-sm text-rose-600" role="alert">
           {error}
           {t("endpointHint")}
         </p>
@@ -46,14 +50,14 @@ export default function CertificatesPage() {
           return (
             <li
               key={String(c.id)}
-              className="flex flex-wrap items-center justify-between gap-4 rounded-ds-card border border-ds-gray-border bg-ds-white px-6 py-4"
+              className="student-surface-panel flex flex-wrap items-center justify-between gap-4 rounded-2xl px-5 py-4 sm:px-6"
             >
               <div>
-                <p className="ds-text-subtitle text-ds-black">
+                <p className="text-base font-semibold text-slate-900">
                   {c.title ?? t("certFallback", { id: String(c.id) })}
                 </p>
                 {c.issuedAt && (
-                  <p className="ds-text-caption text-ds-gray-text">
+                  <p className="mt-1 text-xs text-slate-500">
                     {String(c.issuedAt)}
                   </p>
                 )}
@@ -63,21 +67,19 @@ export default function CertificatesPage() {
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="ui-btn ui-btn--1"
+                  className="inline-flex items-center rounded-2xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-sky-600/25 transition hover:bg-sky-700"
                 >
                   {t("downloadPdf")}
                 </a>
               ) : (
-                <span className="ds-text-caption text-ds-gray-text">
-                  {t("noUrlHint")}
-                </span>
+                <span className="text-xs text-slate-500">{t("noUrlHint")}</span>
               )}
             </li>
           );
         })}
       </ul>
       {!loading && !error && list.length === 0 && (
-        <p className="ds-text-body text-ds-gray-text">{t("empty")}</p>
+        <p className="text-base text-slate-600">{t("empty")}</p>
       )}
     </div>
   );

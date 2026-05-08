@@ -225,7 +225,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[linear-gradient(180deg,#e3f0fa_0%,#eef6fc_38%,#f4f7fb_100%)] pb-16 pt-6 sm:pb-20 sm:pt-8">
+    <div className="min-h-[calc(100vh-4rem)] bg-[linear-gradient(180deg,#dbeafe_0%,#e0f2fe_36%,#fefce8_100%)] pb-16 pt-6 sm:pb-20 sm:pt-8">
       <div className="ds-container max-w-6xl">
         <h1 className="sr-only">{t("title")}</h1>
         {loading && (
@@ -243,7 +243,7 @@ export default function ProfilePage() {
           <>
             <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
               <div className="space-y-6 lg:col-span-8">
-                <article className="overflow-hidden rounded-3xl border border-white/80 bg-white/95 p-6 shadow-[0_20px_50px_-24px_rgba(15,23,42,0.12)] sm:p-8">
+                <article className="overflow-hidden rounded-3xl border border-sky-200/60 bg-white/95 p-6 shadow-[0_20px_50px_-24px_rgba(14,116,144,0.14)] sm:p-8">
                   <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex min-w-0 flex-1 gap-5">
                       <div className="shrink-0">

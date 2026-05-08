@@ -27,11 +27,11 @@ export function StudentShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="ds-main relative min-h-screen overflow-hidden bg-[linear-gradient(170deg,#f7f7f8_0%,#ececef_45%,#f7f7f8_100%)]">
+    <div className="ds-main student-app-root relative min-h-screen overflow-hidden">
       <div className="st-orb st-orb--a" aria-hidden />
       <div className="st-orb st-orb--b" aria-hidden />
       <div className="st-grid-mask" aria-hidden />
-      <header className="sticky top-0 z-20 border-b border-white/60 bg-white/72 px-4 py-3 sm:py-3.5 backdrop-blur-xl md:py-3 lg:px-6 lg:py-3.5">
+      <header className="sticky top-0 z-20 border-b border-sky-200/55 bg-white/80 px-4 py-3 shadow-[0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl sm:py-3.5 md:py-3 lg:px-6 lg:py-3.5">
         <div className="ds-container flex max-w-none flex-wrap items-center justify-between gap-4">
           <Link
             href="/dashboard"
@@ -52,10 +52,10 @@ export function StudentShell({ children }: { children: ReactNode }) {
               <Link
                 key={href}
                 href={href}
-                className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
+                className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                   pathname === href || pathname?.startsWith(href + "/")
-                    ? "bg-ds-black text-white"
-                    : "text-ds-black hover:bg-white hover:text-ds-primary"
+                    ? "bg-sky-600 text-white shadow-sm shadow-sky-600/25 ring-1 ring-sky-500/40"
+                    : "text-slate-700 hover:bg-amber-100/90 hover:text-sky-900"
                 }`}
               >
                 {label}
@@ -64,7 +64,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
             <LocaleSwitcher className="w-full flex-none sm:hidden" />
             <Link
               href="/logout"
-              className="rounded-full border border-ds-gray-border bg-white px-3 py-1.5 text-sm text-ds-gray-text transition-colors hover:border-ds-primary hover:text-ds-primary"
+              className="rounded-full border border-sky-200/90 bg-white/95 px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:border-amber-300 hover:bg-amber-50/90 hover:text-sky-800"
             >
               {t("logout")}
             </Link>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import {
@@ -18,13 +19,6 @@ import {
   type SchoolStudentRow,
 } from "@/lib/api/school-admin/users";
 import { isApiConfigured, resolvePublicFileUrl } from "@/lib/env";
-
-function levelRu(level: string): string {
-  if (level === "beginner") return "Начальный";
-  if (level === "intermediate") return "Средний";
-  if (level === "advanced") return "Продвинутый";
-  return level;
-}
 
 function pickAccessUserId(row: unknown): string | null {
   if (!row || typeof row !== "object") return null;
@@ -78,6 +72,7 @@ function accessRowsFromRaw(data: unknown): unknown[] {
 }
 
 export default function SchoolAdminCourseAccessPage() {
+  const t = useTranslations("SchoolAdminCourseAccess");
   const params = useParams();
   const courseId = params.courseId as string;
   const [course, setCourse] = useState<AdminCourseRow | null>(null);
@@ -132,7 +127,17 @@ export default function SchoolAdminCourseAccessPage() {
     return id;
   }
 
-  function load() {
+  const accessLevel = useCallback(
+    (level: string) => {
+      if (level === "beginner") return t("levelBeginner");
+      if (level === "intermediate") return t("levelIntermediate");
+      if (level === "advanced") return t("levelAdvanced");
+      return level;
+    },
+    [t],
+  );
+
+  const load = useCallback(() => {
     if (!isApiConfigured() || !courseId) return;
     setCourseErr(null);
     fetchSchoolAdminCourse(courseId)
@@ -154,7 +159,7 @@ export default function SchoolAdminCourseAccessPage() {
       })
       .catch((e: Error) => {
         setAllUsers([]);
-        setUsersErr(e.message || "Не удалось загрузить учеников школы");
+        setUsersErr(e.message || t("usersLoadError"));
       })
       .finally(() => setUsersLoading(false));
 
@@ -169,17 +174,17 @@ export default function SchoolAdminCourseAccessPage() {
         setAccessesErr(e.message);
       })
       .finally(() => setAccessesLoading(false));
-  }
+  }, [courseId, t]);
 
   useEffect(() => {
     load();
-  }, [courseId]);
+  }, [load]);
 
   async function grant() {
     setError(null);
     setMsg(null);
     if (!userId) {
-      setError("Выберите ученика");
+      setError(t("grantPickStudent"));
       return;
     }
     try {
@@ -191,11 +196,11 @@ export default function SchoolAdminCourseAccessPage() {
             ? new Date(expiresAt).toISOString()
             : undefined,
       });
-      setMsg("Доступ выдан");
+      setMsg(t("grantSuccess"));
       setUserId("");
       load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Ошибка");
+      setError(e instanceof Error ? e.message : t("errorGeneric"));
     }
   }
 
@@ -208,9 +213,7 @@ export default function SchoolAdminCourseAccessPage() {
       .filter(Boolean);
     const uniq = [...new Set(ids)];
     if (uniq.length < 1 || uniq.length > 200) {
-      setError(
-        "Укажите от 1 до 200 уникальных UUID (через запятую или с новой строки)",
-      );
+      setError(t("bulkUuidHint"));
       return;
     }
     setBulkBusy(true);
@@ -224,24 +227,27 @@ export default function SchoolAdminCourseAccessPage() {
             : undefined,
       });
       setMsg(
-        `Массовая выдача: успешно ${r.grantedCount}, ошибок: ${r.errors.length}`,
+        t("bulkSuccess", {
+          granted: r.grantedCount,
+          errors: r.errors.length,
+        }),
       );
       setBulkText("");
       load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Ошибка");
+      setError(e instanceof Error ? e.message : t("errorGeneric"));
     } finally {
       setBulkBusy(false);
     }
   }
 
   async function revoke(uid: string) {
-    if (!confirm("Отозвать доступ?")) return;
+    if (!confirm(t("revokeConfirm"))) return;
     try {
       await revokeCourseAccess(courseId, uid);
       load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Ошибка");
+      setError(e instanceof Error ? e.message : t("errorGeneric"));
     }
   }
 
@@ -260,7 +266,7 @@ export default function SchoolAdminCourseAccessPage() {
         href="/school-admin/courses"
         className="relative z-[1] mb-6 inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/70 px-4 py-2 text-sm font-medium text-ds-primary shadow-sm backdrop-blur-sm transition hover:border-ds-primary/30 hover:bg-white"
       >
-        <span aria-hidden>←</span> К каталогу курсов
+        <span aria-hidden>←</span> {t("backToCatalog")}
       </Link>
 
       <header className="sa-card-in relative z-[1] mb-8 overflow-hidden rounded-[28px] border border-white/80 bg-gradient-to-br from-white/95 via-white/85 to-ds-gray-light/50 p-6 shadow-[0_24px_70px_-32px_rgba(0,0,0,0.18)] backdrop-blur-md sm:p-8">
@@ -276,7 +282,7 @@ export default function SchoolAdminCourseAccessPage() {
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_20%_20%,rgba(255,96,84,0.25),transparent_50%),linear-gradient(135deg,#eef2f9,#f8f9fc)]">
                 <span className="ds-text-caption text-ds-gray-text">
-                  Обложка курса
+                  {t("coverPlaceholder")}
                 </span>
               </div>
             )}
@@ -284,10 +290,10 @@ export default function SchoolAdminCourseAccessPage() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ds-primary">
-              Доступ к обучению
+              {t("eyebrow")}
             </p>
             <h1 className="mt-2 text-balance font-semibold leading-tight text-ds-black [font-size:clamp(1.35rem,3vw,2rem)]">
-              {course?.title ?? "Курс"}
+              {course?.title ?? t("courseFallback")}
             </h1>
             {courseErr && (
               <p className="mt-2 ds-text-caption text-ds-error">{courseErr}</p>
@@ -295,33 +301,31 @@ export default function SchoolAdminCourseAccessPage() {
             <div className="mt-4 flex flex-wrap gap-2">
               {course?.level && (
                 <span className="rounded-full border border-ds-primary/25 bg-ds-primary/10 px-3 py-1 text-xs font-medium text-ds-black">
-                  {levelRu(course.level)}
+                  {accessLevel(course.level)}
                 </span>
               )}
               <span className="rounded-full border border-ds-gray-border bg-white/80 px-3 py-1 text-xs font-medium text-ds-gray-text">
-                Модулей:{" "}
+                {t("modulesCount")}{" "}
                 <span className="tabular-nums text-ds-black">
                   {course?.moduleCount ?? "—"}
                 </span>
               </span>
               <span className="rounded-full border border-ds-gray-border bg-white/80 px-3 py-1 text-xs font-medium text-ds-gray-text">
-                Учеников школы с доступом:{" "}
+                {t("studentsWithAccess")}{" "}
                 <span className="tabular-nums text-ds-primary">{grantedCount}</span>
               </span>
             </div>
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ds-gray-text">
-              Выдайте доступ ученикам вашей школы к этому курсу. Временный доступ
-              можно ограничить датой окончания; отзыв доступа доступен в списке
-              ниже.
+              {t("lead")}
             </p>
             <p className="mt-3 font-mono text-[11px] text-ds-gray-text/90">
-              ID курса: <span className="text-ds-black/80">{courseId}</span>
+              {t("courseId")} <span className="text-ds-black/80">{courseId}</span>
             </p>
             <Link
               href={`/school-admin/courses/${encodeURIComponent(courseId)}/modules`}
               className="mt-4 inline-flex items-center gap-2 rounded-full border border-ds-primary/30 bg-ds-primary/8 px-4 py-2 text-sm font-medium text-ds-primary transition hover:bg-ds-primary/15"
             >
-              Модули курса — проверка ДЗ
+              {t("modulesHomework")}
             </Link>
           </div>
         </div>
@@ -329,14 +333,14 @@ export default function SchoolAdminCourseAccessPage() {
 
       <div className="relative z-[1] grid gap-6 lg:grid-cols-2 lg:gap-8">
         <section className="sa-card-in rounded-[22px] border border-white/90 bg-white/80 p-6 shadow-[0_16px_48px_-28px_rgba(0,0,0,0.12)] backdrop-blur-sm">
-          <h2 className="ds-text-h3 text-ds-black">Выдать доступ</h2>
+          <h2 className="ds-text-h3 text-ds-black">{t("grantTitle")}</h2>
           <p className="mt-1 text-sm text-ds-gray-text">
-            Один ученик — быстро из списка вашей школы.
+            {t("grantLead")}
           </p>
           <div className="mt-5 space-y-4">
             <div>
               <label className="ds-text-small mb-1.5 block font-medium text-ds-black">
-                Ученик
+                {t("studentLabel")}
               </label>
               <select
                 className="ds-input w-full"
@@ -345,7 +349,7 @@ export default function SchoolAdminCourseAccessPage() {
                 disabled={usersLoading}
               >
                 <option value="">
-                  {usersLoading ? "Загрузка…" : "— выберите ученика —"}
+                  {usersLoading ? t("selectLoading") : t("selectPlaceholder")}
                 </option>
                 {allUsers.map((u) => (
                   <option key={u.id} value={u.id}>
@@ -363,13 +367,13 @@ export default function SchoolAdminCourseAccessPage() {
               )}
               {!usersLoading && !usersErr && allUsers.length === 0 && (
                 <p className="ds-text-caption mt-1.5 text-ds-gray-text">
-                  Список пуст. Проверьте раздел «Ученики» и запрос к API.
+                  {t("usersEmpty")}
                 </p>
               )}
             </div>
             <div>
               <label className="ds-text-small mb-1.5 block font-medium text-ds-black">
-                Тип доступа
+                {t("accessType")}
               </label>
               <select
                 className="ds-input w-full"
@@ -378,14 +382,14 @@ export default function SchoolAdminCourseAccessPage() {
                   setAccessType(e.target.value as "permanent" | "temporary")
                 }
               >
-                <option value="permanent">Постоянный</option>
-                <option value="temporary">Временный</option>
+                <option value="permanent">{t("accessPermanent")}</option>
+                <option value="temporary">{t("accessTemporary")}</option>
               </select>
             </div>
             {accessType === "temporary" && (
               <div>
                 <label className="ds-text-small mb-1.5 block font-medium text-ds-black">
-                  Действует до
+                  {t("validUntil")}
                 </label>
                 <input
                   type="datetime-local"
@@ -410,19 +414,19 @@ export default function SchoolAdminCourseAccessPage() {
               onClick={() => void grant()}
               className="ui-btn ui-btn--1 w-full sm:w-auto"
             >
-              Выдать доступ
+              {t("grantButton")}
             </button>
           </div>
         </section>
 
         <section className="sa-card-in rounded-[22px] border border-white/90 bg-white/80 p-6 shadow-[0_16px_48px_-28px_rgba(0,0,0,0.12)] backdrop-blur-sm">
-          <h2 className="ds-text-h3 text-ds-black">Массовая выдача</h2>
+          <h2 className="ds-text-h3 text-ds-black">{t("bulkTitle")}</h2>
           <p className="mt-1 text-sm text-ds-gray-text">
-            До 200 UUID в одном запросе — те же тип и срок, что слева.
+            {t("bulkLead")}
           </p>
           <textarea
             className="ds-input mt-4 min-h-[120px] w-full font-mono text-xs"
-            placeholder={"uuid\nuuid, uuid"}
+            placeholder={t("bulkPlaceholder")}
             value={bulkText}
             onChange={(e) => setBulkText(e.target.value)}
           />
@@ -432,7 +436,7 @@ export default function SchoolAdminCourseAccessPage() {
             disabled={bulkBusy}
             onClick={() => void grantBulk()}
           >
-            {bulkBusy ? "Отправка…" : "Выдать по списку"}
+            {bulkBusy ? t("bulkSubmitting") : t("bulkSubmit")}
           </button>
         </section>
       </div>
@@ -440,9 +444,9 @@ export default function SchoolAdminCourseAccessPage() {
       <section className="sa-card-in relative z-[1] mt-8 rounded-[22px] border border-white/90 bg-white/85 p-6 shadow-[0_16px_48px_-28px_rgba(0,0,0,0.1)] backdrop-blur-sm sm:p-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="ds-text-h3 text-ds-black">Кто уже с доступом</h2>
+            <h2 className="ds-text-h3 text-ds-black">{t("withAccessTitle")}</h2>
             <p className="mt-1 text-sm text-ds-gray-text">
-              Ученики вашей школы с активным доступом или прогрессом по курсу.
+              {t("withAccessLead")}
             </p>
           </div>
           <span className="rounded-full bg-ds-gray-light px-4 py-1.5 text-sm font-medium tabular-nums text-ds-black">
@@ -477,29 +481,23 @@ export default function SchoolAdminCourseAccessPage() {
                 className="ui-btn ui-btn--6 shrink-0 !border-ds-error/40 !text-ds-error hover:!bg-[#FFF5F5]"
                 onClick={() => revoke(u.id)}
               >
-                Отозвать
+                {t("revoke")}
               </button>
             </li>
           ))}
         </ul>
         {withAccessView.length === 0 && (
           <p className="mt-6 rounded-xl border border-dashed border-ds-gray-border bg-ds-gray-light/40 px-4 py-8 text-center text-sm text-ds-gray-text">
-            Пока никого нет — выдайте доступ выше или проверьте данные на бэкенде.
+            {t("withAccessEmpty")}
           </p>
         )}
       </section>
 
       <section className="sa-card-in relative z-[1] mt-8 rounded-[22px] border border-ds-gray-border/60 bg-[#FAFAFA]/90 p-6 backdrop-blur-sm">
-        <h2 className="ds-text-h3 text-ds-black">Записи доступа (API)</h2>
-        <p className="mt-1 text-sm text-ds-gray-text">
-          Ответ{" "}
-          <code className="rounded bg-white px-1.5 py-0.5 text-xs">
-            GET …/accesses
-          </code>{" "}
-          в удобном виде.
-        </p>
+        <h2 className="ds-text-h3 text-ds-black">{t("apiTitle")}</h2>
+        <p className="mt-1 text-sm text-ds-gray-text">{t("apiLead")}</p>
         {accessesLoading && (
-          <p className="mt-4 ds-text-caption text-ds-gray-text">Загрузка…</p>
+          <p className="mt-4 ds-text-caption text-ds-gray-text">{t("apiLoading")}</p>
         )}
         {!accessesLoading && accessesErr && (
           <p className="mt-4 ds-text-small text-ds-error">{accessesErr}</p>
@@ -517,7 +515,7 @@ export default function SchoolAdminCourseAccessPage() {
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="font-medium text-ds-black">
-                      {uid ? userLabel(uid) : "Запись"}
+                      {uid ? userLabel(uid) : t("rowFallback")}
                     </span>
                     {a.accessType && (
                       <span className="rounded-full bg-ds-gray-light px-2 py-0.5 text-xs text-ds-black">
@@ -532,11 +530,11 @@ export default function SchoolAdminCourseAccessPage() {
                   )}
                   {a.expiresAt && (
                     <p className="mt-1 text-xs text-ds-gray-text">
-                      До: {a.expiresAt}
+                      {t("expiresUntil", { date: a.expiresAt })}
                     </p>
                   )}
                   {revoked && (
-                    <p className="mt-1 text-xs text-ds-error">Отозвано</p>
+                    <p className="mt-1 text-xs text-ds-error">{t("revoked")}</p>
                   )}
                 </li>
               );
@@ -548,18 +546,18 @@ export default function SchoolAdminCourseAccessPage() {
           accessListRows.length === 0 &&
           accessesRaw != null && (
             <p className="mt-4 ds-text-caption text-ds-gray-text">
-              Пустой список доступов.
+              {t("emptyAccessList")}
             </p>
           )}
 
         <details className="mt-6 rounded-xl border border-ds-gray-border bg-white/80 p-3">
           <summary className="cursor-pointer text-sm font-medium text-ds-primary">
-            Сырой JSON (для отладки)
+            {t("rawJson")}
           </summary>
           <pre className="mt-3 max-h-48 overflow-auto font-mono text-[11px] text-ds-gray-text">
             {accessesRaw != null
               ? JSON.stringify(accessesRaw, null, 2)
-              : "—"}
+              : t("dash")}
           </pre>
         </details>
       </section>

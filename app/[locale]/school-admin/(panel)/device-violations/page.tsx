@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   fetchDeviceViolations,
   type DeviceViolationRow,
 } from "@/lib/api/school-admin/notifications";
 import { AdminDeviceViolationsView } from "@/components/admin/device-violations-view";
+import { SchoolAdminPageHero } from "@/components/school-admin/admin-page-hero";
 import { isApiConfigured } from "@/lib/env";
 
 export default function SchoolAdminDeviceViolationsPage() {
+  const t = useTranslations("AdminDeviceViolations");
   const [items, setItems] = useState<DeviceViolationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,11 +28,18 @@ export default function SchoolAdminDeviceViolationsPage() {
   }, []);
 
   return (
-    <AdminDeviceViolationsView
-      variant="school"
-      items={items}
-      loading={loading}
-      error={error}
-    />
+    <div>
+      <SchoolAdminPageHero
+        title={t("titleSchool")}
+        description={t("leadSchool")}
+      />
+      <AdminDeviceViolationsView
+        variant="school"
+        items={items}
+        loading={loading}
+        error={error}
+        showBuiltInHeader={false}
+      />
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import {
@@ -11,6 +12,8 @@ import type { AdminCourse, AdminModule } from "@/lib/api/super-admin/courses-mod
 import { isApiConfigured } from "@/lib/env";
 
 export default function SchoolAdminCourseModulesPage() {
+  const t = useTranslations("SchoolAdminCourseModules");
+  const tc = useTranslations("Common");
   const params = useParams();
   const courseId = params.courseId as string;
   const [course, setCourse] = useState<AdminCourse | null>(null);
@@ -35,22 +38,22 @@ export default function SchoolAdminCourseModulesPage() {
       .finally(() => setLoading(false));
   }, [courseId]);
 
+  const title = course?.title
+    ? t("title", { title: course.title })
+    : t("titleFallback");
+
   return (
     <div>
       <Link
         href={`/school-admin/courses/${encodeURIComponent(courseId)}`}
         className="ds-text-caption mb-6 inline-block text-ds-primary hover:underline"
       >
-        ← К курсу
+        {t("backToCourse")}
       </Link>
-      <h1 className="ds-text-h2 text-ds-black">
-        Модули: {course?.title ?? "…"}
-      </h1>
-      <p className="mt-2 max-w-2xl text-sm text-ds-gray-text">
-        Проверка домашних заданий и журнал по каждому модулю.
-      </p>
+      <h1 className="ds-text-h2 text-ds-black">{title}</h1>
+      <p className="mt-2 max-w-2xl text-sm text-ds-gray-text">{t("lead")}</p>
       {loading && (
-        <p className="mt-4 ds-text-caption text-ds-gray-text">Загрузка…</p>
+        <p className="mt-4 ds-text-caption text-ds-gray-text">{tc("loading")}</p>
       )}
       {err && (
         <p className="mt-4 ds-text-small text-ds-error" role="alert">
@@ -68,14 +71,14 @@ export default function SchoolAdminCourseModulesPage() {
                 {m.title || m.id}
               </span>
               <span className="ds-text-caption text-ds-primary">
-                ДЗ и журнал →
+                {t("homeworkLink")}
               </span>
             </Link>
           </li>
         ))}
       </ul>
       {!loading && modules.length === 0 && (
-        <p className="mt-6 text-sm text-ds-gray-text">Модули не найдены.</p>
+        <p className="mt-6 text-sm text-ds-gray-text">{t("empty")}</p>
       )}
     </div>
   );
