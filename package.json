@@ -9,6 +9,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "start:prod": "next start -p 3011",
+    "pm2:start": "pm2 start ecosystem.config.cjs",
+    "pm2:reload": "pm2 reload ecosystem.config.cjs",
+    "pm2:stop": "pm2 stop robomind-front",
+    "pm2:delete": "pm2 delete robomind-front",
     "lint": "eslint"
   },
   "dependencies": {
