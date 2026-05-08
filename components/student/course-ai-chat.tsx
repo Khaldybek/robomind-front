@@ -222,10 +222,13 @@ export function AiChatScrollArea({
 
 export function CourseAiChat({
   courseId,
-  moduleId,
+  lessonId: lessonIdProp,
+  moduleId: moduleIdProp,
   variant = "page",
 }: {
   courseId: string;
+  lessonId?: string;
+  /** @deprecated */
   moduleId?: string;
   variant?: "page" | "embedded";
 }) {
@@ -233,10 +236,11 @@ export function CourseAiChat({
   const tm = useTranslations("StudentModule");
   const locale = useLocale();
   const aiLang = locale === "ru" ? "ru" : "kk";
+  const lessonId = lessonIdProp ?? moduleIdProp;
   const chat = useStudentAiChat({
-    moduleId,
+    lessonId,
     courseId,
-    mode: "course",
+    mode: lessonId ? "module" : "course",
     language: aiLang,
   });
 
@@ -245,7 +249,7 @@ export function CourseAiChat({
   if (variant === "embedded") {
     const fullHref =
       `/courses/${encodeURIComponent(courseId)}/chat` +
-      (moduleId ? `?moduleId=${encodeURIComponent(moduleId)}` : "");
+      (lessonId ? `?lessonId=${encodeURIComponent(lessonId)}` : "");
     return (
       <section className="flex min-h-0 flex-col">
         <div className="mb-3 flex items-start gap-2.5 sm:gap-3">
@@ -262,7 +266,7 @@ export function CourseAiChat({
             <p className="mt-1 text-xs leading-relaxed text-slate-600 sm:text-sm">
               {t("lead")}
             </p>
-            {moduleId ? (
+            {lessonId ? (
               <p className="mt-1.5 inline-flex rounded-full bg-sky-100/90 px-2 py-0.5 text-[11px] font-medium text-sky-900">
                 {t("courseWideContext")}
               </p>
@@ -294,7 +298,7 @@ export function CourseAiChat({
       </Link>
       <h1 className="ds-text-h2 text-ds-black">{t("title")}</h1>
       <p className="mt-2 ds-text-body text-ds-gray-text">{t("lead")}</p>
-      {moduleId ? (
+      {lessonId ? (
         <p className="mt-1 text-sm font-medium text-ds-primary">
           {t("courseWideContext")}
         </p>

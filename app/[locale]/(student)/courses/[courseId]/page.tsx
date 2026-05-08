@@ -6,19 +6,15 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { fetchCourseDetail } from "@/lib/api/student/courses";
-import {
-  fetchModuleContent,
-  type ModuleContentItem,
-} from "@/lib/api/student/modules";
+import { fetchCourseModuleLessons } from "@/lib/api/student/modules";
 import type { CourseSummary } from "@/lib/api/types";
-import type { CourseModuleSummary } from "@/lib/api/types";
+import type { CourseLessonSummary, CourseModuleSummary } from "@/lib/api/types";
 import {
   formatCourseLevel,
   pickCourseAgeGroup,
   resolveCourseThumbnailUrl,
 } from "@/lib/course-display";
 import { isApiConfigured } from "@/lib/env";
-import { ModuleLessonList } from "@/components/student/module-lesson-list";
 import {
   classifyModuleLessonLoadError,
   type ModuleLessonLoadError,
@@ -27,7 +23,6 @@ import { ChevronRight, LockKeyhole } from "lucide-react";
 
 export default function CourseDetailPage() {
   const t = useTranslations("StudentCourseDetail");
-  const tm = useTranslations("StudentModule");
   const tc = useTranslations("Common");
   const params = useParams();
   const courseId = params.courseId as string;
@@ -35,8 +30,8 @@ export default function CourseDetailPage() {
   const [modules, setModules] = useState<CourseModuleSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [lessonsByModule, setLessonsByModule] = useState<
-    Record<string, ModuleContentItem[]>
+  const [lessonsBySection, setLessonsBySection] = useState<
+    Record<string, CourseLessonSummary[]>
   >({});
   const [lessonsLoaded, setLessonsLoaded] = useState<Record<string, boolean>>(
     {},
@@ -67,23 +62,23 @@ export default function CourseDetailPage() {
   }, [courseId, t]);
 
   useEffect(() => {
-    setLessonsByModule({});
+    setLessonsBySection({});
     setLessonsLoaded({});
     setLessonsError({});
   }, [courseId]);
 
-  async function loadModuleLessons(moduleId: string) {
-    if (!isApiConfigured() || lessonsLoaded[moduleId]) return;
-    setLessonsLoadingId(moduleId);
-    setLessonsError((prev) => ({ ...prev, [moduleId]: null }));
+  async function loadSectionLessons(sectionId: string) {
+    if (!isApiConfigured() || lessonsLoaded[sectionId]) return;
+    setLessonsLoadingId(sectionId);
+    setLessonsError((prev) => ({ ...prev, [sectionId]: null }));
     try {
-      const items = await fetchModuleContent(moduleId);
-      setLessonsByModule((prev) => ({ ...prev, [moduleId]: items }));
-      setLessonsLoaded((prev) => ({ ...prev, [moduleId]: true }));
+      const items = await fetchCourseModuleLessons(sectionId);
+      setLessonsBySection((prev) => ({ ...prev, [sectionId]: items }));
+      setLessonsLoaded((prev) => ({ ...prev, [sectionId]: true }));
     } catch (e) {
       setLessonsError((prev) => ({
         ...prev,
-        [moduleId]: classifyModuleLessonLoadError(e),
+        [sectionId]: classifyModuleLessonLoadError(e),
       }));
     } finally {
       setLessonsLoadingId(null);
@@ -103,19 +98,6 @@ export default function CourseDetailPage() {
 
   const displayTitle =
     course?.title ?? course?.name ?? t("courseFallback", { id: courseId });
-
-  function formatLessonType(type: string | undefined): string | undefined {
-    const k = (type ?? "").toLowerCase();
-    if (!k) return undefined;
-    const map: Record<string, string> = {
-      video: t("lessonTypeVideo"),
-      file: t("lessonTypeFile"),
-      text: t("lessonTypeText"),
-      livestream: t("lessonTypeLivestream"),
-      link: t("lessonTypeLink"),
-    };
-    return map[k] ?? t("lessonTypeMaterial");
-  }
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-[linear-gradient(180deg,#dbeafe_0%,#e8f2fc_42%,#f0f7fc_100%)] pb-12 sm:pb-16">
@@ -176,22 +158,25 @@ export default function CourseDetailPage() {
           )}
           <ol className="space-y-3">
             {modules.map((mod, i) => {
-              const mid = String(mod.id);
-              const moduleHref = `/courses/${encodeURIComponent(courseId)}/modules/${encodeURIComponent(mid)}`;
-              const rawLessons = lessonsByModule[mid];
+              const sectionId = String(mod.id);
+              const rawLessons = lessonsBySection[sectionId];
               const sortedLessons = rawLessons
                 ? [...rawLessons].sort(
                     (a, b) =>
                       Number(a.order ?? 0) - Number(b.order ?? 0),
                   )
                 : [];
+              const firstLesson = sortedLessons[0];
+              const firstLessonHref = firstLesson
+                ? `/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(firstLesson.id)}`
+                : null;
               return (
-                <li key={mid}>
+                <li key={sectionId}>
                   <details
                     className="group rounded-ds-card border border-ds-gray-border bg-ds-white"
                     onToggle={(e) => {
                       const el = e.currentTarget;
-                      if (el.open) void loadModuleLessons(mid);
+                      if (el.open) void loadSectionLessons(sectionId);
                     }}
                   >
                     <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 marker:content-none [&::-webkit-details-marker]:hidden">
@@ -199,7 +184,7 @@ export default function CourseDetailPage() {
                         {i + 1}
                       </span>
                       <span className="min-w-0 flex-1 ds-text-body font-medium text-ds-black">
-                        {mod.title ?? mod.name ?? t("moduleFallback", { id: mid })}
+                        {mod.title ?? mod.name ?? t("moduleFallback", { id: sectionId })}
                       </span>
                       <span
                         className="shrink-0 text-ds-gray-text transition-transform duration-200 group-open:rotate-180"
@@ -209,14 +194,14 @@ export default function CourseDetailPage() {
                       </span>
                     </summary>
                     <div className="border-t border-ds-gray-border bg-gradient-to-b from-ds-gray-light/50 to-ds-gray-light/30 px-3 py-4 sm:px-4">
-                      {lessonsLoadingId === mid && (
+                      {lessonsLoadingId === sectionId && (
                         <p className="ds-text-small text-ds-gray-text">
                           {t("lessonsLoading")}
                         </p>
                       )}
-                      {lessonsError[mid] && lessonsLoadingId !== mid && (
+                      {lessonsError[sectionId] && lessonsLoadingId !== sectionId && (
                         <>
-                          {lessonsError[mid]!.kind === "locked" ? (
+                          {lessonsError[sectionId]!.kind === "locked" ? (
                             <div
                               className="flex gap-3 rounded-xl border border-amber-200/90 bg-gradient-to-br from-amber-50 to-amber-100/80 px-3 py-3 text-amber-950 shadow-sm"
                               role="status"
@@ -233,7 +218,7 @@ export default function CourseDetailPage() {
                                   {t("lessonsLockedLabel")}
                                 </p>
                                 <p className="mt-1.5 text-sm leading-relaxed text-amber-950">
-                                  {lessonsError[mid]!.message}
+                                  {lessonsError[sectionId]!.message}
                                 </p>
                               </div>
                             </div>
@@ -242,37 +227,54 @@ export default function CourseDetailPage() {
                               className="ds-text-small text-ds-error"
                               role="alert"
                             >
-                              {t("lessonsError")}: {lessonsError[mid]!.message}
+                              {t("lessonsError")}: {lessonsError[sectionId]!.message}
                             </p>
                           )}
                         </>
                       )}
-                      {lessonsLoaded[mid] &&
-                        lessonsLoadingId !== mid &&
-                        !lessonsError[mid] &&
+                      {lessonsLoaded[sectionId] &&
+                        lessonsLoadingId !== sectionId &&
+                        !lessonsError[sectionId] &&
                         sortedLessons.length === 0 && (
                           <p className="ds-text-small text-ds-gray-text">
                             {t("lessonsEmpty")}
                           </p>
                         )}
                       {sortedLessons.length > 0 && (
-                        <ModuleLessonList
-                          items={sortedLessons}
-                          moduleHref={moduleHref}
-                          labelFallback={tm("contentFallback")}
-                          formatLessonType={formatLessonType}
-                        />
+                        <ul className="space-y-2">
+                          {sortedLessons.map((lesson, li) => (
+                            <li key={lesson.id}>
+                              <Link
+                                href={`/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lesson.id)}`}
+                                className="flex items-center gap-3 rounded-xl border border-ds-gray-border/80 bg-white/95 px-3 py-2.5 shadow-sm transition-all hover:border-ds-primary/45 hover:bg-white hover:shadow-md"
+                              >
+                                <span className="shrink-0 text-xs font-semibold tabular-nums text-ds-gray-text">
+                                  {li + 1}
+                                </span>
+                                <span className="min-w-0 flex-1 ds-text-body font-medium leading-snug text-ds-black">
+                                  {lesson.title ?? t("moduleFallback", { id: lesson.id })}
+                                </span>
+                                <ChevronRight
+                                  className="h-4 w-4 shrink-0 text-ds-primary opacity-80"
+                                  aria-hidden
+                                />
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
                       )}
-                      <Link
-                        href={moduleHref}
-                        className="mt-4 flex items-center justify-center gap-1 rounded-xl border border-ds-gray-border/90 bg-white/90 px-3 py-2.5 text-sm font-semibold text-ds-primary shadow-sm transition-colors hover:border-ds-primary/50 hover:bg-white sm:justify-start"
-                      >
-                        <span>{t("openModule")}</span>
-                        <ChevronRight
-                          className="h-4 w-4 shrink-0 opacity-80"
-                          aria-hidden
-                        />
-                      </Link>
+                      {firstLessonHref ? (
+                        <Link
+                          href={firstLessonHref}
+                          className="mt-4 flex items-center justify-center gap-1 rounded-xl border border-ds-gray-border/90 bg-white/90 px-3 py-2.5 text-sm font-semibold text-ds-primary shadow-sm transition-colors hover:border-ds-primary/50 hover:bg-white sm:justify-start"
+                        >
+                          <span>{t("openModule")}</span>
+                          <ChevronRight
+                            className="h-4 w-4 shrink-0 opacity-80"
+                            aria-hidden
+                          />
+                        </Link>
+                      ) : null}
                     </div>
                   </details>
                 </li>

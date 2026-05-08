@@ -28,11 +28,11 @@ function unwrapList(raw: unknown): unknown[] {
   return [];
 }
 
-/** GET /admin/homework-submissions?moduleId= */
+/** GET /admin/homework-submissions?lessonId= */
 export async function fetchSchoolHomeworkSubmissions(
-  moduleId: string,
+  lessonId: string,
 ): Promise<HomeworkSubmissionRow[]> {
-  const q = new URLSearchParams({ moduleId });
+  const q = new URLSearchParams({ lessonId });
   const res = await apiSchoolAdminFetch(
     `${SCHOOL_ADMIN_ROUTES.HOMEWORK_SUBMISSIONS}?${q}`,
   );
@@ -77,13 +77,16 @@ export async function patchSchoolHomeworkSubmission(
   return { ...n, id: String(n.id ?? "") } as HomeworkSubmissionRow;
 }
 
-/** GET /admin/modules/:moduleId/grade-overview */
-export async function fetchSchoolModuleGradeOverview(
-  moduleId: string,
+/** GET /admin/lessons/:lessonId/grade-overview */
+export async function fetchSchoolLessonGradeOverview(
+  lessonId: string,
 ): Promise<unknown> {
   const res = await apiSchoolAdminFetch(
-    SCHOOL_ADMIN_ROUTES.MODULE_GRADE_OVERVIEW(moduleId),
+    SCHOOL_ADMIN_ROUTES.LESSON_GRADE_OVERVIEW(lessonId),
   );
   await throwIfNotOk(res);
   return parseJsonSafe(res);
 }
+
+/** @deprecated */
+export const fetchSchoolModuleGradeOverview = fetchSchoolLessonGradeOverview;

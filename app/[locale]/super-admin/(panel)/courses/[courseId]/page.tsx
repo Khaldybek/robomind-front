@@ -104,7 +104,7 @@ export default function Page() {
               className="flex flex-wrap items-center justify-between gap-3 rounded-ds-card border border-ds-gray-border bg-ds-white px-4 py-3"
             >
               <Link
-                href={`/super-admin/courses/${encodeURIComponent(courseId)}/modules/${encodeURIComponent(m.id)}`}
+                href={`/super-admin/courses/${encodeURIComponent(courseId)}/sections/${encodeURIComponent(m.id)}`}
                 className="min-w-0 flex-1 transition-colors hover:text-ds-primary"
               >
                 <span className="ds-text-small font-medium text-ds-black">
@@ -232,7 +232,7 @@ export default function Page() {
               description: description.trim() || undefined,
               order: Number(order) || 0,
               isPublished: isPublishedNew,
-              unlockAfterModuleId: unlockAfterId || undefined,
+              unlockAfterCourseModuleId: unlockAfterId || undefined,
             })
               .then(() => {
                 setModuleModal(false);
@@ -355,7 +355,7 @@ function EditModuleForm({
   const [order, setOrder] = useState(String(mod.order));
   const [isPublished, setIsPublished] = useState(mod.isPublished);
   const [unlockAfterId, setUnlockAfterId] = useState(
-    mod.unlockAfterModuleId ?? "",
+    mod.unlockAfterCourseModuleId ?? "",
   );
   const [clearUnlock, setClearUnlock] = useState(false);
 
@@ -370,7 +370,7 @@ function EditModuleForm({
           description: description.trim() === "" ? null : description.trim(),
           order: Number(order) || 0,
           isPublished,
-          unlockAfterModuleId: clearUnlock
+          unlockAfterCourseModuleId: clearUnlock
             ? null
             : unlockAfterId
               ? unlockAfterId
@@ -451,11 +451,11 @@ function EditModuleForm({
           Сохранить
         </button>
         <Link
-          href={`/super-admin/courses/${encodeURIComponent(courseId)}/modules/${encodeURIComponent(mod.id)}`}
+          href={`/super-admin/courses/${encodeURIComponent(courseId)}/sections/${encodeURIComponent(mod.id)}`}
           className="ui-btn ui-btn--4 inline-flex items-center"
           onClick={() => {}}
         >
-          Контент модуля
+          Уроки раздела
         </Link>
       </div>
     </form>

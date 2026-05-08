@@ -284,7 +284,7 @@ export type AdminModule = {
   description: string | null;
   order: number;
   isPublished: boolean;
-  unlockAfterModuleId: string | null;
+  unlockAfterCourseModuleId: string | null;
   createdAt: string;
   updatedAt: string;
   contentCount: number;
@@ -302,6 +302,18 @@ export type AdminModuleList = {
 };
 
 function mapModule(raw: Record<string, unknown>): AdminModule {
+  const unlockCourse =
+    raw.unlockAfterCourseModuleId != null
+      ? String(raw.unlockAfterCourseModuleId)
+      : raw.unlock_after_course_module_id != null
+        ? String(raw.unlock_after_course_module_id)
+        : null;
+  const unlockLegacy =
+    raw.unlockAfterModuleId != null
+      ? String(raw.unlockAfterModuleId)
+      : raw.unlock_after_module_id != null
+        ? String(raw.unlock_after_module_id)
+        : null;
   return {
     id: String(raw.id ?? ""),
     courseId: String(raw.courseId ?? raw.course_id ?? ""),
@@ -312,12 +324,7 @@ function mapModule(raw: Record<string, unknown>): AdminModule {
         : String(raw.description),
     order: num(raw.order, 0),
     isPublished: Boolean(raw.isPublished ?? raw.is_published),
-    unlockAfterModuleId:
-      raw.unlockAfterModuleId != null
-        ? String(raw.unlockAfterModuleId)
-        : raw.unlock_after_module_id != null
-          ? String(raw.unlock_after_module_id)
-          : null,
+    unlockAfterCourseModuleId: unlockCourse ?? unlockLegacy,
     createdAt: String(raw.createdAt ?? raw.created_at ?? ""),
     updatedAt: String(raw.updatedAt ?? raw.updated_at ?? ""),
     contentCount: num(raw.contentCount ?? raw.content_count, 0),
@@ -389,11 +396,28 @@ export async function listAdminModules(params: {
   };
 }
 
-export async function getAdminModule(moduleId: string): Promise<AdminModule> {
-  const res = await apiSuperAdminFetch(SUPER_ADMIN_ROUTES.MODULE(moduleId));
+export async function getAdminCourseModule(
+  courseModuleId: string,
+): Promise<AdminModule> {
+  const res = await apiSuperAdminFetch(
+    SUPER_ADMIN_ROUTES.COURSE_MODULE(courseModuleId),
+  );
   await throwIfNotOk(res);
   const d = await parseJsonSafe<Record<string, unknown>>(res);
   return mapModule(d ?? {});
+}
+
+/** Один урок (редактор контента / теста) */
+export async function getAdminLesson(lessonId: string): Promise<AdminModule> {
+  const res = await apiSuperAdminFetch(SUPER_ADMIN_ROUTES.LESSON(lessonId));
+  await throwIfNotOk(res);
+  const d = await parseJsonSafe<Record<string, unknown>>(res);
+  return mapModule(d ?? {});
+}
+
+/** @deprecated используйте getAdminCourseModule или getAdminLesson */
+export async function getAdminModule(moduleId: string): Promise<AdminModule> {
+  return getAdminLesson(moduleId);
 }
 
 export type CreateModuleBody = {
@@ -402,19 +426,39 @@ export type CreateModuleBody = {
   description?: string;
   order?: number;
   isPublished?: boolean;
+  unlockAfterCourseModuleId?: string | null;
+  /** @deprecated */
   unlockAfterModuleId?: string | null;
 };
+
+export async function createCourseModule(
+  courseId: string,
+  body: Omit<CreateModuleBody, "courseId">,
+): Promise<AdminModule> {
+  const payload: Record<string, unknown> = {
+    title: body.title,
+    description: body.description ?? null,
+    order: body.order ?? 0,
+    isPublished: body.isPublished ?? false,
+    unlockAfterCourseModuleId:
+      body.unlockAfterCourseModuleId ??
+      body.unlockAfterModuleId ??
+      null,
+  };
+  const res = await apiSuperAdminFetch(
+    `${SUPER_ADMIN_ROUTES.COURSE_MODULES(courseId)}`,
+    { method: "POST", body: JSON.stringify(payload) },
+  );
+  await throwIfNotOk(res);
+  const d = await parseJsonSafe<Record<string, unknown>>(res);
+  return mapModule(d ?? {});
+}
 
 export async function createSuperModule(
   body: CreateModuleBody,
 ): Promise<AdminModule> {
-  const res = await apiSuperAdminFetch(SUPER_ADMIN_ROUTES.MODULES, {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
-  await throwIfNotOk(res);
-  const d = await parseJsonSafe<Record<string, unknown>>(res);
-  return mapModule(d ?? {});
+  const { courseId, ...rest } = body;
+  return createCourseModule(courseId, rest);
 }
 
 export type PatchModuleBody = Partial<{
@@ -422,27 +466,128 @@ export type PatchModuleBody = Partial<{
   description: string | null;
   order: number;
   isPublished: boolean;
+  unlockAfterCourseModuleId: string | null;
   unlockAfterModuleId: string | null;
 }>;
 
-export async function updateAdminModule(
-  moduleId: string,
+export async function patchCourseModule(
+  courseModuleId: string,
   body: PatchModuleBody,
 ): Promise<AdminModule> {
-  const res = await apiSuperAdminFetch(SUPER_ADMIN_ROUTES.MODULE(moduleId), {
-    method: "PATCH",
-    body: JSON.stringify(body),
-  });
+  const payload = { ...body } as Record<string, unknown>;
+  if (body.unlockAfterModuleId !== undefined && body.unlockAfterCourseModuleId === undefined) {
+    payload.unlockAfterCourseModuleId =
+      body.unlockAfterModuleId === undefined ? null : body.unlockAfterModuleId;
+    delete payload.unlockAfterModuleId;
+  }
+  const res = await apiSuperAdminFetch(
+    SUPER_ADMIN_ROUTES.COURSE_MODULE(courseModuleId),
+    {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    },
+  );
   await throwIfNotOk(res);
   const d = await parseJsonSafe<Record<string, unknown>>(res);
   return mapModule(d ?? {});
 }
 
+export async function updateAdminModule(
+  moduleId: string,
+  body: PatchModuleBody,
+): Promise<AdminModule> {
+  return patchCourseModule(moduleId, body);
+}
+
+export async function deleteCourseModule(courseModuleId: string): Promise<void> {
+  const res = await apiSuperAdminFetch(
+    SUPER_ADMIN_ROUTES.COURSE_MODULE(courseModuleId),
+    {
+      method: "DELETE",
+    },
+  );
+  await throwIfNotOk(res);
+}
+
 export async function deleteAdminModule(moduleId: string): Promise<void> {
-  const res = await apiSuperAdminFetch(SUPER_ADMIN_ROUTES.MODULE(moduleId), {
-    method: "DELETE",
+  return deleteCourseModule(moduleId);
+}
+
+export type AdminLessonRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  order: number;
+  unlockAfterLessonId: string | null;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+function mapLessonRow(raw: Record<string, unknown>): AdminLessonRow {
+  return {
+    id: String(raw.id ?? ""),
+    title: String(raw.title ?? ""),
+    description:
+      raw.description === null || raw.description === undefined
+        ? null
+        : String(raw.description),
+    order: num(raw.order, 0),
+    unlockAfterLessonId:
+      raw.unlockAfterLessonId != null
+        ? String(raw.unlockAfterLessonId)
+        : raw.unlock_after_lesson_id != null
+          ? String(raw.unlock_after_lesson_id)
+          : null,
+    isPublished: Boolean(raw.isPublished ?? raw.is_published),
+    createdAt: String(raw.createdAt ?? raw.created_at ?? ""),
+    updatedAt: String(raw.updatedAt ?? raw.updated_at ?? ""),
+  };
+}
+
+export async function listAdminLessons(params: {
+  courseModuleId: string;
+  page?: number;
+  limit?: number;
+}): Promise<{ items: AdminLessonRow[]; total: number }> {
+  const u = new URLSearchParams({
+    courseModuleId: params.courseModuleId,
+  });
+  if (params.page != null) u.set("page", String(params.page));
+  if (params.limit != null) u.set("limit", String(params.limit));
+  const res = await apiSuperAdminFetch(`${SUPER_ADMIN_ROUTES.LESSONS}?${u}`);
+  await throwIfNotOk(res);
+  const data = (await parseJsonSafe<Record<string, unknown>>(res)) ?? {};
+  const itemsRaw = (data.items as unknown[]) ?? [];
+  return {
+    items: itemsRaw.map((x) =>
+      mapLessonRow(
+        typeof x === "object" && x !== null ? (x as Record<string, unknown>) : {},
+      ),
+    ),
+    total: num(data.total, itemsRaw.length),
+  };
+}
+
+export type CreateAdminLessonBody = {
+  courseModuleId: string;
+  title: string;
+  description?: string | null;
+  order?: number;
+  isPublished?: boolean;
+  unlockAfterLessonId?: string | null;
+};
+
+export async function createAdminLesson(
+  body: CreateAdminLessonBody,
+): Promise<AdminLessonRow> {
+  const res = await apiSuperAdminFetch(SUPER_ADMIN_ROUTES.LESSONS, {
+    method: "POST",
+    body: JSON.stringify(body),
   });
   await throwIfNotOk(res);
+  const d = await parseJsonSafe<Record<string, unknown>>(res);
+  return mapLessonRow(d ?? {});
 }
 
 /** @deprecated используйте listAdminModules */
@@ -486,9 +631,12 @@ export type AdminContentBlock = {
 
 function mapContentBlock(raw: Record<string, unknown>): AdminContentBlock {
   const t = String(raw.type ?? "text") as ContentBlockType;
+  const lessonId = String(
+    raw.lessonId ?? raw.lesson_id ?? raw.moduleId ?? raw.module_id ?? "",
+  );
   return {
     id: String(raw.id ?? ""),
-    moduleId: String(raw.moduleId ?? raw.module_id ?? ""),
+    moduleId: lessonId,
     type: (
       [
         "image",
@@ -541,7 +689,7 @@ export async function listModuleContents(
   moduleId: string,
 ): Promise<AdminContentBlock[]> {
   const res = await apiSuperAdminFetch(
-    SUPER_ADMIN_ROUTES.MODULE_CONTENTS(moduleId),
+    SUPER_ADMIN_ROUTES.LESSON_CONTENTS(moduleId),
   );
   await throwIfNotOk(res);
   const data = await parseJsonSafe<unknown>(res);
@@ -569,7 +717,7 @@ export async function createModuleContent(
   body: CreateContentBody,
 ): Promise<AdminContentBlock> {
   const res = await apiSuperAdminFetch(
-    SUPER_ADMIN_ROUTES.MODULE_CONTENT(moduleId),
+    SUPER_ADMIN_ROUTES.LESSON_CONTENT(moduleId),
     { method: "POST", body: JSON.stringify(body) },
   );
   await throwIfNotOk(res);
@@ -583,7 +731,7 @@ export async function createModuleContentAtContents(
   body: CreateContentBody,
 ): Promise<AdminContentBlock> {
   const res = await apiSuperAdminFetch(
-    SUPER_ADMIN_ROUTES.MODULE_CONTENTS(moduleId),
+    SUPER_ADMIN_ROUTES.LESSON_CONTENTS(moduleId),
     { method: "POST", body: JSON.stringify(body) },
   );
   await throwIfNotOk(res);
@@ -618,7 +766,7 @@ export async function createModuleContentFromFile(
   if (params.content != null && params.content !== "")
     fd.append("content", params.content);
   const res = await apiSuperAdminFetch(
-    SUPER_ADMIN_ROUTES.MODULE_CONTENT_FROM_FILE(moduleId),
+    SUPER_ADMIN_ROUTES.LESSON_CONTENT_FROM_FILE(moduleId),
     { method: "POST", body: fd },
   );
   await throwIfNotOk(res);
@@ -658,7 +806,7 @@ export async function updateModuleContent(
   body: PatchContentBody,
 ): Promise<AdminContentBlock> {
   const res = await apiSuperAdminFetch(
-    SUPER_ADMIN_ROUTES.MODULE_CONTENT_ITEM(moduleId, contentId),
+    SUPER_ADMIN_ROUTES.LESSON_CONTENT_ITEM(moduleId, contentId),
     { method: "PATCH", body: JSON.stringify(body) },
   );
   await throwIfNotOk(res);
@@ -671,7 +819,7 @@ export async function deleteModuleContent(
   contentId: string,
 ): Promise<void> {
   const res = await apiSuperAdminFetch(
-    SUPER_ADMIN_ROUTES.MODULE_CONTENT_ITEM(moduleId, contentId),
+    SUPER_ADMIN_ROUTES.LESSON_CONTENT_ITEM(moduleId, contentId),
     { method: "DELETE" },
   );
   await throwIfNotOk(res);

@@ -9,12 +9,15 @@ function ChatInner() {
   const params = useParams();
   const searchParams = useSearchParams();
   const courseId = params.courseId as string;
-  const moduleId = searchParams.get("moduleId")?.trim() || undefined;
+  const lessonId =
+    searchParams.get("lessonId")?.trim() ||
+    searchParams.get("moduleId")?.trim() ||
+    undefined;
 
   return (
     <CourseAiChat
       courseId={courseId}
-      moduleId={moduleId}
+      lessonId={lessonId}
       variant="page"
     />
   );

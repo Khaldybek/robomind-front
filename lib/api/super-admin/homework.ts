@@ -20,12 +20,12 @@ function unwrapList(raw: unknown): unknown[] {
   return [];
 }
 
-/** GET /admin/homework-submissions?moduleId=&schoolId= (schoolId обязателен для super_admin) */
+/** GET /admin/homework-submissions?lessonId=&schoolId= */
 export async function fetchSuperHomeworkSubmissions(
-  moduleId: string,
+  lessonId: string,
   schoolId: string,
 ): Promise<HomeworkSubmissionRow[]> {
-  const q = new URLSearchParams({ moduleId, schoolId });
+  const q = new URLSearchParams({ lessonId, schoolId });
   const res = await apiSuperAdminFetch(
     `${SUPER_ADMIN_ROUTES.HOMEWORK_SUBMISSIONS}?${q}`,
   );
@@ -63,15 +63,18 @@ export async function patchSuperHomeworkSubmission(
   return { ...n, id: String(n.id ?? "") } as HomeworkSubmissionRow;
 }
 
-/** GET /admin/modules/:moduleId/grade-overview?schoolId= */
-export async function fetchSuperModuleGradeOverview(
-  moduleId: string,
+/** GET /admin/lessons/:lessonId/grade-overview?schoolId= */
+export async function fetchSuperLessonGradeOverview(
+  lessonId: string,
   schoolId: string,
 ): Promise<unknown> {
   const q = new URLSearchParams({ schoolId });
   const res = await apiSuperAdminFetch(
-    `${SUPER_ADMIN_ROUTES.MODULE_GRADE_OVERVIEW(moduleId)}?${q}`,
+    `${SUPER_ADMIN_ROUTES.LESSON_GRADE_OVERVIEW(lessonId)}?${q}`,
   );
   await throwIfNotOk(res);
   return parseJsonSafe(res);
 }
+
+/** @deprecated */
+export const fetchSuperModuleGradeOverview = fetchSuperLessonGradeOverview;

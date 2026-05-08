@@ -47,7 +47,7 @@
     "hwOpen": "Открыть",
     "hwPending": "На проверке",
     "noJournalRows": "Нет строк в журнале.",
-    "footerMeta": "courseId: {courseId} · moduleId: {moduleId}"
+    "footerMeta": "courseId: {courseId} · lessonId: {lessonId}"
   },
   "AdminDeviceViolations": {
     "titleSchool": "Попытки входа с лишнего устройства",
@@ -199,8 +199,8 @@
     "backToCourse": "← К курсу",
     "title": "Модули: {title}",
     "titleFallback": "Модули",
-    "lead": "Проверка домашних заданий и журнал по каждому модулю.",
-    "homeworkLink": "ДЗ и журнал →",
+    "lead": "Разделы курса: внутри — список уроков и проверка ДЗ по каждому уроку.",
+    "homeworkLink": "Уроки раздела →",
     "empty": "Модули не найдены."
   },
   "SchoolAdminCourseAccess": {

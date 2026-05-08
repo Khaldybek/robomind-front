@@ -175,8 +175,9 @@ export function parseModuleGradeOverview(raw: unknown): ModuleGradeOverview {
       if (row) rows.push(row);
     }
   }
+  const moduleRaw = root.module ?? root.lesson;
   return {
-    module: pickModule(root.module),
+    module: pickModule(moduleRaw),
     quiz: pickQuizMeta(root.quiz),
     rows,
   };

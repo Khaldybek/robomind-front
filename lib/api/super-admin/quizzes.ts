@@ -33,10 +33,12 @@ export type AdminQuizQuestion = {
   answers: AdminQuizAnswer[];
 };
 
-/** Полное дерево теста (GET …/quiz) */
+/** Полное дерево теста (GET …/lessons/:id/quiz) */
 export type AdminQuiz = {
   id: string;
-  moduleId: string;
+  lessonId: string;
+  /** @deprecated */
+  moduleId?: string;
   title: string;
   passingScore: number;
   maxAttempts: number | null;
@@ -78,9 +80,13 @@ function mapQuestion(raw: Record<string, unknown>): AdminQuizQuestion {
 
 function mapQuiz(raw: Record<string, unknown>): AdminQuiz {
   const questionsRaw = (raw.questions as unknown[]) ?? [];
+  const lid = String(
+    raw.lessonId ?? raw.lesson_id ?? raw.moduleId ?? raw.module_id ?? "",
+  );
   return {
     id: String(raw.id ?? ""),
-    moduleId: String(raw.moduleId ?? raw.module_id ?? ""),
+    lessonId: lid,
+    moduleId: lid,
     title: String(raw.title ?? ""),
     passingScore: num(raw.passingScore ?? raw.passing_score, 0),
     maxAttempts:
@@ -104,11 +110,11 @@ function mapQuiz(raw: Record<string, unknown>): AdminQuiz {
   };
 }
 
-/** `GET /admin/modules/:moduleId/quiz` — полное дерево или `null` */
-export async function getAdminModuleQuiz(
-  moduleId: string,
+/** `GET /admin/lessons/:lessonId/quiz` */
+export async function getAdminLessonQuiz(
+  lessonId: string,
 ): Promise<AdminQuiz | null> {
-  const res = await apiSuperAdminFetch(SUPER_ADMIN_ROUTES.MODULE_QUIZ(moduleId));
+  const res = await apiSuperAdminFetch(SUPER_ADMIN_ROUTES.LESSON_QUIZ(lessonId));
   if (res.status === 404) return null;
   await throwIfNotOk(res);
   const data = await parseJsonSafe<unknown>(res);
@@ -123,6 +129,9 @@ export async function getAdminModuleQuiz(
   );
 }
 
+/** @deprecated */
+export const getAdminModuleQuiz = getAdminLessonQuiz;
+
 export type CreateAdminQuizBody = {
   title: string;
   passingScore: number;
@@ -131,12 +140,12 @@ export type CreateAdminQuizBody = {
   shuffleQuestions?: boolean;
 };
 
-/** `POST /admin/modules/:moduleId/quiz` — один тест на модуль */
-export async function createAdminModuleQuiz(
-  moduleId: string,
+/** `POST /admin/lessons/:lessonId/quiz` */
+export async function createAdminLessonQuiz(
+  lessonId: string,
   body: CreateAdminQuizBody,
 ): Promise<AdminQuiz> {
-  const res = await apiSuperAdminFetch(SUPER_ADMIN_ROUTES.MODULE_QUIZ(moduleId), {
+  const res = await apiSuperAdminFetch(SUPER_ADMIN_ROUTES.LESSON_QUIZ(lessonId), {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -145,22 +154,27 @@ export async function createAdminModuleQuiz(
   return mapQuiz(d ?? {});
 }
 
+/** @deprecated */
+export const createAdminModuleQuiz = createAdminLessonQuiz;
+
 /**
- * `POST /admin/modules/:moduleId/quiz/import-generated` — импорт вопросов из ИИ
- * (тело по контракту бэка, обычно payload от `POST /admin/ai/quiz/generate`).
+ * `POST /admin/lessons/:lessonId/quiz/import-generated`
  */
-export async function importGeneratedModuleQuiz(
-  moduleId: string,
+export async function importGeneratedLessonQuiz(
+  lessonId: string,
   body: Record<string, unknown>,
 ): Promise<AdminQuiz> {
   const res = await apiSuperAdminFetch(
-    SUPER_ADMIN_ROUTES.MODULE_QUIZ_IMPORT_GENERATED(moduleId),
+    SUPER_ADMIN_ROUTES.LESSON_QUIZ_IMPORT_GENERATED(lessonId),
     { method: "POST", body: JSON.stringify(body) },
   );
   await throwIfNotOk(res);
   const d = await parseJsonSafe<Record<string, unknown>>(res);
   return mapQuiz(d ?? {});
 }
+
+/** @deprecated */
+export const importGeneratedModuleQuiz = importGeneratedLessonQuiz;
 
 export type PatchAdminQuizBody = Partial<{
   title: string;

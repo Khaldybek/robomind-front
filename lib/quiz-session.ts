@@ -16,6 +16,8 @@ export type QuizSubmitResultStored = {
 export type QuizReviewPayload = {
   quizId?: string;
   moduleId?: string;
+  /** Предпочтительный id урока (новый API). */
+  lessonId?: string;
   courseId?: string;
   result?: QuizSubmitResultStored | null;
   submittedAt?: string;

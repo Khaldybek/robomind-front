@@ -236,37 +236,67 @@ export type ProgressEntry = {
   id?: string;
   courseId?: string;
   courseTitle?: string | null;
+  lessonId?: string;
+  lessonTitle?: string | null;
+  /** @deprecated */
   moduleId?: string;
+  /** @deprecated */
   moduleTitle?: string | null;
   status?: "not_started" | "in_progress" | "completed";
   completedAt?: string | null;
   watchedSeconds?: number;
   updatedAt?: string;
 
-  // legacy/fallback fields (still used by some screens)
   courseName?: string;
   percent?: number;
   completedModules?: number;
   totalModules?: number;
+  completedLessons?: number;
+  totalLessons?: number;
   [key: string]: unknown;
 };
 
 function normalizeProgressEntry(raw: unknown): ProgressEntry {
   if (!raw || typeof raw !== "object") return {};
   const o = raw as Record<string, unknown>;
+  const lessonId =
+    (o.lessonId ?? o.lesson_id ?? o.moduleId ?? o.module_id) as
+      | string
+      | undefined;
+  const lessonTitle = (o.lessonTitle ??
+    o.lesson_title ??
+    o.moduleTitle ??
+    o.module_title ??
+    null) as string | null;
   return {
     ...o,
     id: (o.id as string | undefined) ?? undefined,
     courseId: (o.courseId ?? o.course_id) as string | undefined,
     courseTitle: (o.courseTitle ?? o.course_title ?? null) as string | null,
-    moduleId: (o.moduleId ?? o.module_id) as string | undefined,
-    moduleTitle: (o.moduleTitle ?? o.module_title ?? null) as string | null,
+    lessonId: lessonId != null ? String(lessonId) : undefined,
+    lessonTitle,
+    moduleId: lessonId != null ? String(lessonId) : undefined,
+    moduleTitle: lessonTitle,
     status: (o.status as ProgressEntry["status"]) ?? undefined,
     completedAt: (o.completedAt ?? o.completed_at ?? null) as string | null,
     watchedSeconds: Number(o.watchedSeconds ?? o.watched_seconds ?? 0),
     updatedAt: (o.updatedAt ?? o.updated_at) as string | undefined,
     courseName: (o.courseName ?? o.course_title) as string | undefined,
+    completedLessons: numOpt(o.completedLessons ?? o.completed_lessons),
+    totalLessons: numOpt(o.totalLessons ?? o.total_lessons),
+    completedModules: numOpt(
+      o.completedModules ?? o.completed_modules ?? o.completedLessons,
+    ),
+    totalModules: numOpt(
+      o.totalModules ?? o.total_modules ?? o.totalLessons,
+    ),
   };
+}
+
+function numOpt(v: unknown): number | undefined {
+  if (v == null) return undefined;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : undefined;
 }
 
 export async function fetchUserProgress(): Promise<ProgressEntry[]> {

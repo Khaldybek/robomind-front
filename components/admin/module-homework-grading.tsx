@@ -5,13 +5,13 @@ import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import {
   fetchSchoolHomeworkSubmissions,
-  fetchSchoolModuleGradeOverview,
+  fetchSchoolLessonGradeOverview,
   patchSchoolHomeworkSubmission,
   type HomeworkSubmissionRow,
 } from "@/lib/api/school-admin/homework";
 import {
   fetchSuperHomeworkSubmissions,
-  fetchSuperModuleGradeOverview,
+  fetchSuperLessonGradeOverview,
   patchSuperHomeworkSubmission,
 } from "@/lib/api/super-admin/homework";
 import {
@@ -241,13 +241,17 @@ function GradeOverviewJournal({
 
 export function AdminModuleHomeworkGrading({
   variant,
-  moduleId,
+  lessonId: lessonIdProp,
+  moduleId: moduleIdProp,
   courseId,
 }: {
   variant: "school" | "super";
-  moduleId: string;
+  lessonId?: string;
+  /** @deprecated */
+  moduleId?: string;
   courseId: string;
 }) {
+  const lessonId = lessonIdProp ?? moduleIdProp ?? "";
   const t = useTranslations("AdminModuleHomework");
   const tc = useTranslations("Common");
   const locale = useLocale();
@@ -273,7 +277,7 @@ export function AdminModuleHomeworkGrading({
   );
 
   const load = useCallback(() => {
-    if (!isApiConfigured() || !moduleId) return;
+    if (!isApiConfigured() || !lessonId) return;
     if (variant === "super" && !schoolId.trim()) {
       setRows([]);
       setOverview(null);
@@ -285,22 +289,22 @@ export function AdminModuleHomeworkGrading({
     const p = (async () => {
       if (variant === "school") {
         const [list, ov] = await Promise.all([
-          fetchSchoolHomeworkSubmissions(moduleId),
-          fetchSchoolModuleGradeOverview(moduleId),
+          fetchSchoolHomeworkSubmissions(lessonId),
+          fetchSchoolLessonGradeOverview(lessonId),
         ]);
         setRows(list);
         setOverview(ov);
       } else {
         const [list, ov] = await Promise.all([
-          fetchSuperHomeworkSubmissions(moduleId, schoolId.trim()),
-          fetchSuperModuleGradeOverview(moduleId, schoolId.trim()),
+          fetchSuperHomeworkSubmissions(lessonId, schoolId.trim()),
+          fetchSuperLessonGradeOverview(lessonId, schoolId.trim()),
         ]);
         setRows(list);
         setOverview(ov);
       }
     })();
     p.catch((e: Error) => setErr(e.message)).finally(() => setLoading(false));
-  }, [variant, moduleId, schoolId]);
+  }, [variant, lessonId, schoolId]);
 
   useEffect(() => {
     load();
@@ -515,7 +519,7 @@ export function AdminModuleHomeworkGrading({
       </section>
 
       <p className="font-mono text-[11px] text-ds-gray-text">
-        {t("footerMeta", { courseId, moduleId })}
+        {t("footerMeta", { courseId, lessonId })}
       </p>
     </div>
   );

@@ -7,14 +7,20 @@ function num(raw: unknown, d = 0): number {
 export function normalizeHomeworkSubmission(
   raw: Record<string, unknown>,
 ): Record<string, unknown> {
+  const lessonId =
+    raw.lessonId != null
+      ? String(raw.lessonId)
+      : raw.lesson_id != null
+        ? String(raw.lesson_id)
+        : raw.moduleId != null
+          ? String(raw.moduleId)
+          : raw.module_id != null
+            ? String(raw.module_id)
+            : undefined;
   const base: Record<string, unknown> = {
     id: String(raw.id ?? ""),
-    moduleId:
-      raw.moduleId != null
-        ? String(raw.moduleId)
-        : raw.module_id != null
-          ? String(raw.module_id)
-          : undefined,
+    lessonId,
+    moduleId: lessonId,
     fileUrl: String(raw.fileUrl ?? raw.file_url ?? ""),
     fileName:
       raw.fileName != null

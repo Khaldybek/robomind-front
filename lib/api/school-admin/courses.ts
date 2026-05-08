@@ -7,6 +7,7 @@ import { SCHOOL_ADMIN_ROUTES } from "@/lib/api/school-admin/routes";
 import type {
   AdminCourse,
   AdminCourseList,
+  AdminLessonRow,
   AdminModule,
   AdminModuleList,
   CourseLevel,
@@ -50,6 +51,18 @@ function mapCourse(raw: Record<string, unknown>): AdminCourse {
 }
 
 function mapModule(raw: Record<string, unknown>): AdminModule {
+  const unlockCourse =
+    raw.unlockAfterCourseModuleId != null
+      ? String(raw.unlockAfterCourseModuleId)
+      : raw.unlock_after_course_module_id != null
+        ? String(raw.unlock_after_course_module_id)
+        : null;
+  const unlockLegacy =
+    raw.unlockAfterModuleId != null
+      ? String(raw.unlockAfterModuleId)
+      : raw.unlock_after_module_id != null
+        ? String(raw.unlock_after_module_id)
+        : null;
   return {
     id: String(raw.id ?? ""),
     courseId: String(raw.courseId ?? raw.course_id ?? ""),
@@ -60,12 +73,7 @@ function mapModule(raw: Record<string, unknown>): AdminModule {
         : String(raw.description),
     order: num(raw.order, 0),
     isPublished: Boolean(raw.isPublished ?? raw.is_published),
-    unlockAfterModuleId:
-      raw.unlockAfterModuleId != null
-        ? String(raw.unlockAfterModuleId)
-        : raw.unlock_after_module_id != null
-          ? String(raw.unlock_after_module_id)
-          : null,
+    unlockAfterCourseModuleId: unlockCourse ?? unlockLegacy,
     createdAt: String(raw.createdAt ?? raw.created_at ?? ""),
     updatedAt: String(raw.updatedAt ?? raw.updated_at ?? ""),
     contentCount: num(raw.contentCount ?? raw.content_count, 0),
@@ -77,6 +85,52 @@ function mapModule(raw: Record<string, unknown>): AdminModule {
         : raw.quiz_id != null
           ? String(raw.quiz_id)
           : null,
+  };
+}
+
+function mapLessonRow(raw: Record<string, unknown>): AdminLessonRow {
+  return {
+    id: String(raw.id ?? ""),
+    title: String(raw.title ?? ""),
+    description:
+      raw.description === null || raw.description === undefined
+        ? null
+        : String(raw.description),
+    order: num(raw.order, 0),
+    unlockAfterLessonId:
+      raw.unlockAfterLessonId != null
+        ? String(raw.unlockAfterLessonId)
+        : raw.unlock_after_lesson_id != null
+          ? String(raw.unlock_after_lesson_id)
+          : null,
+    isPublished: Boolean(raw.isPublished ?? raw.is_published),
+    createdAt: String(raw.createdAt ?? raw.created_at ?? ""),
+    updatedAt: String(raw.updatedAt ?? raw.updated_at ?? ""),
+  };
+}
+
+/** `GET /admin/lessons?courseModuleId=` — уроки раздела курса */
+export async function listSchoolAdminLessons(params: {
+  courseModuleId: string;
+  page?: number;
+  limit?: number;
+}): Promise<{ items: AdminLessonRow[]; total: number }> {
+  const u = new URLSearchParams({
+    courseModuleId: params.courseModuleId,
+  });
+  if (params.page != null) u.set("page", String(params.page));
+  if (params.limit != null) u.set("limit", String(params.limit));
+  const res = await apiSchoolAdminFetch(`${SCHOOL_ADMIN_ROUTES.LESSONS}?${u}`);
+  await throwIfNotOk(res);
+  const data = (await parseJsonSafe<Record<string, unknown>>(res)) ?? {};
+  const itemsRaw = (data.items as unknown[]) ?? [];
+  return {
+    items: itemsRaw.map((x) =>
+      mapLessonRow(
+        typeof x === "object" && x !== null ? (x as Record<string, unknown>) : {},
+      ),
+    ),
+    total: num(data.total, itemsRaw.length),
   };
 }
 

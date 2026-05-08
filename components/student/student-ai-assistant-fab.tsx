@@ -13,9 +13,9 @@ function parseCourseId(pathname: string | null): string | null {
   return m ? decodeURIComponent(m[1]) : null;
 }
 
-function parseModuleId(pathname: string | null): string | null {
+function parseLessonId(pathname: string | null): string | null {
   if (!pathname) return null;
-  const m = pathname.match(/\/courses\/[^/]+\/modules\/([^/]+)/);
+  const m = pathname.match(/\/courses\/[^/]+\/lessons\/([^/]+)/);
   return m ? decodeURIComponent(m[1]) : null;
 }
 
@@ -28,7 +28,7 @@ export function StudentAiAssistantFab() {
   const [open, setOpen] = useState(false);
 
   const courseId = useMemo(() => parseCourseId(pathname), [pathname]);
-  const moduleId = useMemo(() => parseModuleId(pathname), [pathname]);
+  const lessonId = useMemo(() => parseLessonId(pathname), [pathname]);
 
   const isFullChatPage = useMemo(
     () => Boolean(pathname && /\/courses\/[^/]+\/chat$/.test(pathname)),
@@ -36,9 +36,9 @@ export function StudentAiAssistantFab() {
   );
 
   const chat = useStudentAiChat({
-    moduleId: moduleId ?? undefined,
+    lessonId: lessonId ?? undefined,
     courseId,
-    mode: courseId != null ? "course" : "module",
+    mode: lessonId ? "module" : courseId != null ? "course" : "module",
     language: aiLang,
   });
 
@@ -54,7 +54,7 @@ export function StudentAiAssistantFab() {
   const fullChatHref =
     courseId != null
       ? `/courses/${encodeURIComponent(courseId)}/chat` +
-        (moduleId ? `?moduleId=${encodeURIComponent(moduleId)}` : "")
+        (lessonId ? `?lessonId=${encodeURIComponent(lessonId)}` : "")
       : null;
 
   if (isFullChatPage) return null;
@@ -98,7 +98,7 @@ export function StudentAiAssistantFab() {
                   </p>
                   {courseId ? (
                     <p className="mt-2 inline-flex items-center rounded-full bg-ds-primary/10 px-2.5 py-1 text-xs font-medium text-ds-primary">
-                      {moduleId
+                      {lessonId
                         ? t("courseWideContext")
                         : t("courseContext")}
                     </p>

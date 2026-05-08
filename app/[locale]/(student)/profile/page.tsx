@@ -248,7 +248,7 @@ export default function ProfilePage() {
                     <div className="flex min-w-0 flex-1 gap-5">
                       <div className="shrink-0">
                         <div className="relative h-24 w-24 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200/80 sm:h-28 sm:w-28">
-                          <input
+            <input
                             ref={avatarFileRef}
                             type="file"
                             className="sr-only"
@@ -293,16 +293,16 @@ export default function ProfilePage() {
                           <dd className="mt-0.5 font-medium text-slate-900">
                             {displayName(profile) || t("notSpecified")}
                           </dd>
-                        </div>
-                        <div>
+          </div>
+          <div>
                           <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                             {t("schoolLabel")}
                           </dt>
                           <dd className="mt-0.5 text-slate-800">
                             {schoolLine(profile) || t("notSpecified")}
                           </dd>
-                        </div>
-                        <div>
+          </div>
+          <div>
                           <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                             {t("classLabel")}
                           </dt>
@@ -356,8 +356,8 @@ export default function ProfilePage() {
                         send={profileChat.send}
                         pending={profileChat.pending}
                         error={profileChat.error}
-                      />
-                    </div>
+            />
+          </div>
                   </div>
                 </article>
 

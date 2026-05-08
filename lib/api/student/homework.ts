@@ -4,6 +4,8 @@ import { STUDENT_ROUTES } from "@/lib/api/routes";
 
 export type ModuleHomeworkSubmission = {
   id: string;
+  lessonId?: string;
+  /** @deprecated */
   moduleId?: string;
   fileUrl: string;
   fileName?: string;
@@ -21,7 +23,6 @@ export type ModuleHomeworkSubmission = {
 
 export type ModuleHomeworkGetResponse = {
   submission: ModuleHomeworkSubmission | null;
-  /** false — GET /homework вернул 404 */
   homeworkAvailable: boolean;
 };
 
@@ -50,11 +51,11 @@ function parseHomeworkGet(
   return { submission: null, homeworkAvailable };
 }
 
-/** GET /app/modules/:moduleId/homework — `{ submission: null }` или объект сдачи */
-export async function fetchModuleHomework(
-  moduleId: string,
+/** GET /app/lessons/:lessonId/homework */
+export async function fetchLessonHomework(
+  lessonId: string,
 ): Promise<ModuleHomeworkGetResponse> {
-  const res = await apiFetch(STUDENT_ROUTES.MODULE_HOMEWORK(moduleId));
+  const res = await apiFetch(STUDENT_ROUTES.LESSON_HOMEWORK(lessonId));
   if (res.status === 404) {
     return { submission: null, homeworkAvailable: false };
   }
@@ -63,12 +64,14 @@ export async function fetchModuleHomework(
   return parseHomeworkGet(json, true);
 }
 
+/** @deprecated */
+export const fetchModuleHomework = fetchLessonHomework;
+
 /**
- * POST /app/modules/:moduleId/homework — multipart: `file`, опционально `comment`.
- * Повторная загрузка обновляет файл и сбрасывает оценку на бэке.
+ * POST /app/lessons/:lessonId/homework — multipart: `file`, опционально `comment`.
  */
-export async function postModuleHomework(
-  moduleId: string,
+export async function postLessonHomework(
+  lessonId: string,
   file: File,
   comment?: string,
 ): Promise<ModuleHomeworkGetResponse> {
@@ -77,7 +80,7 @@ export async function postModuleHomework(
   if (comment != null && comment.trim() !== "") {
     body.append("comment", comment.trim());
   }
-  const res = await apiFetch(STUDENT_ROUTES.MODULE_HOMEWORK(moduleId), {
+  const res = await apiFetch(STUDENT_ROUTES.LESSON_HOMEWORK(lessonId), {
     method: "POST",
     body,
   });
@@ -85,3 +88,6 @@ export async function postModuleHomework(
   const json = await parseJsonSafe<unknown>(res);
   return parseHomeworkGet(json, true);
 }
+
+/** @deprecated */
+export const postModuleHomework = postLessonHomework;

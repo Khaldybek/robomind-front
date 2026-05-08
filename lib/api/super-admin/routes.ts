@@ -1,7 +1,5 @@
 export const SUPER_ADMIN_ROUTES = {
-  /** Агрегированная статистика */
   STATS_SUMMARY: "/admin/stats/summary",
-  /** Сертификаты (платформа): список / создание */
   CERTIFICATES: "/admin/certificates",
   CERTIFICATE: (id: string) =>
     `/admin/certificates/${encodeURIComponent(id)}`,
@@ -12,7 +10,6 @@ export const SUPER_ADMIN_ROUTES = {
   DISTRICT: (id: string) => `/admin/districts/${encodeURIComponent(id)}`,
   SCHOOLS: "/admin/schools",
   SCHOOL: (id: string) => `/admin/schools/${encodeURIComponent(id)}`,
-  /** GET — список админов школы: query `page`, `limit`, `search`, `isActive` (без schoolId в query) */
   SCHOOL_ADMINS_BY_SCHOOL: (schoolId: string) =>
     `/admin/schools/${encodeURIComponent(schoolId)}/admins`,
 
@@ -21,7 +18,6 @@ export const SUPER_ADMIN_ROUTES = {
     `/admin/school-admins/${encodeURIComponent(id)}`,
 
   USERS: "/admin/users",
-  /** school_admin | super_admin — текущий пользователь (профиль без пароля) */
   ME: "/admin/me",
   USER: (id: string) => `/admin/users/${encodeURIComponent(id)}`,
   USER_ACTIVATE: (id: string) =>
@@ -40,10 +36,8 @@ export const SUPER_ADMIN_ROUTES = {
     `/admin/courses/${encodeURIComponent(courseId)}`,
   COURSE_MODULES: (courseId: string) =>
     `/admin/courses/${encodeURIComponent(courseId)}/modules`,
-  /** GET — список выданных доступов к курсу */
   COURSE_ACCESSES: (courseId: string) =>
     `/admin/courses/${encodeURIComponent(courseId)}/accesses`,
-  /** POST — выдать доступ */
   COURSE_ACCESS: (courseId: string) =>
     `/admin/courses/${encodeURIComponent(courseId)}/access`,
   COURSE_ACCESS_BULK: (courseId: string) =>
@@ -53,32 +47,32 @@ export const SUPER_ADMIN_ROUTES = {
   COURSE_STUDENTS: (courseId: string) =>
     `/admin/courses/${encodeURIComponent(courseId)}/students`,
 
-  MODULES: "/admin/modules",
-  MODULE: (moduleId: string) =>
-    `/admin/modules/${encodeURIComponent(moduleId)}`,
-  MODULE_CONTENTS: (moduleId: string) =>
-    `/admin/modules/${encodeURIComponent(moduleId)}/contents`,
-  /** POST — то же, что MODULE_CONTENTS */
-  MODULE_CONTENT: (moduleId: string) =>
-    `/admin/modules/${encodeURIComponent(moduleId)}/content`,
-  MODULE_CONTENT_ITEM: (moduleId: string, contentId: string) =>
-    `/admin/modules/${encodeURIComponent(moduleId)}/contents/${encodeURIComponent(contentId)}`,
-  /** multipart: file + type (image|video|file) */
-  MODULE_CONTENT_FROM_FILE: (moduleId: string) =>
-    `/admin/modules/${encodeURIComponent(moduleId)}/contents/from-file`,
+  /** Секция курса (модуль курса) */
+  COURSE_MODULE: (courseModuleId: string) =>
+    `/admin/course-modules/${encodeURIComponent(courseModuleId)}`,
 
-  MODULE_QUIZ: (moduleId: string) =>
-    `/admin/modules/${encodeURIComponent(moduleId)}/quiz`,
-  /** GET — журнал оценок по модулю (обязателен query schoolId для super_admin) */
-  MODULE_GRADE_OVERVIEW: (moduleId: string) =>
-    `/admin/modules/${encodeURIComponent(moduleId)}/grade-overview`,
+  LESSONS: "/admin/lessons",
+  LESSON: (lessonId: string) =>
+    `/admin/lessons/${encodeURIComponent(lessonId)}`,
+  LESSON_CONTENTS: (lessonId: string) =>
+    `/admin/lessons/${encodeURIComponent(lessonId)}/contents`,
+  LESSON_CONTENT: (lessonId: string) =>
+    `/admin/lessons/${encodeURIComponent(lessonId)}/content`,
+  LESSON_CONTENT_ITEM: (lessonId: string, contentId: string) =>
+    `/admin/lessons/${encodeURIComponent(lessonId)}/contents/${encodeURIComponent(contentId)}`,
+  LESSON_CONTENT_FROM_FILE: (lessonId: string) =>
+    `/admin/lessons/${encodeURIComponent(lessonId)}/contents/from-file`,
+  LESSON_QUIZ: (lessonId: string) =>
+    `/admin/lessons/${encodeURIComponent(lessonId)}/quiz`,
+  LESSON_GRADE_OVERVIEW: (lessonId: string) =>
+    `/admin/lessons/${encodeURIComponent(lessonId)}/grade-overview`,
+  LESSON_QUIZ_IMPORT_GENERATED: (lessonId: string) =>
+    `/admin/lessons/${encodeURIComponent(lessonId)}/quiz/import-generated`,
 
   HOMEWORK_SUBMISSIONS: "/admin/homework-submissions",
   HOMEWORK_SUBMISSION: (submissionId: string) =>
     `/admin/homework-submissions/${encodeURIComponent(submissionId)}`,
-  /** POST — импорт вопросов из ИИ в тест модуля */
-  MODULE_QUIZ_IMPORT_GENERATED: (moduleId: string) =>
-    `/admin/modules/${encodeURIComponent(moduleId)}/quiz/import-generated`,
+
   QUIZ: (quizId: string) =>
     `/admin/quizzes/${encodeURIComponent(quizId)}`,
   QUIZ_QUESTIONS: (quizId: string) =>

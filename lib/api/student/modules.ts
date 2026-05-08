@@ -1,19 +1,54 @@
 import { apiFetch, parseJsonSafe, throwIfNotOk } from "@/lib/api/client";
 import { STUDENT_ROUTES } from "@/lib/api/routes";
-import type { CourseModuleSummary } from "@/lib/api/types";
+import type {
+  CourseLessonSummary,
+  CourseModuleSummary,
+} from "@/lib/api/types";
 
 export function normalizeModuleList(raw: unknown): CourseModuleSummary[] {
   if (!Array.isArray(raw)) return [];
   return raw.map((x) => {
     if (x && typeof x === "object" && "id" in x) {
-      return x as CourseModuleSummary;
+      const o = x as Record<string, unknown>;
+      return {
+        ...o,
+        id: String(o.id),
+        unlockAfterCourseModuleId:
+          o.unlockAfterCourseModuleId != null
+            ? String(o.unlockAfterCourseModuleId)
+            : o.unlock_after_course_module_id != null
+              ? String(o.unlock_after_course_module_id)
+              : (o as CourseModuleSummary).unlockAfterCourseModuleId ?? null,
+      } as CourseModuleSummary;
     }
     return { id: String(x) } as CourseModuleSummary;
   });
 }
 
+function normalizeLessonList(raw: unknown): CourseLessonSummary[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((x) => {
+    if (x && typeof x === "object" && "id" in x) {
+      const o = x as Record<string, unknown>;
+      return {
+        ...o,
+        id: String(o.id),
+        unlockAfterLessonId:
+          o.unlockAfterLessonId != null
+            ? String(o.unlockAfterLessonId)
+            : o.unlock_after_lesson_id != null
+              ? String(o.unlock_after_lesson_id)
+              : null,
+      } as CourseLessonSummary;
+    }
+    return { id: String(x) } as CourseLessonSummary;
+  });
+}
+
 export type ModuleContentItem = {
   id: string;
+  lessonId?: string;
+  /** @deprecated ответ бэка мог содержать moduleId — трактуем как lessonId */
   moduleId?: string;
   type?: "video" | "file" | "text" | "livestream" | "link" | string;
   title?: string;
@@ -23,8 +58,22 @@ export type ModuleContentItem = {
   order?: number;
   livestreamUrl?: string;
   livestreamStartsAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
   [key: string]: unknown;
 };
+
+function normalizeContentItems(items: ModuleContentItem[]): ModuleContentItem[] {
+  return items.map((item) => {
+    const o = item as Record<string, unknown>;
+    const lid =
+      item.lessonId ??
+      item.moduleId ??
+      (o.lesson_id != null ? String(o.lesson_id) : undefined) ??
+      (o.module_id != null ? String(o.module_id) : undefined);
+    return { ...item, lessonId: lid, moduleId: lid };
+  });
+}
 
 export type ModuleQuizQuestionAnswer = {
   id: string;
@@ -46,6 +95,8 @@ export type ModuleQuizQuestion = {
 
 export type ModuleQuizResponse = {
   id: string;
+  lessonId?: string;
+  /** @deprecated */
   moduleId?: string;
   title?: string;
   passingScore?: number;
@@ -79,7 +130,7 @@ export type QuizSubmitResponse = {
   [key: string]: unknown;
 };
 
-/** GET /app/courses/:courseId/modules */
+/** GET /app/courses/:courseId/modules — секции */
 export async function fetchCourseModules(
   courseId: string,
 ): Promise<CourseModuleSummary[]> {
@@ -114,53 +165,96 @@ export async function fetchCourseModules(
   return [];
 }
 
-/** GET /app/modules/:moduleId/content */
-export async function fetchModuleContent(
-  moduleId: string,
-): Promise<ModuleContentItem[]> {
-  const res = await apiFetch(STUDENT_ROUTES.MODULE_CONTENT(moduleId));
+/** GET /app/course-modules/:courseModuleId/lessons */
+export async function fetchCourseModuleLessons(
+  courseModuleId: string,
+): Promise<CourseLessonSummary[]> {
+  const res = await apiFetch(
+    STUDENT_ROUTES.COURSE_MODULE_LESSONS(courseModuleId),
+  );
   await throwIfNotOk(res);
   const data = await parseJsonSafe<unknown>(res);
-  if (Array.isArray(data)) return data as ModuleContentItem[];
   if (
     data &&
     typeof data === "object" &&
-    "items" in data &&
-    Array.isArray((data as { items: unknown }).items)
+    "lessons" in data &&
+    Array.isArray((data as { lessons: unknown }).lessons)
   ) {
-    return (data as { items: ModuleContentItem[] }).items;
+    return normalizeLessonList((data as { lessons: unknown }).lessons);
   }
+  if (Array.isArray(data)) return normalizeLessonList(data);
   if (
     data &&
     typeof data === "object" &&
     "data" in data &&
     Array.isArray((data as { data: unknown }).data)
   ) {
-    return (data as { data: ModuleContentItem[] }).data;
+    return normalizeLessonList((data as { data: unknown }).data);
   }
   return [];
 }
 
-/** GET /app/modules/:moduleId/quiz — `null`, если теста нет (**404**). */
-export async function fetchModuleQuiz(
-  moduleId: string,
+/** GET /app/lessons/:lessonId/content */
+export async function fetchLessonContent(
+  lessonId: string,
+): Promise<ModuleContentItem[]> {
+  const res = await apiFetch(STUDENT_ROUTES.LESSON_CONTENT(lessonId));
+  await throwIfNotOk(res);
+  const data = await parseJsonSafe<unknown>(res);
+  let arr: ModuleContentItem[] = [];
+  if (Array.isArray(data)) arr = data as ModuleContentItem[];
+  else if (
+    data &&
+    typeof data === "object" &&
+    "items" in data &&
+    Array.isArray((data as { items: unknown }).items)
+  ) {
+    arr = (data as { items: ModuleContentItem[] }).items;
+  } else if (
+    data &&
+    typeof data === "object" &&
+    "data" in data &&
+    Array.isArray((data as { data: unknown }).data)
+  ) {
+    arr = (data as { data: ModuleContentItem[] }).data;
+  }
+  return normalizeContentItems(arr);
+}
+
+/** @deprecated используйте fetchLessonContent */
+export const fetchModuleContent = fetchLessonContent;
+
+/** GET /app/lessons/:lessonId/quiz */
+export async function fetchLessonQuiz(
+  lessonId: string,
 ): Promise<ModuleQuizResponse | null> {
-  const res = await apiFetch(STUDENT_ROUTES.MODULE_QUIZ(moduleId));
+  const res = await apiFetch(STUDENT_ROUTES.LESSON_QUIZ(lessonId));
   if (res.status === 404) return null;
   await throwIfNotOk(res);
   const data = await parseJsonSafe<unknown>(res);
+  let q: ModuleQuizResponse | null = null;
   if (data && typeof data === "object") {
-    if ("id" in data) return data as ModuleQuizResponse;
-    if (
+    if ("id" in data) q = data as ModuleQuizResponse;
+    else if (
       "data" in data &&
       (data as { data?: unknown }).data &&
       typeof (data as { data?: unknown }).data === "object"
     ) {
-      return (data as { data: ModuleQuizResponse }).data;
+      q = (data as { data: ModuleQuizResponse }).data;
     }
   }
-  return null;
+  if (!q) return null;
+  const lid =
+    q.lessonId ??
+    q.moduleId ??
+    (q as Record<string, unknown>).lesson_id ??
+    (q as Record<string, unknown>).module_id;
+  const lesson = lid != null ? String(lid) : lessonId;
+  return { ...q, lessonId: lesson };
 }
+
+/** @deprecated используйте fetchLessonQuiz */
+export const fetchModuleQuiz = fetchLessonQuiz;
 
 function parseAttemptId(raw: unknown): string {
   if (!raw || typeof raw !== "object") {
@@ -178,7 +272,7 @@ function parseAttemptId(raw: unknown): string {
   throw new Error("В ответе нет id попытки (attempt)");
 }
 
-/** POST /app/quizzes/:quizId/attempt — начать / возобновить попытку */
+/** POST /app/quizzes/:quizId/attempt */
 export async function postQuizAttempt(
   quizId: string,
 ): Promise<QuizAttemptResponse> {
@@ -201,7 +295,6 @@ export async function postQuizAttempt(
   };
 }
 
-/** Тело сдачи: только `answers` — map `questionId` → uuid | uuid[] | string (как на бэке). */
 export type SubmitQuizAttemptBody = {
   answers: Record<string, string | string[] | unknown>;
 };
@@ -219,21 +312,27 @@ export async function submitQuizAttempt(
   return parseJsonSafe<QuizSubmitResponse>(res);
 }
 
-export type PatchModuleProgressBody = {
+export type PatchLessonProgressBody = {
   watchedSeconds?: number;
   status?: string;
   completed?: boolean;
 } & Record<string, unknown>;
 
-/** PATCH /app/modules/:moduleId/progress */
-export async function patchModuleProgress(
-  moduleId: string,
-  body: PatchModuleProgressBody,
+/** @deprecated */
+export type PatchModuleProgressBody = PatchLessonProgressBody;
+
+/** PATCH /app/lessons/:lessonId/progress */
+export async function patchLessonProgress(
+  lessonId: string,
+  body: PatchLessonProgressBody,
 ): Promise<unknown> {
-  const res = await apiFetch(STUDENT_ROUTES.MODULE_PROGRESS(moduleId), {
+  const res = await apiFetch(STUDENT_ROUTES.LESSON_PROGRESS(lessonId), {
     method: "PATCH",
     body: JSON.stringify(body),
   });
   await throwIfNotOk(res);
   return parseJsonSafe(res);
 }
+
+/** @deprecated используйте patchLessonProgress */
+export const patchModuleProgress = patchLessonProgress;

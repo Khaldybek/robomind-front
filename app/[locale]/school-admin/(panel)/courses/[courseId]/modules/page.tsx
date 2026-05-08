@@ -64,7 +64,7 @@ export default function SchoolAdminCourseModulesPage() {
         {modules.map((m) => (
           <li key={m.id}>
             <Link
-              href={`/school-admin/courses/${encodeURIComponent(courseId)}/modules/${encodeURIComponent(m.id)}/homework`}
+              href={`/school-admin/courses/${encodeURIComponent(courseId)}/sections/${encodeURIComponent(m.id)}`}
               className="flex flex-wrap items-center justify-between gap-2 rounded-ds-card border border-ds-gray-border bg-ds-white px-4 py-3 hover:border-ds-primary"
             >
               <span className="font-medium text-ds-black">

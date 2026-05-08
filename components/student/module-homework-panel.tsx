@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ClipboardList, Upload, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import {
-  fetchModuleHomework,
-  postModuleHomework,
+  fetchLessonHomework,
+  postLessonHomework,
   type ModuleHomeworkGetResponse,
   type ModuleHomeworkSubmission,
 } from "@/lib/api/student/homework";
@@ -26,15 +26,18 @@ function formatSize(
 }
 
 type ModuleHomeworkPanelProps = {
-  moduleId: string;
-  /** Внутри модалки: без своего заголовка и без внешней «карточки» */
+  lessonId?: string;
+  /** @deprecated */
+  moduleId?: string;
   embeddedInModal?: boolean;
 };
 
 export function ModuleHomeworkPanel({
-  moduleId,
+  lessonId: lessonIdProp,
+  moduleId: moduleIdProp,
   embeddedInModal = false,
 }: ModuleHomeworkPanelProps) {
+  const lessonId = lessonIdProp ?? moduleIdProp ?? "";
   const t = useTranslations("StudentHomework");
   const locale = useLocale();
   const [submission, setSubmission] = useState<ModuleHomeworkSubmission | null>(
@@ -48,20 +51,20 @@ export function ModuleHomeworkPanel({
   const [sending, setSending] = useState(false);
 
   const load = useCallback(() => {
-    if (!isApiConfigured() || !moduleId) {
+    if (!isApiConfigured() || !lessonId) {
       setLoading(false);
       return;
     }
     setLoading(true);
     setError(null);
-    fetchModuleHomework(moduleId)
+    fetchLessonHomework(lessonId)
       .then((r) => {
         setSubmission(r.submission);
         setAvailable(r.homeworkAvailable);
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [moduleId]);
+  }, [lessonId]);
 
   useEffect(() => {
     load();
@@ -76,7 +79,7 @@ export function ModuleHomeworkPanel({
     setSending(true);
     setError(null);
     try {
-      const r = await postModuleHomework(moduleId, file, comment);
+      const r = await postLessonHomework(lessonId, file, comment);
       setSubmission(r.submission);
       setAvailable(true);
       setFile(null);
@@ -265,7 +268,14 @@ export function ModuleHomeworkPanel({
 }
 
 /** Карточка на странице урока + модальное окно с полной формой домашки */
-export function ModuleHomeworkLessonBlock({ moduleId }: { moduleId: string }) {
+export function ModuleHomeworkLessonBlock({
+  lessonId: lidProp,
+  moduleId: midProp,
+}: {
+  lessonId?: string;
+  moduleId?: string;
+}) {
+  const lessonId = lidProp ?? midProp ?? "";
   const t = useTranslations("StudentHomework");
   const tc = useTranslations("Common");
   const [open, setOpen] = useState(false);
@@ -274,18 +284,18 @@ export function ModuleHomeworkLessonBlock({ moduleId }: { moduleId: string }) {
   const prevOpen = useRef(open);
 
   useEffect(() => {
-    if (!isApiConfigured() || !moduleId) {
+    if (!isApiConfigured() || !lessonId) {
       setLoading(false);
       return;
     }
     setLoading(true);
-    fetchModuleHomework(moduleId)
+    fetchLessonHomework(lessonId)
       .then(setMeta)
       .catch(() =>
         setMeta({ submission: null, homeworkAvailable: false }),
       )
       .finally(() => setLoading(false));
-  }, [moduleId]);
+  }, [lessonId]);
 
   useEffect(() => {
     if (!open) return;
@@ -297,11 +307,11 @@ export function ModuleHomeworkLessonBlock({ moduleId }: { moduleId: string }) {
   }, [open]);
 
   useEffect(() => {
-    if (prevOpen.current && !open && moduleId && isApiConfigured()) {
-      fetchModuleHomework(moduleId).then(setMeta).catch(() => {});
+    if (prevOpen.current && !open && lessonId && isApiConfigured()) {
+      fetchLessonHomework(lessonId).then(setMeta).catch(() => {});
     }
     prevOpen.current = open;
-  }, [open, moduleId]);
+  }, [open, lessonId]);
 
   if (loading) {
     return (
@@ -394,7 +404,7 @@ export function ModuleHomeworkLessonBlock({ moduleId }: { moduleId: string }) {
               </button>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-5 sm:py-5">
-              <ModuleHomeworkPanel moduleId={moduleId} embeddedInModal />
+              <ModuleHomeworkPanel lessonId={lessonId} embeddedInModal />
             </div>
           </div>
         </div>

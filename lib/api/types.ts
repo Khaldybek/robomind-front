@@ -43,12 +43,28 @@ export type StudentProfile = {
   [key: string]: unknown;
 };
 
-/** Элемент списка модулей курса — поля уточнить по ответу бэка */
+/** Секция курса (модуль курса), не урок */
 export type CourseModuleSummary = {
   id: string;
   title?: string;
   name?: string;
+  description?: string | null;
   order?: number;
+  unlockAfterCourseModuleId?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+};
+
+/** Урок внутри секции */
+export type CourseLessonSummary = {
+  id: string;
+  title?: string;
+  description?: string | null;
+  order?: number;
+  unlockAfterLessonId?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
   [key: string]: unknown;
 };
 

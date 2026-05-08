@@ -34,14 +34,15 @@ function extractReply(res: AiChatResponse | null): string {
 export type StudentAiChatMessage = { role: string; text: string };
 
 export function useStudentAiChat(opts: {
+  lessonId?: string;
+  /** @deprecated */
   moduleId?: string;
   courseId?: string | null;
-  /** `profile` — `/app/ai/chat-profile`; `course` — `/app/ai/chat-course`; иначе `/app/ai/chat` */
   mode?: "module" | "profile" | "course";
-  /** Для `profile` и `course` — подсказка языка ответа (`ru` | `kk`) */
   language?: "ru" | "kk";
 }) {
-  const { moduleId, courseId, mode = "module", language } = opts;
+  const lessonRef = opts.lessonId ?? opts.moduleId;
+  const { courseId, mode = "module", language } = opts;
   const t = useTranslations("StudentAiChat");
   const [messages, setMessages] = useState<StudentAiChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -52,7 +53,7 @@ export function useStudentAiChat(opts: {
     setMessages([]);
     setError(null);
     setInput("");
-  }, [moduleId, courseId, mode]);
+  }, [lessonRef, courseId, mode]);
 
   const send = useCallback(async () => {
     const text = input.trim();
@@ -90,7 +91,7 @@ export function useStudentAiChat(opts: {
       } else {
         res = await postAiChat({
           messages: transcript,
-          moduleId,
+          lessonId: lessonRef,
           ...(courseId ? { courseId } : {}),
         });
       }
@@ -102,7 +103,7 @@ export function useStudentAiChat(opts: {
     } finally {
       setPending(false);
     }
-  }, [messages, input, moduleId, courseId, mode, language, t]);
+  }, [messages, input, lessonRef, courseId, mode, language, t]);
 
   return {
     messages,

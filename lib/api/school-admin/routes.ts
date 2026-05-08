@@ -44,13 +44,15 @@ export const SCHOOL_ADMIN_ROUTES = {
   COURSE_STUDENTS: (courseId: string) =>
     `/admin/courses/${encodeURIComponent(courseId)}/students`,
 
-  /** GET ?moduleId= — сдачи ДЗ по модулю (school_admin; super_admin + schoolId) */
+  /** GET ?courseModuleId= — уроки секции (роль school_admin при наличии доступа) */
+  LESSONS: "/admin/lessons",
+
+  /** GET ?lessonId= — сдачи ДЗ по уроку */
   HOMEWORK_SUBMISSIONS: "/admin/homework-submissions",
   HOMEWORK_SUBMISSION: (submissionId: string) =>
     `/admin/homework-submissions/${encodeURIComponent(submissionId)}`,
-  /** GET — журнал: тест + ДЗ по ученикам школы */
-  MODULE_GRADE_OVERVIEW: (moduleId: string) =>
-    `/admin/modules/${encodeURIComponent(moduleId)}/grade-overview`,
+  LESSON_GRADE_OVERVIEW: (lessonId: string) =>
+    `/admin/lessons/${encodeURIComponent(lessonId)}/grade-overview`,
 
   DEVICE_VIOLATIONS: "/admin/device-violations",
   NOTIFICATIONS: "/admin/notifications",

@@ -47,7 +47,7 @@
     "hwOpen": "Ашу",
     "hwPending": "Тексеруде",
     "noJournalRows": "Журналда жол жоқ.",
-    "footerMeta": "courseId: {courseId} · moduleId: {moduleId}"
+    "footerMeta": "courseId: {courseId} · lessonId: {lessonId}"
   },
   "AdminDeviceViolations": {
     "titleSchool": "Қосымша құрылғыдан кіру әрекеттері",
@@ -199,8 +199,8 @@
     "backToCourse": "← Курсқа",
     "title": "Модульдер: {title}",
     "titleFallback": "Модульдер",
-    "lead": "Әр модуль бойынша үй тапсырмаларын тексеру және журнал.",
-    "homeworkLink": "ҮТ және журнал →",
+    "lead": "Курс бөлімдері: ішінде сабақтар тізімі және әр сабақ бойынша ҮТ тексеруі.",
+    "homeworkLink": "Бөлім сабақтары →",
     "empty": "Модульдер табылмады."
   },
   "SchoolAdminCourseAccess": {

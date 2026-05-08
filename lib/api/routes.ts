@@ -28,19 +28,20 @@ export const STUDENT_ROUTES = {
   COURSES: "/app/courses",
   COURSE_BY_ID: (courseId: string) =>
     `/app/courses/${encodeURIComponent(courseId)}`,
+  /** Секции курса: в ответе поле `modules` — секции, не уроки */
   COURSE_MODULES: (courseId: string) =>
     `/app/courses/${encodeURIComponent(courseId)}/modules`,
-  /** Контент модуля (урок) */
-  MODULE_CONTENT: (moduleId: string) =>
-    `/app/modules/${encodeURIComponent(moduleId)}/content`,
-  /** Тест модуля (без `isCorrect` у ответов) */
-  MODULE_QUIZ: (moduleId: string) =>
-    `/app/modules/${encodeURIComponent(moduleId)}/quiz`,
-  MODULE_PROGRESS: (moduleId: string) =>
-    `/app/modules/${encodeURIComponent(moduleId)}/progress`,
-  /** Домашнее задание: GET статус / POST multipart (file, comment?) */
-  MODULE_HOMEWORK: (moduleId: string) =>
-    `/app/modules/${encodeURIComponent(moduleId)}/homework`,
+  /** Уроки внутри секции */
+  COURSE_MODULE_LESSONS: (courseModuleId: string) =>
+    `/app/course-modules/${encodeURIComponent(courseModuleId)}/lessons`,
+  LESSON_CONTENT: (lessonId: string) =>
+    `/app/lessons/${encodeURIComponent(lessonId)}/content`,
+  LESSON_QUIZ: (lessonId: string) =>
+    `/app/lessons/${encodeURIComponent(lessonId)}/quiz`,
+  LESSON_PROGRESS: (lessonId: string) =>
+    `/app/lessons/${encodeURIComponent(lessonId)}/progress`,
+  LESSON_HOMEWORK: (lessonId: string) =>
+    `/app/lessons/${encodeURIComponent(lessonId)}/homework`,
 
   /** Начать / возобновить попытку */
   QUIZ_ATTEMPT: (quizId: string) =>
@@ -57,15 +58,12 @@ export const STUDENT_ROUTES = {
     `/app/districts/${encodeURIComponent(districtId)}/schools`,
 
   AI_CHAT: "/app/ai/chat",
-  /** Чат в профиле ученика без moduleId */
   AI_CHAT_PROFILE: "/app/ai/chat-profile",
-  /** Чат по всему курсу (контекст всех опубликованных модулей) */
   AI_CHAT_COURSE: "/app/ai/chat-course",
   AI_RECOMMENDATIONS: "/app/ai/recommendations",
   AI_GRADE_TEXT: "/app/ai/grade-text",
 
   GAMIFICATION_ME: "/app/gamification/me",
-  /** Место в рейтинге: с `schoolId` — внутри школы, без — глобально */
   GAMIFICATION_MY_RANK: "/app/gamification/my-rank",
   GAMIFICATION_LEADERBOARD: "/app/gamification/leaderboard",
 } as const;
