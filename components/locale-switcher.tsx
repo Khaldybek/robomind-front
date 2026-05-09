@@ -7,8 +7,8 @@ import { routing } from "@/i18n/routing";
 
 type LocaleSwitcherProps = {
   className?: string;
-  /** Тёмный фон (например шапка super-admin) */
-  tone?: "default" | "onDark";
+  /** default — светлая плашка; onDark — тёмная шапка; onGradient — полупрозрачно поверх цветного фона */
+  tone?: "default" | "onDark" | "onGradient";
   /**
    * @deprecated Раньше «текст / иконка» — теперь везде единый вид: иконка + переключатель.
    * Оставлено для совместимости с существующими вызовами.
@@ -31,6 +31,7 @@ export function LocaleSwitcher({
   const t = useTranslations("LocaleSwitcher");
 
   const isDark = tone === "onDark";
+  const isGradient = tone === "onGradient";
 
   function onSelect(next: string) {
     if (next === locale) return;
@@ -39,22 +40,30 @@ export function LocaleSwitcher({
 
   const iconWrap = isDark
     ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/[0.08] text-white shadow-sm"
-    : "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/90 bg-gradient-to-br from-white to-slate-50 text-slate-700 shadow-sm ring-1 ring-slate-200/60";
+    : isGradient
+      ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/50 bg-white/25 text-slate-800 shadow-sm"
+      : "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/90 bg-gradient-to-br from-white to-slate-50 text-slate-700 shadow-sm ring-1 ring-slate-200/60";
 
   const track = isDark
     ? "inline-flex rounded-full border border-white/18 bg-black/25 p-0.5 shadow-inner"
-    : "inline-flex rounded-full border border-slate-200/80 bg-slate-100/90 p-0.5 shadow-inner";
+    : isGradient
+      ? "inline-flex rounded-full border border-white/45 bg-white/22 p-0.5 shadow-inner"
+      : "inline-flex rounded-full border border-slate-200/80 bg-slate-100/90 p-0.5 shadow-inner";
 
   const btnBase =
     "min-w-[3.25rem] rounded-full px-3 py-1.5 text-xs font-semibold tracking-wide transition-all duration-200 sm:min-w-[3.5rem] sm:px-3.5 sm:text-[13px]";
 
   const btnActive = isDark
     ? "bg-white text-slate-900 shadow-md"
-    : "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/80";
+    : isGradient
+      ? "bg-white/90 text-slate-900 shadow-sm ring-1 ring-white/55"
+      : "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/80";
 
   const btnIdle = isDark
     ? "text-white/65 hover:bg-white/10 hover:text-white"
-    : "text-slate-500 hover:bg-white/60 hover:text-slate-900";
+    : isGradient
+      ? "text-slate-700/90 hover:bg-white/45 hover:text-slate-900"
+      : "text-slate-500 hover:bg-white/60 hover:text-slate-900";
 
   return (
     <div

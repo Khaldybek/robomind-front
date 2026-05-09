@@ -66,7 +66,7 @@ export function LoginForm() {
   }
 
   return (
-    <div className="relative mx-auto w-full max-w-md lg:mx-0 lg:ml-auto lg:mr-10 xl:mr-14 2xl:mr-20">
+    <div className="relative mx-auto w-full max-w-md lg:mx-0 lg:ml-auto lg:mr-12 xl:mr-16 2xl:mr-24">
       <form
         onSubmit={onSubmit}
         className="auth-student-form auth-student-glass-panel flex min-h-0 w-full flex-col space-y-5 rounded-[28px] p-6 sm:min-h-[min(32rem,calc(100dvh-10rem))] sm:justify-center sm:p-8 sm:py-10"

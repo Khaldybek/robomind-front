@@ -40,17 +40,17 @@ export function AuthExperienceShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="relative z-[1] flex min-h-[100dvh] flex-col">
-      <header className="shrink-0 border-b border-slate-200/90 bg-white/60 px-4 py-3.5 backdrop-blur-lg sm:px-8 sm:py-4">
+      <header className="shrink-0 border-b border-white/35 bg-transparent px-4 py-3.5 shadow-none sm:px-8 sm:py-4">
         <div className="mx-auto flex max-w-[90rem] flex-wrap items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <AuthBrandLogo
               size="authNav"
-              className="drop-shadow-[0_1px_3px_rgba(255,255,255,0.9)]"
+              className="drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)]"
             />
           </div>
           <div className="flex flex-wrap items-center justify-end gap-1 sm:gap-2">
             <nav
-              className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium sm:gap-x-6 sm:text-[15px]"
+              className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium sm:gap-x-6 sm:text-[15px] [text-shadow:0_1px_0_rgba(255,255,255,0.65)]"
               aria-label={tp("navAria")}
             >
               <Link href="/" prefetch={false} className={navMuted}>
@@ -72,8 +72,8 @@ export function AuthExperienceShell({ children }: { children: ReactNode }) {
                 </Link>
               )}
             </nav>
-            <div className="ml-1 border-l border-slate-300/90 pl-2 sm:ml-2 sm:pl-3">
-              <LocaleSwitcher />
+            <div className="ml-1 border-l border-white/40 pl-2 sm:ml-2 sm:pl-3">
+              <LocaleSwitcher tone="onGradient" />
             </div>
           </div>
         </div>
@@ -103,7 +103,7 @@ export function AuthExperienceShell({ children }: { children: ReactNode }) {
 
         <div
           key={pathname}
-          className="auth-panel-enter relative z-[1] mx-auto flex min-h-[240px] w-full max-w-[90rem] flex-1 flex-col items-center justify-center sm:min-h-[280px] lg:min-h-0 lg:items-end lg:pr-8 xl:pr-12 2xl:pr-16"
+          className="auth-panel-enter relative z-[1] mx-auto flex min-h-[240px] w-full max-w-[90rem] flex-1 flex-col items-center justify-center sm:min-h-[280px] lg:min-h-0 lg:items-end lg:pr-10 xl:pr-14 2xl:pr-20"
         >
           <div className="flex w-full flex-1 flex-col items-center justify-center lg:items-end">
             {children}

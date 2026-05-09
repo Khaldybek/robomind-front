@@ -104,7 +104,7 @@ export function RegisterForm() {
   }
 
   return (
-    <div className="relative mx-auto w-full max-w-lg lg:mx-0 lg:ml-auto lg:mr-10 xl:mr-14 2xl:mr-20">
+    <div className="relative mx-auto w-full max-w-lg lg:mx-0 lg:ml-auto lg:mr-12 xl:mr-16 2xl:mr-24">
       <form
         onSubmit={onSubmit}
         className="auth-register-form auth-student-form auth-student-glass-panel max-h-[min(78dvh,720px)] w-full space-y-3 overflow-y-auto overflow-x-hidden rounded-[28px] p-5 pr-4 sm:space-y-3.5 sm:p-6 sm:pr-5"
