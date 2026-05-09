@@ -15,11 +15,43 @@ import {
   patchSuperHomeworkSubmission,
 } from "@/lib/api/super-admin/homework";
 import {
+  fetchSuperCourseStudents,
+  type CourseStudentRow,
+} from "@/lib/api/super-admin/courses-modules";
+import { getSchool } from "@/lib/api/super-admin/geo";
+import {
   gradeOverviewUserLabel,
   parseModuleGradeOverview,
   type ModuleGradeOverview,
 } from "@/lib/api/admin/module-grade-overview";
 import { isApiConfigured, resolvePublicFileUrl } from "@/lib/env";
+
+function extractStudentSchoolId(s: CourseStudentRow): string | null {
+  const raw = s.schoolId;
+  const direct =
+    typeof raw === "string"
+      ? raw.trim()
+      : raw != null
+        ? String(raw).trim()
+        : "";
+  if (direct) return direct;
+  const sch = (s as Record<string, unknown>).school;
+  if (sch && typeof sch === "object") {
+    const id = (sch as Record<string, unknown>).id;
+    if (typeof id === "string" && id.trim()) return id.trim();
+  }
+  return null;
+}
+
+function formatSchoolLabelFromGeo(s: {
+  id: string;
+  name: string;
+  number?: number | null;
+}): string {
+  const n = s.number != null ? ` №${s.number}` : "";
+  const line = `${s.name}${n}`.trim();
+  return line || s.id;
+}
 
 function pickUserLabel(row: HomeworkSubmissionRow): string {
   const s = row.student;
@@ -270,6 +302,69 @@ export function AdminModuleHomeworkGrading({
   const [drafts, setDrafts] = useState<Record<string, GradeDraft>>({});
   const [openId, setOpenId] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [schoolPickList, setSchoolPickList] = useState<
+    { id: string; label: string }[]
+  >([]);
+  const [resolvingSchools, setResolvingSchools] = useState(false);
+  const [schoolsErr, setSchoolsErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (variant !== "super" || !courseId.trim()) {
+      setSchoolPickList([]);
+      setResolvingSchools(false);
+      setSchoolsErr(null);
+      return;
+    }
+    let cancelled = false;
+    setResolvingSchools(true);
+    setSchoolsErr(null);
+    void (async () => {
+      try {
+        const students = await fetchSuperCourseStudents(courseId.trim());
+        if (cancelled) return;
+        const idSet = new Set<string>();
+        for (const st of students) {
+          const sid = extractStudentSchoolId(st);
+          if (sid) idSet.add(sid);
+        }
+        const ids = [...idSet].sort((a, b) => a.localeCompare(b));
+        const labeled = await Promise.all(
+          ids.map(async (id) => {
+            try {
+              const sch = await getSchool(id);
+              return { id, label: formatSchoolLabelFromGeo(sch) };
+            } catch {
+              return { id, label: id };
+            }
+          }),
+        );
+        if (cancelled) return;
+        setSchoolPickList(labeled);
+        const q = schoolIdFromQuery;
+        if (q) {
+          setSchoolId(q);
+        } else if (labeled.length === 1) {
+          setSchoolId(labeled[0].id);
+        } else if (labeled.length > 1) {
+          setSchoolId((prev) =>
+            prev && labeled.some((x) => x.id === prev) ? prev : "",
+          );
+        } else {
+          setSchoolId("");
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setSchoolPickList([]);
+          setSchoolsErr(e instanceof Error ? e.message : t("errGeneric"));
+        }
+      } finally {
+        if (!cancelled) setResolvingSchools(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [variant, courseId, schoolIdFromQuery, t]);
 
   const parsedOverview = useMemo(
     () => parseModuleGradeOverview(overview),
@@ -359,24 +454,90 @@ export function AdminModuleHomeworkGrading({
     <div className="space-y-8">
       {variant === "super" && (
         <div className="rounded-xl border border-ds-gray-border bg-white/90 p-4">
-          <label className="ds-text-caption text-ds-gray-text">
-            {t("schoolIdLabel")}
-          </label>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <input
-              className="ds-input min-w-[240px] flex-1 font-mono text-sm"
-              value={schoolId}
-              onChange={(e) => setSchoolId(e.target.value)}
-              placeholder={t("schoolIdPlaceholder")}
-            />
-            <button
-              type="button"
-              className="ui-btn ui-btn--4"
-              onClick={() => load()}
-            >
-              {t("load")}
-            </button>
-          </div>
+          {schoolsErr && (
+            <p className="mb-2 text-sm text-ds-error" role="alert">
+              {schoolsErr}
+            </p>
+          )}
+          {resolvingSchools && (
+            <p className="text-sm text-ds-gray-text">{t("superSchoolLoading")}</p>
+          )}
+          {!resolvingSchools && schoolPickList.length > 1 && (
+            <>
+              <p className="mb-2 text-sm text-ds-gray-text">
+                {t("superSchoolHintMany")}
+              </p>
+              <label className="ds-text-caption text-ds-gray-text">
+                {t("superSchoolSelectLabel")}
+              </label>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <select
+                  className="ds-input min-w-[240px] flex-1 text-sm"
+                  value={schoolId}
+                  onChange={(e) => setSchoolId(e.target.value)}
+                >
+                  <option value="">{t("superSchoolSelectPlaceholder")}</option>
+                  {schoolPickList.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="ui-btn ui-btn--4"
+                  onClick={() => load()}
+                >
+                  {t("load")}
+                </button>
+              </div>
+            </>
+          )}
+          {!resolvingSchools && schoolPickList.length === 1 && (
+            <div className="space-y-2">
+              <p className="text-sm text-ds-gray-text">
+                {t("superSchoolHintSingle")}
+              </p>
+              <p className="text-sm text-ds-black">
+                <span className="font-medium">{schoolPickList[0].label}</span>{" "}
+                <code className="break-all font-mono text-xs text-ds-gray-text">
+                  {schoolPickList[0].id}
+                </code>
+              </p>
+              <button
+                type="button"
+                className="ui-btn ui-btn--4"
+                onClick={() => load()}
+              >
+                {t("load")}
+              </button>
+            </div>
+          )}
+          {!resolvingSchools && schoolPickList.length === 0 && (
+            <>
+              <p className="mb-2 text-sm text-ds-gray-text">
+                {t("superSchoolHintNone")}
+              </p>
+              <label className="ds-text-caption text-ds-gray-text">
+                {t("schoolIdLabel")}
+              </label>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <input
+                  className="ds-input min-w-[240px] flex-1 font-mono text-sm"
+                  value={schoolId}
+                  onChange={(e) => setSchoolId(e.target.value)}
+                  placeholder={t("schoolIdPlaceholder")}
+                />
+                <button
+                  type="button"
+                  className="ui-btn ui-btn--4"
+                  onClick={() => load()}
+                >
+                  {t("load")}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 
