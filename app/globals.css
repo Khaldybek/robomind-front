@@ -1054,6 +1054,46 @@ body {
   );
 }
 
+/** Студент: /login, /register — лаванда → голубой (насыщеннее, читается как «живой» фон). */
+.student-auth-page {
+  background: linear-gradient(
+    128deg,
+    #b2aaf0 0%,
+    #9cb4f8 16%,
+    #7fabf5 34%,
+    #6b9ef0 52%,
+    #8eb8f5 72%,
+    #c9dcf9 88%,
+    #e8f0fc 100%
+  );
+}
+
+/* Поля в студенческих формах входа/регистрации: светлый фон, тонкая рамка */
+.auth-student-form .ds-input,
+.auth-student-form select.ds-input {
+  border: 1px solid rgba(138, 137, 227, 0.22);
+  background: rgba(255, 255, 255, 0.82);
+  border-radius: 10px;
+}
+
+.auth-student-form .ds-input:focus,
+.auth-student-form select.ds-input:focus {
+  border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
+}
+
+/** Карточка входа/регистрации: стекло + рамка в тон лавандово-голубому фону */
+.auth-student-glass-panel {
+  background: rgba(255, 255, 255, 0.48);
+  border: 1px solid rgba(138, 137, 227, 0.32);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.65) inset,
+    0 28px 64px -32px rgba(99, 102, 241, 0.22),
+    0 12px 36px -20px rgba(59, 130, 246, 0.12);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
 .landing-kid-bot-a {
   animation: landing-kid-bob 2.9s ease-in-out infinite;
 }

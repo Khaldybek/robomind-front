@@ -11,7 +11,7 @@ import { registerStudent } from "@/lib/api/student/auth";
 import { ApiRequestError } from "@/lib/api/types";
 import { isApiConfigured } from "@/lib/env";
 import type { GeoItem } from "@/lib/api/types";
-import { AuthCardMascot } from "@/components/auth/auth-card-mascot";
+import { Link } from "@/i18n/navigation";
 
 /**
  * Онбординг: город → район → школа (только для выбора `schoolId`) + поля регистрации.
@@ -19,6 +19,7 @@ import { AuthCardMascot } from "@/components/auth/auth-card-mascot";
  */
 export function RegisterForm() {
   const t = useTranslations("Auth.register");
+  const tp = useTranslations("AuthPages");
   const tc = useTranslations("Common");
   const [cities, setCities] = useState<GeoItem[]>([]);
   const [districts, setDistricts] = useState<GeoItem[]>([]);
@@ -103,12 +104,12 @@ export function RegisterForm() {
   }
 
   return (
-    <div className="relative mx-auto w-full max-w-lg overflow-visible pb-24 sm:pb-20">
+    <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
       <form
         onSubmit={onSubmit}
-        className="auth-register-form relative z-[2] space-y-3 rounded-2xl border border-slate-200/90 bg-white p-4 pr-3.5 shadow-[0_20px_50px_-28px_rgba(15,23,42,0.1)] sm:space-y-3.5 sm:p-5 sm:pr-5"
+        className="auth-register-form auth-student-form auth-student-glass-panel max-h-[min(78dvh,720px)] w-full space-y-3 overflow-y-auto overflow-x-hidden rounded-[28px] p-5 pr-4 sm:space-y-3.5 sm:p-6 sm:pr-5"
       >
-        <h1 className="text-xl font-semibold tracking-tight text-ds-black sm:text-2xl">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-[1.65rem]">
           {t("title")}
         </h1>
         {geoError && (
@@ -261,11 +262,24 @@ export function RegisterForm() {
             {error}
           </div>
         )}
-        <button type="submit" className="ui-btn ui-btn--1 w-full" disabled={pending}>
+        <button
+          type="submit"
+          className="ui-btn ui-btn--1 w-full rounded-xl py-3.5 text-base font-semibold shadow-md shadow-blue-600/20"
+          disabled={pending}
+        >
           {pending ? t("submitting") : t("submit")}
         </button>
+        <p className="pb-1 text-center text-sm text-slate-600">
+          {tp("footerLoginLead")}{" "}
+          <Link
+            href="/login"
+            prefetch={false}
+            className="font-bold text-[color:var(--ds-error)] underline-offset-2 hover:underline"
+          >
+            {tp("footerLoginAction")}
+          </Link>
+        </p>
       </form>
-      <AuthCardMascot />
     </div>
   );
 }

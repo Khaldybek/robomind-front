@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
@@ -18,29 +18,20 @@ export default async function AuthLayout({
   }
   setRequestLocale(locale);
 
-  const tHome = await getTranslations("HomePage");
-  const motifLabels: [string, string, string, string, string] = [
-    tHome("motifCode"),
-    tHome("motifLogic"),
-    tHome("motifLaunch"),
-    tHome("motifBuild"),
-    tHome("motifCircuit"),
-  ];
-  const trustChips = (tHome.raw("trustLines") as string[]).slice(0, 4);
-
   return (
-    <div className="landing-kid-page relative min-h-screen overflow-x-hidden">
+    <div className="student-auth-page relative min-h-screen overflow-x-hidden">
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.12]"
+        className="pointer-events-none absolute inset-0 z-0 opacity-[0.72]"
         aria-hidden
         style={{
-          backgroundImage: `radial-gradient(circle at 20% 20%, rgb(255 255 255 / 0.9) 0, transparent 42%),
-            radial-gradient(circle at 88% 12%, rgb(255 255 255 / 0.55) 0, transparent 38%)`,
+          backgroundImage: `radial-gradient(ellipse 85% 72% at 10% 14%, rgba(138, 137, 227, 0.58) 0%, transparent 52%),
+            radial-gradient(ellipse 82% 68% at 90% 10%, rgba(127, 185, 242, 0.58) 0%, transparent 50%),
+            radial-gradient(ellipse 100% 48% at 50% 100%, rgba(255, 255, 255, 0.42) 0%, transparent 58%)`,
         }}
       />
-      <AuthExperienceShell motifLabels={motifLabels} trustChips={trustChips}>
-        {children}
-      </AuthExperienceShell>
+      <div className="relative z-[1]">
+        <AuthExperienceShell>{children}</AuthExperienceShell>
+      </div>
     </div>
   );
 }

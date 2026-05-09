@@ -5,37 +5,50 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import { AdminModuleHomeworkGrading } from "@/components/admin/module-homework-grading";
+import { SchoolAdminPageHero } from "@/components/school-admin/admin-page-hero";
 
 function HomeworkInner() {
   const t = useTranslations("AdminModuleHomework");
-  const tc = useTranslations("Common");
   const { courseId, lessonId } = useParams() as {
     courseId: string;
     lessonId: string;
   };
 
+  const lessonHref = `/school-admin/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lessonId)}`;
+  const modulesHref = `/school-admin/courses/${encodeURIComponent(courseId)}/modules`;
+
   return (
-    <div>
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <Link
-          href={`/school-admin/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lessonId)}`}
-          className="ds-text-caption font-medium text-ds-primary hover:underline"
-        >
-          {t("lessonMaterialsNav")}
-        </Link>
-      </div>
-      <Link
-        href={`/school-admin/courses/${encodeURIComponent(courseId)}/modules`}
-        className="ds-text-caption mb-6 inline-block text-ds-primary hover:underline"
+    <div className="mx-auto max-w-4xl pb-10">
+      <SchoolAdminPageHero
+        title={t("titleSchool")}
+        description={t("pageLead")}
       >
-        {t("backToCourseModules")}
-      </Link>
-      <h1 className="ds-text-h2 text-ds-black">{t("titleSchool")}</h1>
-      <AdminModuleHomeworkGrading
-        variant="school"
-        courseId={courseId}
-        lessonId={lessonId}
-      />
+        <nav
+          className="relative z-[1] mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium"
+          aria-label="Breadcrumb"
+        >
+          <Link
+            href={lessonHref}
+            className="text-white/90 underline-offset-4 transition hover:text-white hover:underline"
+          >
+            {t("lessonMaterialsNav")}
+          </Link>
+          <Link
+            href={modulesHref}
+            className="text-white/90 underline-offset-4 transition hover:text-white hover:underline"
+          >
+            {t("backToCourseModules")}
+          </Link>
+        </nav>
+      </SchoolAdminPageHero>
+
+      <div className="mt-2">
+        <AdminModuleHomeworkGrading
+          variant="school"
+          courseId={courseId}
+          lessonId={lessonId}
+        />
+      </div>
     </div>
   );
 }

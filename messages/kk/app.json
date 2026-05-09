@@ -11,6 +11,7 @@
     "lessonMaterialsNav": "Сабақ материалдары",
     "backToModule": "← Модульге",
     "titleSchool": "Модульдің үй тапсырмалары",
+    "pageLead": "Жүктелген жұмыстарды бағалау және осы сабақ бойынша тест пен ҮТ журналы.",
     "titleSuper": "Үй тапсырмалары (супер әкімші)",
     "superLead": "Мектеп курстағы оқушылар тізімінен алынады; бірнеше мектеп болса, тізімнен таңдаңыз. URL-де ?schoolId= беруге болады.",
     "superSchoolLoading": "Курстағы оқушылар бойынша мектеп анықталуда…",
@@ -116,6 +117,9 @@
   },
   "AuthPages": {
     "backHome": "← Басты бетке",
+    "navHome": "Басты бет",
+    "navCourses": "Курстар",
+    "navInfo": "Ақпарат",
     "registerCta": "Тіркелу",
     "backToLogin": "← Кіруге",
     "navAria": "Кіру немесе тіркелу",
@@ -124,7 +128,7 @@
     "asideEyebrow": "Roboschool қысқаша",
     "footerRegisterLead": "Аккаунтыңыз жоқ па?",
     "footerRegisterAction": "Тіркелу",
-    "footerLoginLead": "Аккаунтыңыз бар ма?",
+    "footerLoginLead": "Сенде аккаунт бар ма?",
     "footerLoginAction": "Кіру"
   },
   "PendingActivation": {

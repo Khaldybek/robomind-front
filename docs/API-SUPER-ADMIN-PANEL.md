@@ -58,6 +58,8 @@
 | DELETE | `/admin/users/:userId` | Удаление |
 | GET | `/admin/users/:userId/progress` | Прогресс |
 | GET | `/admin/users/:userId/certificates` | Сертификаты |
+| GET | `/admin/users/:userId/quiz-attempts` | Попытки тестов (метаданные) |
+| GET / PUT / DELETE | `/admin/users/:userId/quiz-attempt-limits` | Переопределения лимита попыток (ученик + квиз) |
 
 ### Гео и школы
 
@@ -274,6 +276,16 @@
 
 Супер-админ видит **любого** пользователя платформы (`activateSuperUser`, `fetchSuperUserProgress`, …).
 
+### `GET /admin/users/:userId/quiz-attempts` · `GET|PUT|DELETE …/quiz-attempt-limits`
+
+Попытки тестов и **переопределения лимита** «ученик + квиз». Для `quiz-attempt-limits`: тело **PUT** — массив `{ quizId, maxAttempts }` с целыми **1–99**; **DELETE** — снять все переопределения. Клиент: `lib/api/super-admin/users.ts`.
+
+| Действие | `super_admin` | `school_admin` |
+|----------|---------------|----------------|
+| PATCH курса `defaultMaxQuizAttempts` | да | нет |
+| POST/PATCH доступа с `maxQuizAttempts` | да | да (своя школа, опубликованный курс, ученик своей школы) |
+| GET/PUT/DELETE `…/quiz-attempt-limits` | да | да (только **student** своей школы) |
+
 ### 3.1. Школьные администраторы (`/admin/school-admins` и список по школе)
 
 Префикс: `/api/v1`, **`Authorization: Bearer`**, роль **`super_admin`**.
@@ -337,7 +349,7 @@
 
 Как **`application/json`**, так и **`multipart/form-data`** с теми же полями + опциональный файл в поле **`thumbnail`**.
 
-- **JSON:** обязательно `title`, `level`; опционально `description`, `isPublished` (default `false`), `order` (default `0`), `thumbnailUrl`, `ageGroup`.
+- **JSON:** обязательно `title`, `level`; опционально `description`, `isPublished` (default `false`), `order` (default `0`), `thumbnailUrl`, `ageGroup`, **`defaultMaxQuizAttempts`** (целое **1–99** — дефолт лимита попыток тестов для учеников курса; только **`super_admin`** на PATCH).
 - **Multipart:** те же имена полей; файл обложки — **`thumbnail`** (MIME как у `POST /admin/upload/image`: jpeg, png, gif, webp, svg). Сохранение в `uploads/images`, в БД — путь вида `/api/v1/files/images/<uuid>.<ext>`. Если в запросе есть файл `thumbnail`, значение **`thumbnailUrl` из тела не используется** (приоритет у загрузки).
 
 **201** — созданный курс (`moduleCount: 0`, `studentsCount: 0`).
@@ -372,7 +384,8 @@ await fetch(`${base}/admin/courses/${courseId}`, {
 
 - Список модулей курса: **`GET /admin/courses/:courseId/modules`** — те же query, что у `GET /admin/modules` (`page`, `limit`, `search`, `isPublished`, `sort`), но **`courseId` в пути**, не в query; ответ как у `GET /admin/modules?courseId=…` (см. §5). Альтернатива: `GET /admin/modules?courseId=…`.
 - **`GET /admin/courses/:courseId/accesses`** — список выданных доступов. Клиент: `fetchSuperCourseAccesses`.
-- **`POST /admin/courses/:courseId/access`** — выдача доступа **ученику** (`role: student`). Тело: `userId`, `accessType` (`permanent` \| `temporary`), опц. `expiresAt` (ISO).
+- **`POST /admin/courses/:courseId/access`** — выдача доступа **ученику** (`role: student`). Тело: `userId`, `accessType` (`permanent` \| `temporary`), опц. `expiresAt` (ISO), опц. **`maxQuizAttempts`** (1–99).
+- **`PATCH /admin/courses/:courseId/access/:userId`** — в т.ч. **`maxQuizAttempts`** (1–99) или **`null`**. Клиент: `patchSuperCourseAccess`.
 - `DELETE /admin/courses/:courseId/access/:userId` → **204**.
 - **`GET /admin/courses/:courseId/students`** — студенты с **активным доступом** или с **прогрессом** по курсу. Клиент: `fetchSuperCourseStudents` — `lib/api/super-admin/courses-modules.ts`.
 

@@ -22,6 +22,7 @@ import { getSchool } from "@/lib/api/super-admin/geo";
 import {
   gradeOverviewUserLabel,
   parseModuleGradeOverview,
+  type GradeOverviewHomework,
   type ModuleGradeOverview,
 } from "@/lib/api/admin/module-grade-overview";
 import { isApiConfigured, resolvePublicFileUrl } from "@/lib/env";
@@ -89,6 +90,85 @@ function formatOverviewDate(iso: string | null | undefined, locale: string): str
   }
 }
 
+/**
+ * Список GET …/homework-submissions иногда приходит без fileUrl, тогда как
+ * grade-overview уже содержит файл — подставляем, чтобы блок оценки совпадал с журналом.
+ */
+function enrichSubmissionRowsFromOverview(
+  list: HomeworkSubmissionRow[],
+  overview: ModuleGradeOverview,
+): HomeworkSubmissionRow[] {
+  return list.map((sub) => enrichOneSubmissionFromOverview(sub, overview));
+}
+
+function enrichOneSubmissionFromOverview(
+  sub: HomeworkSubmissionRow,
+  overview: ModuleGradeOverview,
+): HomeworkSubmissionRow {
+  const fileUrlNow =
+    typeof sub.fileUrl === "string" && sub.fileUrl.trim()
+      ? sub.fileUrl.trim()
+      : "";
+  if (fileUrlNow) return sub;
+
+  const subId = String(sub.id ?? "").trim();
+  const uid = String(sub.userId ?? "").trim();
+  const studentId = String(sub.student?.id ?? "").trim();
+  const email = String(sub.student?.email ?? "").trim().toLowerCase();
+  const userIdSet = new Set<string>();
+  if (uid) userIdSet.add(uid);
+  if (studentId) userIdSet.add(studentId);
+
+  let hw: GradeOverviewHomework | null = null;
+  for (const r of overview.rows) {
+    const h = r.homework;
+    if (!h) continue;
+    const hid = String(h.submissionId ?? "").trim();
+    if (hid && hid === subId) {
+      hw = h;
+      break;
+    }
+  }
+  if (!hw) {
+    for (const r of overview.rows) {
+      const h = r.homework;
+      if (!h) continue;
+      const url = (h.fileUrl ?? "").trim();
+      if (!url) continue;
+      const ru = String(r.user.id ?? "").trim();
+      if (ru && userIdSet.has(ru)) {
+        hw = h;
+        break;
+      }
+      const re = (r.user.email ?? "").trim().toLowerCase();
+      if (email && re && re === email) {
+        hw = h;
+        break;
+      }
+    }
+  }
+
+  const url = (hw?.fileUrl ?? "").trim();
+  if (!url) return sub;
+
+  const name =
+    sub.originalFileName?.trim() ||
+    sub.fileName?.trim() ||
+    hw?.originalFilename?.trim() ||
+    undefined;
+
+  return {
+    ...sub,
+    fileUrl: url,
+    ...(name
+      ? {
+          originalFileName: name,
+          fileName: sub.fileName?.trim() ? sub.fileName : name,
+        }
+      : {}),
+  };
+}
+
 type GradeDraft = {
   points: string;
   maxPoints: string;
@@ -108,7 +188,7 @@ function GradeOverviewJournal({
   return (
     <div className="space-y-4">
       {(mod?.courseTitle || mod?.title || quiz?.title) && (
-        <div className="space-y-1 rounded-lg border border-ds-gray-border bg-ds-gray-light/20 px-4 py-3 text-sm text-ds-black">
+        <div className="space-y-1 rounded-xl border border-sky-100/80 bg-sky-50/50 px-4 py-3 text-sm text-ds-black">
           {mod?.courseTitle ? (
             <p className="font-medium">
               {t("contextCourse", { title: mod.courseTitle })}
@@ -133,7 +213,7 @@ function GradeOverviewJournal({
       {rows.length === 0 ? (
         <p className="text-sm text-ds-gray-text">{t("noJournalRows")}</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-ds-gray-border">
+        <div className="overflow-x-auto rounded-xl border border-ds-gray-border/80 bg-white/60">
           <table className="w-full min-w-[720px] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-ds-gray-border bg-ds-gray-light/40">
@@ -387,14 +467,16 @@ export function AdminModuleHomeworkGrading({
           fetchSchoolHomeworkSubmissions(lessonId),
           fetchSchoolLessonGradeOverview(lessonId),
         ]);
-        setRows(list);
+        const parsedOv = parseModuleGradeOverview(ov);
+        setRows(enrichSubmissionRowsFromOverview(list, parsedOv));
         setOverview(ov);
       } else {
         const [list, ov] = await Promise.all([
           fetchSuperHomeworkSubmissions(lessonId, schoolId.trim()),
           fetchSuperLessonGradeOverview(lessonId, schoolId.trim()),
         ]);
-        setRows(list);
+        const parsedOv = parseModuleGradeOverview(ov);
+        setRows(enrichSubmissionRowsFromOverview(list, parsedOv));
         setOverview(ov);
       }
     })();
@@ -450,10 +532,13 @@ export function AdminModuleHomeworkGrading({
     }
   }
 
+  const cardSection =
+    "sa-card-in rounded-[22px] border border-white/90 bg-white/85 p-5 shadow-[0_16px_48px_-28px_rgba(0,0,0,0.12)] backdrop-blur-sm sm:p-6";
+
   return (
     <div className="space-y-8">
       {variant === "super" && (
-        <div className="rounded-xl border border-ds-gray-border bg-white/90 p-4">
+        <div className={`${cardSection}`}>
           {schoolsErr && (
             <p className="mb-2 text-sm text-ds-error" role="alert">
               {schoolsErr}
@@ -550,7 +635,7 @@ export function AdminModuleHomeworkGrading({
         </p>
       )}
 
-      <section className="rounded-xl border border-white/80 bg-white/85 p-4 shadow-sm">
+      <section className={cardSection}>
         <h2 className="ds-text-h3 text-ds-black">{t("submissionsTitle")}</h2>
         <p className="mt-1 text-sm text-ds-gray-text">{t("submissionsHint")}</p>
         {rows.length === 0 && !loading ? (
@@ -565,7 +650,7 @@ export function AdminModuleHomeworkGrading({
               return (
                 <li
                   key={sid}
-                  className="rounded-lg border border-ds-gray-border bg-ds-gray-light/30 p-3"
+                  className="rounded-xl border border-ds-gray-border/70 bg-gradient-to-br from-slate-50/90 to-white p-4 shadow-sm"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
@@ -671,7 +756,7 @@ export function AdminModuleHomeworkGrading({
         )}
       </section>
 
-      <section className="rounded-xl border border-white/80 bg-white/85 p-4 shadow-sm">
+      <section className={cardSection}>
         <h2 className="ds-text-h3 text-ds-black">{t("journalTitle")}</h2>
         <p className="mt-1 text-sm text-ds-gray-text">{t("journalApi")}</p>
         <div className="mt-4">

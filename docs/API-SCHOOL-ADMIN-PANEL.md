@@ -260,6 +260,26 @@
 
 Клиент: `fetchUserQuizAttemptsAdmin` — тип `UserQuizAttemptRowAdmin[]`.
 
+### Лимиты попыток по тестам для ученика (`…/quiz-attempt-limits`)
+
+Переопределения «ученик + квиз» (приоритет **1** в цепочке эффективного лимита для панели ученика).
+
+| Метод | Путь | Роль `school_admin` |
+|-------|------|----------------------|
+| GET | `/admin/users/:userId/quiz-attempt-limits` | да, только **student** своей школы |
+| PUT | то же | тело: массив `{ quizId, maxAttempts }` (целые **1–99**), полная замена списка |
+| DELETE | то же | снять все переопределения |
+
+Клиент: `fetchUserQuizAttemptLimitsAdmin`, `putUserQuizAttemptLimitsAdmin`, `deleteUserQuizAttemptLimitsAdmin` — `lib/api/school-admin/users.ts`.
+
+### Матрица (кратко): курс и доступ
+
+| Действие | `school_admin` |
+|----------|----------------|
+| PATCH курса `defaultMaxQuizAttempts` | нет (**403**) |
+| POST/PATCH доступа с `maxQuizAttempts` (1–99) | да: своя школа, **опубликованный** курс, ученик своей школы |
+| GET/PUT/DELETE `…/quiz-attempt-limits` | да: только **student** своей школы |
+
 ---
 
 ## 5. Курсы (чтение + доступы)
@@ -328,12 +348,19 @@
 | `userId` | uuid | да, роль `student`, та же школа |
 | `accessType` | `permanent` \| `temporary` | да |
 | `expiresAt` | ISO string | для `temporary` — логически нужен срок |
+| `maxQuizAttempts` | integer 1…99 | нет — лимит попыток тестов в **записи доступа** |
 
 **Ответ `201`:** объект записи доступа (как элемент в `listAccesses`). В БД в `grantedBy` — **ваш** `userId`.
 
 **403** — ученик не из школы. **404** — курс не найден / не опубликован.
 
 Клиент: `grantCourseAccess` — `lib/api/school-admin/courses.ts`.
+
+### `PATCH /admin/courses/:courseId/access/:userId`
+
+Обновление записи доступа, в т.ч. **`maxQuizAttempts`** (целое **1–99**) или **`null`** (сбросить лимит в доступе).
+
+Клиент: `patchCourseAccess` — `lib/api/school-admin/courses.ts`.
 
 ### `POST /admin/courses/:courseId/access/bulk`
 
@@ -346,6 +373,7 @@
 | `userIds` | uuid[] | да, 1…200 уникальных id, без дубликатов в теле |
 | `accessType` | `permanent` \| `temporary` | да |
 | `expiresAt` | ISO string | опционально |
+| `maxQuizAttempts` | integer 1…99 | нет — общий лимит для всех `userIds` в запросе |
 
 **Ответ `201`:** `{ grantedCount, granted[], errors[] }`. Коды в `errors`: `already_active`, `not_found` и др.
 

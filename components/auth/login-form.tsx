@@ -11,10 +11,10 @@ import {
 } from "@/lib/api/student/auth";
 import { ApiRequestError } from "@/lib/api/types";
 import { isApiConfigured } from "@/lib/env";
-import { AuthCardMascot } from "@/components/auth/auth-card-mascot";
 
 export function LoginForm() {
   const t = useTranslations("Auth.login");
+  const tp = useTranslations("AuthPages");
   const tc = useTranslations("Common");
   const router = useRouter();
   const { refreshProfile, applyUserFromLogin } = useAuth();
@@ -66,13 +66,15 @@ export function LoginForm() {
   }
 
   return (
-    <div className="relative mx-auto w-full max-w-md overflow-visible pb-28 sm:pb-24">
+    <div className="relative mx-auto w-full max-w-md lg:max-w-none">
       <form
         onSubmit={onSubmit}
-        className="relative z-[2] space-y-5 rounded-2xl border border-slate-200/90 bg-white p-6 pr-5 shadow-[0_20px_50px_-28px_rgba(15,23,42,0.1)] sm:p-8 sm:pr-8"
+        className="auth-student-form auth-student-glass-panel flex min-h-0 w-full flex-col space-y-5 rounded-[28px] p-6 sm:min-h-[min(32rem,calc(100dvh-10rem))] sm:justify-center sm:p-8 sm:py-10"
       >
-        <h1 className="ds-text-h2 text-ds-black">{t("title")}</h1>
-        <p className="ds-text-caption text-slate-600">{t("hint")}</p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-[1.65rem]">
+          {t("title")}
+        </h1>
+        <p className="text-sm leading-relaxed text-slate-600">{t("hint")}</p>
         <div>
           <label className="ds-text-small mb-1 block text-ds-black">
             {t("emailLabel")}
@@ -110,21 +112,31 @@ export function LoginForm() {
         )}
         <button
           type="submit"
-          className="ui-btn ui-btn--1 w-full"
+          className="ui-btn w-full rounded-xl border border-transparent bg-[color:var(--ds-error)] py-3.5 text-base font-semibold text-white shadow-md shadow-rose-900/15 transition hover:brightness-[1.06] active:brightness-[0.96] disabled:cursor-not-allowed disabled:opacity-55"
           disabled={pending}
         >
           {pending ? t("submitting") : t("submit")}
         </button>
+        <p className="text-center text-sm text-slate-600">
+          {tp("footerRegisterLead")}{" "}
+          <Link
+            href="/register"
+            prefetch={false}
+            className="font-bold text-[color:var(--ds-error)] underline-offset-2 hover:underline"
+          >
+            {tp("footerRegisterAction")}
+          </Link>
+        </p>
         <p className="text-center">
           <Link
             href="/forgot-password"
-            className="ds-text-caption text-ds-primary hover:underline"
+            prefetch={false}
+            className="text-xs text-slate-500 underline-offset-2 transition hover:text-slate-700 hover:underline sm:text-sm"
           >
             {t("forgotPassword")}
           </Link>
         </p>
       </form>
-      <AuthCardMascot />
     </div>
   );
 }

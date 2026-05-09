@@ -3,6 +3,15 @@ function num(raw: unknown, d = 0): number {
   return Number.isFinite(n) ? n : d;
 }
 
+function firstNonEmptyStr(...vals: unknown[]): string {
+  for (const v of vals) {
+    if (v == null) continue;
+    const s = typeof v === "string" ? v : String(v);
+    if (s.trim()) return s.trim();
+  }
+  return "";
+}
+
 /** Общая нормализация сдачи ДЗ (student + admin списки). */
 export function normalizeHomeworkSubmission(
   raw: Record<string, unknown>,
@@ -17,11 +26,35 @@ export function normalizeHomeworkSubmission(
           : raw.module_id != null
             ? String(raw.module_id)
             : undefined;
+  const nestedFile =
+    raw.file != null && typeof raw.file === "object" && !Array.isArray(raw.file)
+      ? (raw.file as Record<string, unknown>)
+      : null;
+  const fileUrl = firstNonEmptyStr(
+    raw.fileUrl,
+    raw.file_url,
+    raw.url,
+    raw.downloadUrl,
+    raw.download_url,
+    raw.publicUrl,
+    raw.public_url,
+    raw.storagePath,
+    raw.storage_path,
+    raw.fileKey,
+    raw.file_key,
+    raw.objectKey,
+    raw.object_key,
+    raw.path,
+    nestedFile?.url,
+    nestedFile?.fileUrl,
+    nestedFile?.file_url,
+    nestedFile?.path,
+  );
   const base: Record<string, unknown> = {
     id: String(raw.id ?? ""),
     lessonId,
     moduleId: lessonId,
-    fileUrl: String(raw.fileUrl ?? raw.file_url ?? ""),
+    fileUrl: fileUrl,
     fileName:
       raw.fileName != null
         ? String(raw.fileName)

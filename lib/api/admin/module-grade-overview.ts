@@ -97,13 +97,45 @@ function pickQuizAttempt(raw: unknown): GradeOverviewQuizAttempt | null {
   };
 }
 
+function firstFileUrl(o: Record<string, unknown>): string | undefined {
+  const nested =
+    o.file != null && typeof o.file === "object" && !Array.isArray(o.file)
+      ? (o.file as Record<string, unknown>)
+      : null;
+  const direct = s(
+    o.fileUrl ??
+      o.file_url ??
+      o.url ??
+      o.downloadUrl ??
+      o.download_url ??
+      o.publicUrl ??
+      o.public_url ??
+      o.storagePath ??
+      o.storage_path ??
+      o.fileKey ??
+      o.file_key ??
+      o.objectKey ??
+      o.object_key ??
+      o.path,
+  );
+  if (direct) return direct;
+  if (!nested) return undefined;
+  return s(
+    nested.url ??
+      nested.fileUrl ??
+      nested.file_url ??
+      nested.path ??
+      nested.key,
+  );
+}
+
 function pickHomework(raw: unknown): GradeOverviewHomework | null {
   if (raw == null) return null;
   if (typeof raw !== "object") return null;
   const o = raw as Record<string, unknown>;
   return {
     submissionId: s(o.submissionId ?? o.submission_id),
-    fileUrl: s(o.fileUrl ?? o.file_url),
+    fileUrl: firstFileUrl(o),
     originalFilename: s(
       o.originalFilename ?? o.original_filename ?? o.originalFileName,
     ),
