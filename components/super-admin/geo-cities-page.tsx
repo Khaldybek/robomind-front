@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
   type GeoCity,
@@ -21,9 +22,11 @@ import {
 const PAGE_SIZE = 20;
 
 export function GeoCitiesPage() {
+  const t = useTranslations("SuperAdminGeoCities");
+  const tc = useTranslations("Common");
   const [err, setErr] = useState<string | null>(null);
   const setApiErr = (e: unknown) =>
-    setErr(e instanceof Error ? e.message : "Ошибка");
+    setErr(e instanceof Error ? e.message : t("errorGeneric"));
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -39,7 +42,7 @@ export function GeoCitiesPage() {
 
   const load = useCallback(async () => {
     if (!isApiConfigured()) {
-      setErr("Задайте NEXT_PUBLIC_API_BASE_URL");
+      setErr(tc("apiEnvMissing"));
       setLoading(false);
       return;
     }
@@ -59,7 +62,7 @@ export function GeoCitiesPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, activeFilter]);
+  }, [page, search, activeFilter, t, tc]);
 
   useEffect(() => {
     void load();
@@ -71,11 +74,8 @@ export function GeoCitiesPage() {
   return (
     <div className="max-w-4xl pb-12">
       <header className="mb-6">
-        <h1 className="ds-text-h2 text-ds-black">Гео: города</h1>
-        <p className="mt-1 ds-text-caption text-ds-gray-text">
-          Город → отдельная страница с районами → школы района. Формы открываются
-          в окне, список остаётся спокойным.
-        </p>
+        <h1 className="ds-text-h2 text-ds-black">{t("title")}</h1>
+        <p className="mt-1 ds-text-caption text-ds-gray-text">{t("lead")}</p>
       </header>
 
       {err && (
@@ -96,11 +96,11 @@ export function GeoCitiesPage() {
             setEditCity(null);
           }}
         >
-          + Город
+          {t("addCity")}
         </button>
         <input
           className="ds-input min-w-[160px] flex-1 sm:max-w-xs"
-          placeholder="Поиск…"
+          placeholder={t("searchPlaceholder")}
           value={searchDraft}
           onChange={(e) => setSearchDraft(e.target.value)}
           onKeyDown={(e) => {
@@ -118,7 +118,7 @@ export function GeoCitiesPage() {
             setPage(1);
           }}
         >
-          Найти
+          {t("find")}
         </button>
         <select
           className="ds-input w-auto min-w-[120px]"
@@ -128,30 +128,32 @@ export function GeoCitiesPage() {
             setPage(1);
           }}
         >
-          <option value="all">Все</option>
-          <option value="yes">Активные</option>
-          <option value="no">Неактивные</option>
+          <option value="all">{t("filterAll")}</option>
+          <option value="yes">{t("filterActive")}</option>
+          <option value="no">{t("filterInactive")}</option>
         </select>
       </div>
 
       <div className="overflow-hidden rounded-ds-card border border-ds-gray-border bg-ds-white">
         {loading ? (
-          <p className="p-6 ds-text-caption text-ds-gray-text">Загрузка…</p>
+          <p className="p-6 ds-text-caption text-ds-gray-text">{t("loading")}</p>
         ) : !data?.items.length ? (
           <p className="p-8 text-center ds-text-caption text-ds-gray-text">
-            Городов нет
+            {t("empty")}
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse ds-text-small">
               <thead>
                 <tr className="border-b border-ds-gray-border bg-[#F8F8F8] text-left text-ds-gray-text">
-                  <th className="px-3 py-2 font-medium">Город</th>
+                  <th className="px-3 py-2 font-medium">{t("thCity")}</th>
                   <th className="hidden px-3 py-2 font-medium sm:table-cell">
-                    KZ
+                    {t("thKz")}
                   </th>
-                  <th className="px-3 py-2 font-medium">Акт.</th>
-                  <th className="px-3 py-2 text-right font-medium">Действия</th>
+                  <th className="px-3 py-2 font-medium">{t("thActive")}</th>
+                  <th className="px-3 py-2 text-right font-medium">
+                    {t("thActions")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -179,20 +181,21 @@ export function GeoCitiesPage() {
                         href={`/super-admin/geo/cities/${encodeURIComponent(c.id)}`}
                         className="mr-3 ds-text-caption text-ds-primary"
                       >
-                        Районы
+                        {t("districts")}
                       </Link>
                       <button
                         type="button"
                         className="mr-2 ds-text-caption text-ds-gray-text underline"
                         onClick={() => setEditCity(c)}
                       >
-                        Изм.
+                        {t("editShort")}
                       </button>
                       <button
                         type="button"
                         className="ds-text-caption text-ds-error underline"
                         onClick={() => {
-                          if (!confirm(`Удалить «${c.name}»?`)) return;
+                          if (!confirm(t("confirmDelete", { name: c.name })))
+                            return;
                           void (async () => {
                             try {
                               await deleteCity(c.id);
@@ -203,7 +206,7 @@ export function GeoCitiesPage() {
                           })();
                         }}
                       >
-                        Удал.
+                        {t("deleteShort")}
                       </button>
                     </td>
                   </tr>
@@ -226,7 +229,7 @@ export function GeoCitiesPage() {
 
       <AdminModal
         open={modalNew}
-        title="Новый город"
+        title={t("modalNew")}
         onClose={() => setModalNew(false)}
       >
         <CityFormCard
@@ -244,7 +247,7 @@ export function GeoCitiesPage() {
 
       <AdminModal
         open={Boolean(editCity)}
-        title="Редактировать город"
+        title={t("modalEdit")}
         onClose={() => setEditCity(null)}
       >
         {editCity && (

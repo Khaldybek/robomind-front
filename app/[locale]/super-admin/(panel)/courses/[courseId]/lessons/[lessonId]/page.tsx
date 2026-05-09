@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import {
@@ -38,6 +39,7 @@ const TYPES: ContentBlockType[] = [
 const FROM_FILE_KINDS: ContentFromFileKind[] = ["image", "video", "file"];
 
 export default function Page() {
+  const t = useTranslations("SuperAdminLessonEditor");
   const { courseId, lessonId } = useParams() as {
     courseId: string;
     lessonId: string;
@@ -98,22 +100,29 @@ export default function Page() {
     load();
   }, [load]);
 
+  const metaLine =
+    mod != null
+      ? `${t("metaBlocks", { blocks: mod.contentCount, progress: mod.progressCount })}${
+          mod.hasQuiz
+            ? t("metaQuiz", {
+                prefix: mod.quizId?.slice(0, 8) ?? "",
+              })
+            : ""
+        }`
+      : null;
+
   return (
     <div className="max-w-4xl space-y-6">
       <Link
         href={`/super-admin/courses/${encodeURIComponent(courseId)}`}
         className="ds-text-caption text-ds-primary"
       >
-        ← К курсу
+        {t("backCourse")}
       </Link>
       <h1 className="ds-text-h2 text-ds-black">
-        {mod?.title ?? "Контент модуля"}
+        {mod?.title ?? t("fallbackTitle")}
       </h1>
-      <p className="ds-text-caption text-ds-gray-text">
-        {mod != null
-          ? `Блоков: ${mod.contentCount} · Прогресс: ${mod.progressCount}${mod.hasQuiz ? ` · Тест: ${mod.quizId?.slice(0, 8) ?? ""}…` : ""}`
-          : null}
-      </p>
+      <p className="ds-text-caption text-ds-gray-text">{metaLine}</p>
       <p className="ds-text-caption break-all text-ds-gray-text/80">
         {lessonId}
       </p>
@@ -121,7 +130,7 @@ export default function Page() {
         href={`/super-admin/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lessonId)}/homework`}
         className="inline-block ds-text-caption font-medium text-ds-primary hover:underline"
       >
-        Домашние задания учеников →
+        {t("homeworkLink")}
       </Link>
 
       {err && (
@@ -131,11 +140,11 @@ export default function Page() {
       )}
 
       <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
-        <h2 className="ds-text-h3 text-ds-black">Блоки</h2>
+        <h2 className="ds-text-h3 text-ds-black">{t("blocksTitle")}</h2>
         {loading ? (
-          <p className="mt-3 ds-text-caption text-ds-gray-text">Загрузка…</p>
+          <p className="mt-3 ds-text-caption text-ds-gray-text">{t("loading")}</p>
         ) : blocks.length === 0 ? (
-          <p className="mt-3 ds-text-caption text-ds-gray-text">Пока нет блоков.</p>
+          <p className="mt-3 ds-text-caption text-ds-gray-text">{t("noBlocks")}</p>
         ) : (
           <ul className="mt-3 space-y-2">
             {blocks.map((b) => (
@@ -153,7 +162,7 @@ export default function Page() {
                     </span>
                   ) : null}
                   <span className="ml-2 ds-text-caption text-ds-gray-text">
-                    order {b.order}
+                    {t("orderLabel", { order: b.order })}
                   </span>
                   {(b.content ?? b.fileUrl ?? b.livestreamUrl) && (
                     <p className="mt-1 truncate ds-text-caption text-ds-gray-text">
@@ -165,7 +174,7 @@ export default function Page() {
                   type="button"
                   className="shrink-0 rounded border border-ds-error/40 px-2 py-1 ds-text-caption text-ds-error hover:bg-[#FFF5F5]"
                   onClick={() => {
-                    if (!confirm("Удалить блок?")) return;
+                    if (!confirm(t("deleteBlockConfirm"))) return;
                     deleteModuleContent(lessonId, b.id)
                       .then(() => load())
                       .catch((er) =>
@@ -173,7 +182,7 @@ export default function Page() {
                       );
                   }}
                 >
-                  Удалить
+                  {t("delete")}
                 </button>
               </li>
             ))}
@@ -182,22 +191,19 @@ export default function Page() {
       </section>
 
       <section className="space-y-4 rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
-        <h2 className="ds-text-h3 text-ds-black">Тест модуля</h2>
+        <h2 className="ds-text-h3 text-ds-black">{t("quizTitle")}</h2>
         <p className="ds-text-caption text-ds-gray-text">
-          Один тест на модуль:{" "}
-          <code className="text-xs">GET/POST …/lessons/:lessonId/quiz</code>.
-          Сгенерировать вопросы ИИ можно в{" "}
-          <Link
-            href="/super-admin/ai"
-            className="text-ds-primary underline"
-          >
-            разделе «ИИ»
+          {t("quizIntro1")}{" "}
+          <code className="text-xs">GET/POST …/lessons/:lessonId/quiz</code>.{" "}
+          {t("quizIntro2")}{" "}
+          <Link href="/super-admin/ai" className="text-ds-primary underline">
+            {t("quizAiLink")}
           </Link>{" "}
-          и импортировать через API{" "}
+          {t("quizIntro3")}{" "}
           <code className="text-xs">…/quiz/import-generated</code>.
         </p>
         {loading ? (
-          <p className="ds-text-caption text-ds-gray-text">Загрузка теста…</p>
+          <p className="ds-text-caption text-ds-gray-text">{t("loadingQuiz")}</p>
         ) : quiz == null ? (
           <form
             className="space-y-3"
@@ -206,12 +212,14 @@ export default function Page() {
               if (!isApiConfigured()) return;
               setErr(null);
               setQuizBusy(true);
-              const title =
+              const qTit =
                 quizTitle.trim() ||
-                (mod?.title ? `Тест: ${mod.title}` : "Тест модуля");
+                (mod?.title
+                  ? t("quizDefaultTitleWithModule", { title: mod.title })
+                  : t("quizDefaultTitle"));
               const passing = Number(quizPassing);
               createAdminModuleQuiz(lessonId, {
-                title,
+                title: qTit,
                 passingScore: Number.isFinite(passing) ? passing : 60,
               })
                 .then((q) => {
@@ -224,13 +232,13 @@ export default function Page() {
                 .finally(() => setQuizBusy(false));
             }}
           >
-            <p className="ds-text-small text-ds-black">
-              Тест ещё не создан. Задайте название и порог прохода (%).
-            </p>
+            <p className="ds-text-small text-ds-black">{t("createQuizHint")}</p>
             <div className="flex flex-wrap gap-2">
               <input
                 className="ds-input min-w-[200px] flex-1"
-                placeholder={`Название (по умолчанию: Тест: ${mod?.title ?? "…"})`}
+                placeholder={t("placeholderQuizTitle", {
+                  title: mod?.title ?? "…",
+                })}
                 value={quizTitle}
                 onChange={(e) => setQuizTitle(e.target.value)}
               />
@@ -239,7 +247,7 @@ export default function Page() {
                 type="number"
                 min={0}
                 max={100}
-                placeholder="%"
+                placeholder={t("placeholderPercent")}
                 value={quizPassing}
                 onChange={(e) => setQuizPassing(e.target.value)}
               />
@@ -249,7 +257,7 @@ export default function Page() {
               disabled={quizBusy}
               className="ui-btn ui-btn--1 disabled:opacity-50"
             >
-              {quizBusy ? "…" : "Создать тест"}
+              {quizBusy ? t("busy") : t("createQuiz")}
             </button>
           </form>
         ) : (
@@ -259,18 +267,17 @@ export default function Page() {
                 {quiz.title}
               </p>
               <p className="ds-text-caption mt-1 text-ds-gray-text">
-                ID: <code className="text-xs">{quiz.id}</code> · Проходной балл:{" "}
-                {quiz.passingScore}% · Вопросов: {quiz.questions.length}
+                {t("quizMeta", {
+                  id: quiz.id,
+                  passing: quiz.passingScore,
+                  count: quiz.questions.length,
+                })}
               </p>
               <button
                 type="button"
                 className="mt-2 rounded border border-ds-error/40 px-2 py-1 ds-text-caption text-ds-error hover:bg-[#FFF5F5]"
                 onClick={() => {
-                  if (
-                    !confirm(
-                      "Удалить тест? Если есть попытки учеников, бэкенд вернёт ошибку.",
-                    )
-                  ) {
+                  if (!confirm(t("deleteQuizConfirm"))) {
                     return;
                   }
                   setQuizBusy(true);
@@ -286,7 +293,7 @@ export default function Page() {
                 }}
                 disabled={quizBusy}
               >
-                Удалить тест
+                {t("deleteQuiz")}
               </button>
             </div>
 
@@ -300,10 +307,12 @@ export default function Page() {
                       key={q.id}
                       className="rounded-lg border border-ds-gray-border px-3 py-2 ds-text-caption text-ds-black"
                     >
-                      <span className="text-ds-primary">{q.type}</span> ·{" "}
-                      {q.text.slice(0, 120)}
-                      {q.text.length > 120 ? "…" : ""} · ответов:{" "}
-                      {q.answers.length}
+                      {t("questionRow", {
+                        type: q.type,
+                        snippet: q.text.slice(0, 120),
+                        ellipsis: q.text.length > 120 ? "…" : "",
+                        count: q.answers.length,
+                      })}
                     </li>
                   ))}
               </ul>
@@ -321,28 +330,28 @@ export default function Page() {
                   }))
                   .filter((a) => a.text.length > 0);
                 if (!qText.trim()) {
-                  setErr("Введите текст вопроса");
+                  setErr(t("errQuestionText"));
                   return;
                 }
                 if (qType !== "text" && trimmed.length < 2) {
-                  setErr("Нужно минимум 2 варианта ответа с текстом");
+                  setErr(t("errMinAnswers"));
                   return;
                 }
                 if (qType === "single" && !trimmed.some((a) => a.isCorrect)) {
-                  setErr("Отметьте один правильный ответ");
+                  setErr(t("errSingleCorrect"));
                   return;
                 }
                 if (qType === "multiple" && !trimmed.some((a) => a.isCorrect)) {
-                  setErr("Отметьте хотя бы один правильный ответ");
+                  setErr(t("errMultiCorrect"));
                   return;
                 }
                 setErr(null);
                 setQuizBusy(true);
-                const order = quiz.questions.length;
+                const qOrder = quiz.questions.length;
                 createQuizQuestion(quiz.id, {
                   text: qText.trim(),
                   type: qType,
-                  order,
+                  order: qOrder,
                   answers:
                     qType === "text"
                       ? []
@@ -372,11 +381,11 @@ export default function Page() {
               }}
             >
               <h3 className="ds-text-small font-semibold text-ds-black">
-                Добавить вопрос
+                {t("addQuestionTitle")}
               </h3>
               <textarea
                 className="ds-input min-h-[80px] w-full"
-                placeholder="Текст вопроса"
+                placeholder={t("placeholderQuestion")}
                 value={qText}
                 onChange={(e) => setQText(e.target.value)}
               />
@@ -388,21 +397,21 @@ export default function Page() {
                     setQType(e.target.value as QuizQuestionType)
                   }
                 >
-                  <option value="single">Один верный (single)</option>
-                  <option value="multiple">Несколько верных (multiple)</option>
-                  <option value="text">Свободный ответ (text)</option>
+                  <option value="single">{t("qTypeSingle")}</option>
+                  <option value="multiple">{t("qTypeMultiple")}</option>
+                  <option value="text">{t("qTypeText")}</option>
                 </select>
               </div>
               {qType !== "text" && (
                 <div className="space-y-2">
                   <p className="ds-text-caption text-ds-gray-text">
-                    Варианты (минимум 2 с текстом), отметьте верные:
+                    {t("variantsHint")}
                   </p>
                   {qAnswers.map((a, i) => (
                     <div key={i} className="flex flex-wrap items-center gap-2">
                       <input
                         className="ds-input min-w-0 flex-1"
-                        placeholder={`Вариант ${i + 1}`}
+                        placeholder={t("optionN", { n: i + 1 })}
                         value={a.text}
                         onChange={(e) => {
                           const next = [...qAnswers];
@@ -423,7 +432,7 @@ export default function Page() {
                             setQAnswers(next);
                           }}
                         />
-                        верный
+                        {t("correctShort")}
                       </label>
                     </div>
                   ))}
@@ -434,7 +443,7 @@ export default function Page() {
                 disabled={quizBusy}
                 className="ui-btn ui-btn--1 disabled:opacity-50"
               >
-                {quizBusy ? "…" : "Добавить вопрос"}
+                {quizBusy ? t("busy") : t("addQuestionBtn")}
               </button>
             </form>
           </div>
@@ -442,19 +451,14 @@ export default function Page() {
       </section>
 
       <section className="space-y-3 rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
-        <h2 className="ds-text-h3 text-ds-black">Загрузить файл в блок</h2>
-        <p className="ds-text-caption text-ds-gray-text">
-          <code className="text-xs">POST .../contents/from-file</code> — multipart:
-          файл попадает на сервер как при <code>/admin/upload/*</code>, в блок
-          записывается <code>fileUrl</code> вида{" "}
-          <code className="break-all">/api/v1/files/...</code>.
-        </p>
+        <h2 className="ds-text-h3 text-ds-black">{t("uploadTitle")}</h2>
+        <p className="ds-text-caption text-ds-gray-text">{t("uploadLead")}</p>
         <form
           className="space-y-3"
           onSubmit={(e) => {
             e.preventDefault();
             if (!isApiConfigured() || !upFile) {
-              setErr("Выберите файл");
+              setErr(t("pickFileErr"));
               return;
             }
             setErr(null);
@@ -501,20 +505,20 @@ export default function Page() {
           </div>
           <input
             className="ds-input w-full max-w-md"
-            placeholder="Заголовок (необязательно)"
+            placeholder={t("placeholderUploadTitle")}
             value={upTitle}
             onChange={(e) => setUpTitle(e.target.value)}
           />
           <input
             className="ds-input w-24"
             type="number"
-            placeholder="order"
+            placeholder={t("placeholderOrder")}
             value={upOrder}
             onChange={(e) => setUpOrder(e.target.value)}
           />
           <textarea
             className="ds-input min-h-[60px] w-full"
-            placeholder="content (необязательно)"
+            placeholder={t("placeholderContentOpt")}
             value={upContent}
             onChange={(e) => setUpContent(e.target.value)}
           />
@@ -523,7 +527,7 @@ export default function Page() {
             disabled={upBusy || !upFile}
             className="ui-btn ui-btn--1 disabled:opacity-50"
           >
-            {upBusy ? "…" : "Загрузить и создать блок"}
+            {upBusy ? t("busy") : t("uploadSubmit")}
           </button>
         </form>
       </section>
@@ -545,21 +549,19 @@ export default function Page() {
           if (type === "image") {
             if (!raw) {
               setErr(
-                `Для image укажите fileUrl (${BACKEND_IMAGE_FILE_URL_PREFIX}...) или используйте форму загрузки файла выше.`,
+                t("errImageUrl", { prefix: BACKEND_IMAGE_FILE_URL_PREFIX }),
               );
               setBusy(false);
               return;
             }
             if (raw.startsWith("http://") || raw.startsWith("https://")) {
-              setErr(
-                "Для image внешние URL запрещены. Используйте «Загрузить файл в блок» или путь на этот бэкенд.",
-              );
+              setErr(t("errImageExternal"));
               setBusy(false);
               return;
             }
             if (!isAllowedImageBlockFileUrl(raw)) {
               setErr(
-                `fileUrl для image должен начинаться с ${BACKEND_IMAGE_FILE_URL_PREFIX}`,
+                t("errImagePrefix", { prefix: BACKEND_IMAGE_FILE_URL_PREFIX }),
               );
               setBusy(false);
               return;
@@ -586,10 +588,9 @@ export default function Page() {
             .finally(() => setBusy(false));
         }}
       >
-        <h2 className="ds-text-h3 text-ds-black">Добавить блок (JSON)</h2>
+        <h2 className="ds-text-h3 text-ds-black">{t("jsonBlockTitle")}</h2>
         <p className="ds-text-caption text-ds-gray-text">
-          Для <strong>image</strong> в поле ниже указывайте только путь на этот API (
-          <code>{BACKEND_IMAGE_FILE_URL_PREFIX}…</code>), не ссылку с другого сайта.
+          {t("jsonImageHint", { prefix: BACKEND_IMAGE_FILE_URL_PREFIX })}
         </p>
         <div className="flex flex-wrap gap-2">
           <select
@@ -597,22 +598,22 @@ export default function Page() {
             value={type}
             onChange={(e) => setType(e.target.value as ContentBlockType)}
           >
-            {TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t}
+            {TYPES.map((ty) => (
+              <option key={ty} value={ty}>
+                {ty}
               </option>
             ))}
           </select>
           <input
             className="ds-input min-w-[200px] flex-1"
-            placeholder="Заголовок блока"
+            placeholder={t("placeholderBlockTitle")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
           <input
             className="ds-input w-24"
             type="number"
-            placeholder="order"
+            placeholder={t("placeholderOrder")}
             value={order}
             onChange={(e) => setOrder(e.target.value)}
           />
@@ -621,8 +622,10 @@ export default function Page() {
           className="ds-input min-h-[120px] w-full"
           placeholder={
             type === "image"
-              ? `fileUrl: ${BACKEND_IMAGE_FILE_URL_PREFIX}...`
-              : "Текст / URL видео / fileUrl / ссылка стрима"
+              ? t("placeholderFileUrlImage", {
+                  prefix: BACKEND_IMAGE_FILE_URL_PREFIX,
+                })
+              : t("placeholderContentMixed")
           }
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -633,7 +636,7 @@ export default function Page() {
             type="datetime-local"
             value={liveAt}
             onChange={(e) => setLiveAt(e.target.value)}
-            placeholder="Начало стрима"
+            placeholder={t("placeholderStream")}
           />
         )}
         <button
@@ -641,7 +644,7 @@ export default function Page() {
           disabled={busy}
           className="ui-btn ui-btn--1 disabled:opacity-50"
         >
-          {busy ? "…" : "Добавить блок"}
+          {busy ? t("busy") : t("addBlock")}
         </button>
       </form>
     </div>

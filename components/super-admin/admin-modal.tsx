@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 
 export function AdminModal({
   open,
@@ -16,6 +17,7 @@ export function AdminModal({
   wide?: boolean;
   children: ReactNode;
 }) {
+  const t = useTranslations("AdminModal");
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -42,7 +44,7 @@ export function AdminModal({
       <button
         type="button"
         className="absolute inset-0 bg-black/40"
-        aria-label="Закрыть"
+        aria-label={t("closeAria")}
         onClick={onClose}
       />
       <div
@@ -57,7 +59,7 @@ export function AdminModal({
             className="shrink-0 rounded-lg px-2 py-1 ds-text-caption text-ds-gray-text hover:bg-[#F5F5F5] hover:text-ds-black"
             onClick={onClose}
           >
-            Закрыть
+            {t("close")}
           </button>
         </div>
         {children}

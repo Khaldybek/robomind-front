@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import {
   aiGenerateQuiz,
   aiSummarize,
@@ -9,13 +10,12 @@ import {
 import { isApiConfigured } from "@/lib/env";
 
 export default function Page() {
+  const t = useTranslations("SuperAdminAi");
   return (
     <div className="max-w-4xl space-y-6">
       <header>
-        <h1 className="ds-text-h2 text-ds-black">ИИ-инструменты</h1>
-        <p className="mt-2 ds-text-caption text-ds-gray-text">
-          Генерация квиза, саммари и транскрипция для учебного контента.
-        </p>
+        <h1 className="ds-text-h2 text-ds-black">{t("title")}</h1>
+        <p className="mt-2 ds-text-caption text-ds-gray-text">{t("lead")}</p>
       </header>
       <QuizSection />
       <SummarizeSection />
@@ -43,6 +43,7 @@ function Block({
 }
 
 function QuizSection() {
+  const t = useTranslations("SuperAdminAi");
   const [moduleId, setModuleId] = useState("");
   const [moduleText, setModuleText] = useState("");
   const [count, setCount] = useState(5);
@@ -53,22 +54,22 @@ function QuizSection() {
   const [err, setErr] = useState("");
 
   return (
-    <Block title="Генерация квиза" endpoint="POST /admin/ai/quiz/generate">
+    <Block title={t("quizTitle")} endpoint={t("quizEndpoint")}>
       <input
         className="ds-input"
-        placeholder="moduleId (uuid)"
+        placeholder={t("placeholderLessonId")}
         value={moduleId}
         onChange={(e) => setModuleId(e.target.value)}
       />
       <textarea
         className="ds-input min-h-[100px]"
-        placeholder="или moduleText (≥80 симв.)"
+        placeholder={t("placeholderModuleText")}
         value={moduleText}
         onChange={(e) => setModuleText(e.target.value)}
       />
       <div className="mt-3 flex flex-wrap gap-3">
         <label className="ds-text-caption text-ds-black">
-          Вопросов
+          {t("questionCount")}
           <input
             type="number"
             min={1}
@@ -106,7 +107,7 @@ function QuizSection() {
             .catch((e) => setErr(String(e)));
         }}
       >
-        Сгенерировать
+        {t("generate")}
       </button>
       {err && (
         <p className="mt-3 rounded border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
@@ -123,22 +124,23 @@ function QuizSection() {
 }
 
 function SummarizeSection() {
+  const t = useTranslations("SuperAdminAi");
   const [moduleId, setModuleId] = useState("");
   const [text, setText] = useState("");
   const [out, setOut] = useState("");
   const [err, setErr] = useState("");
 
   return (
-    <Block title="Саммари" endpoint="POST /admin/ai/summarize">
+    <Block title={t("summarizeTitle")} endpoint={t("summarizeEndpoint")}>
       <input
         className="ds-input"
-        placeholder="moduleId"
+        placeholder={t("placeholderLessonId2")}
         value={moduleId}
         onChange={(e) => setModuleId(e.target.value)}
       />
       <textarea
         className="ds-input min-h-[100px]"
-        placeholder="или text (≥40)"
+        placeholder={t("placeholderText")}
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
@@ -159,7 +161,7 @@ function SummarizeSection() {
             .catch((e) => setErr(String(e)));
         }}
       >
-        Суммаризовать
+        {t("summarizeBtn")}
       </button>
       {err && (
         <p className="mt-3 rounded border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
@@ -176,16 +178,14 @@ function SummarizeSection() {
 }
 
 function TranscribeSection() {
+  const t = useTranslations("SuperAdminAi");
   const [file, setFile] = useState<File | null>(null);
   const [lang, setLang] = useState<"ru" | "kk" | "auto">("auto");
   const [out, setOut] = useState("");
   const [err, setErr] = useState("");
 
   return (
-    <Block
-      title="Транскрипция"
-      endpoint="POST /admin/ai/transcribe (multipart/form-data)"
-    >
+    <Block title={t("transcribeTitle")} endpoint={t("transcribeEndpoint")}>
       <input
         type="file"
         accept="audio/*,video/*"
@@ -213,7 +213,7 @@ function TranscribeSection() {
             .catch((e) => setErr(String(e)));
         }}
       >
-        Транскрибировать
+        {t("transcribeBtn")}
       </button>
       {err && (
         <p className="mt-3 rounded border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">

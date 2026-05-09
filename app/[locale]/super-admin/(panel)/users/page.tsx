@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
   fetchSuperUsers,
@@ -11,6 +12,7 @@ import { isApiConfigured } from "@/lib/env";
 const PAGE_SIZE = 20;
 
 export default function Page() {
+  const t = useTranslations("SuperAdminUsers");
   const [items, setItems] = useState<AdminUser[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -55,25 +57,22 @@ export default function Page() {
   return (
     <div className="max-w-5xl space-y-6">
       <header>
-        <h1 className="ds-text-h2 text-ds-black">Пользователи</h1>
-        <p className="mt-2 ds-text-caption text-ds-gray-text">
-          Поиск по email, ФИО, ИИН; фильтры: школа, роль, активность (
-          <code>GET /admin/users</code>).
-        </p>
+        <h1 className="ds-text-h2 text-ds-black">{t("title")}</h1>
+        <p className="mt-2 ds-text-caption text-ds-gray-text">{t("lead")}</p>
       </header>
 
       <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-4 sm:p-5">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <input
             className="ds-input"
-            placeholder="Поиск: email / ФИО / ИИН"
+            placeholder={t("searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && load(1)}
           />
           <input
             className="ds-input font-mono"
-            placeholder="schoolId (uuid)"
+            placeholder={t("schoolIdPlaceholder")}
             value={schoolId}
             onChange={(e) => setSchoolId(e.target.value)}
           />
@@ -82,7 +81,7 @@ export default function Page() {
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >
-            <option value="">Все роли</option>
+            <option value="">{t("roleAll")}</option>
             <option value="student">student</option>
             <option value="school_admin">school_admin</option>
             <option value="super_admin">super_admin</option>
@@ -94,16 +93,16 @@ export default function Page() {
               setIsActive(e.target.value as typeof isActive)
             }
           >
-            <option value="all">Активность: все</option>
-            <option value="yes">Активные</option>
-            <option value="no">Неактивные</option>
+            <option value="all">{t("activeAll")}</option>
+            <option value="yes">{t("activeYes")}</option>
+            <option value="no">{t("activeNo")}</option>
           </select>
           <button
             type="button"
             className="ui-btn ui-btn--4"
             onClick={() => load(1)}
           >
-            Обновить список
+            {t("refresh")}
           </button>
         </div>
       </section>
@@ -118,8 +117,8 @@ export default function Page() {
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <p className="ds-text-caption text-ds-gray-text">
             {loading
-              ? "Загрузка…"
-              : `Всего: ${total} · стр. ${page} / ${totalPages}`}
+              ? t("loading")
+              : t("totalPage", { total, page, totalPages })}
           </p>
           {totalPages > 1 && (
             <div className="flex gap-2">
@@ -129,7 +128,7 @@ export default function Page() {
                 disabled={page <= 1 || loading}
                 onClick={() => load(page - 1)}
               >
-                Назад
+                {t("back")}
               </button>
               <button
                 type="button"
@@ -137,7 +136,7 @@ export default function Page() {
                 disabled={page >= totalPages || loading}
                 onClick={() => load(page + 1)}
               >
-                Вперёд
+                {t("forward")}
               </button>
             </div>
           )}
@@ -145,7 +144,7 @@ export default function Page() {
 
         {items.length === 0 && !loading ? (
           <p className="rounded-lg border border-dashed border-ds-gray-border bg-[#FAFAFA] py-8 text-center ds-text-caption text-ds-gray-text">
-            Ничего не найдено по текущим фильтрам.
+            {t("empty")}
           </p>
         ) : (
           <ul className="space-y-2">
@@ -166,24 +165,30 @@ export default function Page() {
                     </span>
                     {!u.isActive && (
                       <span className="rounded-full bg-[#FFF5F5] px-2 py-0.5 ds-text-caption text-ds-error">
-                        неактивен
+                        {t("inactive")}
                       </span>
                     )}
                   </div>
                   <p className="mt-1 ds-text-caption text-ds-gray-text">
                     {u.email}
-                    {u.iin ? ` · ИИН ${u.iin}` : ""}
+                    {u.iin ? ` · ${t("iin", { iin: u.iin })}` : ""}
                   </p>
                   <p className="mt-0.5 ds-text-caption text-ds-gray-text">
                     {u.role === "super_admin"
-                      ? "Школа: — (super_admin)"
+                      ? t("schoolSuper")
                       : u.school
-                        ? `Школа: ${u.school.name}${
-                            u.school.number != null
-                              ? ` №${u.school.number}`
-                              : ""
-                          }`
-                        : `schoolId: ${u.schoolId ?? "—"}`}
+                        ? t("schoolNamed", {
+                            name: u.school.name,
+                            numberSuffix:
+                              u.school.number != null
+                                ? t("numberSuffix", {
+                                    n: u.school.number,
+                                  })
+                                : "",
+                          })
+                        : t("schoolIdLine", {
+                            id: u.schoolId ?? "—",
+                          })}
                   </p>
                 </Link>
               </li>

@@ -92,11 +92,11 @@ export function SuperAdminShell({ children }: { children: ReactNode }) {
 
   return (
     <div
-      className="min-h-dvh min-h-screen w-full"
+      className="super-admin-scope min-h-dvh min-h-screen w-full"
       style={{ background: "var(--ds-gradient-page)" }}
     >
       {/* Мобильная шапка */}
-      <header className="fixed left-0 right-0 top-0 z-30 flex h-14 items-center justify-between border-b border-white/10 bg-[#262626] px-4 lg:hidden">
+      <header className="super-admin-mobile-header fixed left-0 right-0 top-0 z-30 flex h-14 items-center justify-between border-b border-white/10 px-4 lg:hidden">
         <span className="truncate ds-text-subtitle text-ds-white">
           {t("mobileBrand")}
         </span>

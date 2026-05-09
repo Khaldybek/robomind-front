@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import type { GeoCity, GeoDistrict, GeoSchool } from "@/lib/api/super-admin/geo";
 
 export function GeoField({
@@ -33,12 +34,13 @@ export function GeoPagination({
   total: number;
   onPage: (p: number) => void;
 }) {
+  const t = useTranslations("SuperAdminGeoForms");
   if (totalPages <= 1 && total === 0) return null;
   return (
     <div className="mt-4 flex flex-wrap items-center justify-between gap-2 ds-text-caption text-ds-gray-text">
       <span>
-        Всего: {total}
-        {totalPages > 1 ? ` · стр. ${page} из ${totalPages}` : ""}
+        {t("paginationTotal", { total })}
+        {totalPages > 1 ? t("paginationPages", { page, totalPages }) : ""}
       </span>
       {totalPages > 1 && (
         <div className="flex gap-2">
@@ -48,7 +50,7 @@ export function GeoPagination({
             disabled={page <= 1}
             onClick={() => onPage(page - 1)}
           >
-            Назад
+            {t("back")}
           </button>
           <button
             type="button"
@@ -56,7 +58,7 @@ export function GeoPagination({
             disabled={page >= totalPages}
             onClick={() => onPage(page + 1)}
           >
-            Вперёд
+            {t("forward")}
           </button>
         </div>
       )}
@@ -65,6 +67,7 @@ export function GeoPagination({
 }
 
 export function GeoActiveBadge({ active }: { active: boolean }) {
+  const t = useTranslations("SuperAdminGeoForms");
   return (
     <span
       className={
@@ -73,7 +76,7 @@ export function GeoActiveBadge({ active }: { active: boolean }) {
           : "rounded-full bg-[#F5F5F5] px-2 py-0.5 ds-text-caption text-ds-gray-text"
       }
     >
-      {active ? "да" : "нет"}
+      {active ? t("yes") : t("no")}
     </span>
   );
 }
@@ -95,6 +98,7 @@ export function CityFormCard({
   onError: (e: unknown) => void;
   plain?: boolean;
 }) {
+  const t = useTranslations("SuperAdminGeoForms");
   const [name, setName] = useState(initial?.name ?? "");
   const [nameKz, setNameKz] = useState(initial?.nameKz ?? "");
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
@@ -121,7 +125,7 @@ export function CityFormCard({
       }}
     >
       <div className="grid gap-3 sm:grid-cols-1">
-        <GeoField id="fc-name" label="Название (RU)">
+        <GeoField id="fc-name" label={t("nameRu")}>
           <input
             id="fc-name"
             className="ds-input w-full"
@@ -130,7 +134,7 @@ export function CityFormCard({
             required
           />
         </GeoField>
-        <GeoField id="fc-kz" label="Название (KZ)">
+        <GeoField id="fc-kz" label={t("nameKz")}>
           <input
             id="fc-kz"
             className="ds-input w-full"
@@ -145,14 +149,14 @@ export function CityFormCard({
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
         />
-        Активен
+        {t("active")}
       </label>
       <div className="flex gap-2 pt-1">
         <button type="submit" className="ui-btn ui-btn--1" disabled={busy}>
-          Сохранить
+          {t("save")}
         </button>
         <button type="button" className="ui-btn ui-btn--4" onClick={onCancel}>
-          Отмена
+          {t("cancel")}
         </button>
       </div>
     </form>
@@ -185,6 +189,7 @@ export function DistrictFormCard({
   onError: (e: unknown) => void;
   plain?: boolean;
 }) {
+  const t = useTranslations("SuperAdminGeoForms");
   const [name, setName] = useState(initial?.name ?? "");
   const [nameKz, setNameKz] = useState(initial?.nameKz ?? "");
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
@@ -221,7 +226,7 @@ export function DistrictFormCard({
       }}
     >
       <div className="grid gap-3">
-        <GeoField id="fd-name" label="Название (RU)">
+        <GeoField id="fd-name" label={t("nameRu")}>
           <input
             id="fd-name"
             className="ds-input w-full"
@@ -230,7 +235,7 @@ export function DistrictFormCard({
             required
           />
         </GeoField>
-        <GeoField id="fd-kz" label="Название (KZ)">
+        <GeoField id="fd-kz" label={t("nameKz")}>
           <input
             id="fd-kz"
             className="ds-input w-full"
@@ -245,14 +250,14 @@ export function DistrictFormCard({
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
         />
-        Активен
+        {t("active")}
       </label>
       <div className="flex gap-2 pt-1">
         <button type="submit" className="ui-btn ui-btn--1" disabled={busy}>
-          Сохранить
+          {t("save")}
         </button>
         <button type="button" className="ui-btn ui-btn--4" onClick={onCancel}>
-          Отмена
+          {t("cancel")}
         </button>
       </div>
     </form>
@@ -287,6 +292,7 @@ export function SchoolFormCard({
   onError: (e: unknown) => void;
   plain?: boolean;
 }) {
+  const t = useTranslations("SuperAdminGeoForms");
   const [name, setName] = useState(initial?.name ?? "");
   const [number, setNumber] = useState(
     initial?.number != null ? String(initial.number) : "",
@@ -328,7 +334,7 @@ export function SchoolFormCard({
         })();
       }}
     >
-      <GeoField id="fs-name" label="Название">
+      <GeoField id="fs-name" label={t("schoolName")}>
         <input
           id="fs-name"
           className="ds-input w-full"
@@ -338,7 +344,7 @@ export function SchoolFormCard({
         />
       </GeoField>
       <div className="grid gap-3 sm:grid-cols-2">
-        <GeoField id="fs-num" label="Номер">
+        <GeoField id="fs-num" label={t("schoolNumber")}>
           <input
             id="fs-num"
             type="number"
@@ -347,7 +353,7 @@ export function SchoolFormCard({
             onChange={(e) => setNumber(e.target.value)}
           />
         </GeoField>
-        <GeoField id="fs-addr" label="Адрес">
+        <GeoField id="fs-addr" label={t("schoolAddress")}>
           <input
             id="fs-addr"
             className="ds-input w-full"
@@ -362,14 +368,14 @@ export function SchoolFormCard({
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
         />
-        Активна
+        {t("activeF")}
       </label>
       <div className="flex gap-2 pt-1">
         <button type="submit" className="ui-btn ui-btn--1" disabled={busy}>
-          Сохранить
+          {t("save")}
         </button>
         <button type="button" className="ui-btn ui-btn--4" onClick={onCancel}>
-          Отмена
+          {t("cancel")}
         </button>
       </div>
     </form>

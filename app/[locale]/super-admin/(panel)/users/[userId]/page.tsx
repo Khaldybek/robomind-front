@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import {
@@ -17,6 +18,7 @@ import {
 import { isApiConfigured } from "@/lib/env";
 
 export default function Page() {
+  const t = useTranslations("SuperAdminUser");
   const { userId } = useParams() as { userId: string };
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -56,15 +58,15 @@ export default function Page() {
   }, [userId]);
 
   if (!loaded) {
-    return <p className="ds-text-caption text-ds-gray-text">Загрузка…</p>;
+    return <p className="ds-text-caption text-ds-gray-text">{t("loading")}</p>;
   }
   if (!user) {
     return (
       <div>
         <Link href="/super-admin/users" className="text-ds-primary">
-          ← Назад
+          {t("back")}
         </Link>
-        <p className="mt-4 text-ds-error">{err ?? "Не найден"}</p>
+        <p className="mt-4 text-ds-error">{err ?? t("notFound")}</p>
       </div>
     );
   }
@@ -72,7 +74,7 @@ export default function Page() {
   return (
     <div className="max-w-5xl space-y-6">
       <Link href="/super-admin/users" className="ds-text-caption text-ds-primary">
-        ← Список
+        {t("backList")}
       </Link>
       <h1 className="ds-text-h2 text-ds-black">
         {[user.lastName, user.firstName, user.patronymic]
@@ -81,19 +83,22 @@ export default function Page() {
       </h1>
       <p className="ds-text-caption text-ds-gray-text">
         {user.email} · {user.role}
-        {user.iin ? ` · ИИН ${user.iin}` : ""}
+        {user.iin ? ` · ${t("iin", { iin: user.iin })}` : ""}
       </p>
       {user.school && (
         <p className="ds-text-caption text-ds-gray-text">
-          Школа: {user.school.name}
-          {user.school.number != null ? ` №${user.school.number}` : ""} (
-          <code className="font-mono">{user.school.id}</code>)
+          {t("schoolLine", {
+            name: user.school.name,
+            numberSuffix:
+              user.school.number != null
+                ? t("numberSuffix", { n: user.school.number })
+                : "",
+            id: user.school.id,
+          })}
         </p>
       )}
       {user.role === "super_admin" && (
-        <p className="ds-text-caption text-ds-gray-text">
-          У супер-админа нет привязки к школе (schoolId: null).
-        </p>
+        <p className="ds-text-caption text-ds-gray-text">{t("superNoSchool")}</p>
       )}
 
       <form
@@ -108,30 +113,30 @@ export default function Page() {
             schoolId: schoolId || undefined,
           })
             .then(() => {
-              setMsg("Сохранено");
+              setMsg(t("saved"));
               refresh();
             })
-            .catch((e) => setErr(e instanceof Error ? e.message : "Ошибка"));
+            .catch((e) => setErr(e instanceof Error ? e.message : t("errorGeneric")));
         }}
       >
-        <h2 className="ds-text-h3 text-ds-black">Профиль пользователя</h2>
+        <h2 className="ds-text-h3 text-ds-black">{t("profileTitle")}</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <input
             className="ds-input"
-            placeholder="Фамилия"
+            placeholder={t("placeholderLastName")}
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
           />
           <input
             className="ds-input"
-            placeholder="Имя"
+            placeholder={t("placeholderFirstName")}
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
           />
         </div>
         <input
           className="mt-3 ds-input sm:max-w-md"
-          placeholder="schoolId (для ученика)"
+          placeholder={t("placeholderSchoolId")}
           value={schoolId}
           onChange={(e) => setSchoolId(e.target.value)}
         />
@@ -141,7 +146,7 @@ export default function Page() {
             checked={isActive}
             onChange={(e) => setIsActive(e.target.checked)}
           />
-          Активен
+          {t("active")}
         </label>
         {err && (
           <p className="mt-3 rounded border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
@@ -151,7 +156,7 @@ export default function Page() {
         {msg && <p className="mt-3 ds-text-small text-ds-black">{msg}</p>}
         <div className="mt-4 flex flex-wrap gap-2">
           <button type="submit" className="ui-btn ui-btn--1">
-            Сохранить
+            {t("save")}
           </button>
           <button
             type="button"
@@ -162,13 +167,13 @@ export default function Page() {
                 .catch((e) => setErr(String(e)))
             }
           >
-            Активировать
+            {t("activate")}
           </button>
         </div>
       </form>
 
       <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
-        <h2 className="ds-text-h3 mb-4 text-ds-black">Устройства</h2>
+        <h2 className="ds-text-h3 mb-4 text-ds-black">{t("devicesTitle")}</h2>
         <ul className="space-y-2">
           {devices.map((d) => (
             <li
@@ -184,14 +189,14 @@ export default function Page() {
                   deleteSuperUserDevice(userId, d.deviceId).then(refresh)
                 }
               >
-                Удалить
+                {t("remove")}
               </button>
             </li>
           ))}
         </ul>
       </section>
       <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
-        <h2 className="ds-text-h3 text-ds-black">Прогресс и сертификаты</h2>
+        <h2 className="ds-text-h3 text-ds-black">{t("progressTitle")}</h2>
         <pre className="mt-3 max-h-48 overflow-auto rounded-lg border border-ds-gray-border bg-ds-gray-light p-4 ds-text-caption">
           {JSON.stringify({ progress, certs }, null, 2)}
         </pre>

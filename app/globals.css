@@ -167,6 +167,36 @@ body {
   color: var(--ds-primary);
 }
 
+/* Супер-админ: акценты синий / голубой (локально, без смены глобального бренда) */
+.super-admin-scope {
+  --ds-primary: #1976d2;
+  --ds-gradient-page: linear-gradient(
+    165deg,
+    #e3f2fd 0%,
+    #f5f9ff 42%,
+    #e8f0fa 100%
+  );
+  --ds-gradient-footer-cta: linear-gradient(
+    148deg,
+    #0d2847 0%,
+    #1a4a7a 48%,
+    #0f3558 100%
+  );
+}
+
+.super-admin-scope .super-admin-mobile-header {
+  background: var(--ds-gradient-footer-cta);
+}
+
+.super-admin-scope .ds-input:focus {
+  border-color: var(--ds-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ds-primary) 24%, transparent);
+}
+
+.super-admin-scope .ds-header-dark {
+  border-bottom-color: color-mix(in srgb, var(--ds-white) 14%, transparent);
+}
+
 /* Контейнер: 97.5% desktop / 91.5% ≤1024px */
 .ds-container {
   width: 100%;

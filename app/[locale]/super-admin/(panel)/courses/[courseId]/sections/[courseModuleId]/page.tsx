@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import {
@@ -14,6 +15,7 @@ import { isApiConfigured } from "@/lib/env";
 import { AdminModal } from "@/components/super-admin/admin-modal";
 
 export default function SuperAdminCourseSectionLessonsPage() {
+  const t = useTranslations("SuperAdminSectionLessons");
   const { courseId, courseModuleId } = useParams() as {
     courseId: string;
     courseModuleId: string;
@@ -52,10 +54,10 @@ export default function SuperAdminCourseSectionLessonsPage() {
         href={`/super-admin/courses/${encodeURIComponent(courseId)}`}
         className="ds-text-caption text-ds-primary"
       >
-        ← К курсу
+        {t("backCourse")}
       </Link>
       <h1 className="ds-text-h2 text-ds-black">
-        {section?.title ?? "Раздел курса"}
+        {section?.title ?? t("fallbackTitle")}
       </h1>
       <p className="ds-text-caption text-ds-gray-text/80 break-all">
         {courseModuleId}
@@ -73,7 +75,7 @@ export default function SuperAdminCourseSectionLessonsPage() {
 
       <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="ds-text-h3 text-ds-black">Уроки</h2>
+          <h2 className="ds-text-h3 text-ds-black">{t("lessonsTitle")}</h2>
           <button
             type="button"
             className="ui-btn ui-btn--1"
@@ -82,7 +84,7 @@ export default function SuperAdminCourseSectionLessonsPage() {
               setModal(true);
             }}
           >
-            + Урок
+            {t("addLesson")}
           </button>
         </div>
         <ol className="space-y-2">
@@ -99,27 +101,29 @@ export default function SuperAdminCourseSectionLessonsPage() {
                   {lesson.order}. {lesson.title}
                 </span>
                 <span className="ml-2 ds-text-caption text-ds-gray-text">
-                  {lesson.isPublished ? "опубл." : "черновик"}
+                  {lesson.isPublished
+                    ? t("publishedShort")
+                    : t("draftShort")}
                 </span>
               </Link>
               <Link
                 href={`/super-admin/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lesson.id)}/homework`}
                 className="ds-text-caption text-ds-primary hover:underline"
               >
-                ДЗ →
+                {t("homework")}
               </Link>
             </li>
           ))}
         </ol>
         {lessons.length === 0 && (
-          <p className="ds-text-caption text-ds-gray-text">Уроков пока нет.</p>
+          <p className="ds-text-caption text-ds-gray-text">{t("noLessons")}</p>
         )}
       </section>
 
       <AdminModal
         open={modal}
         wide
-        title="Новый урок"
+        title={t("modalNew")}
         onClose={() => setModal(false)}
       >
         <form
@@ -142,7 +146,7 @@ export default function SuperAdminCourseSectionLessonsPage() {
                 setOrder("1");
                 setIsPublishedNew(false);
                 setUnlockAfterLessonId("");
-                setOk("Урок создан");
+                setOk(t("lessonCreated"));
                 load();
               })
               .catch((er) => {
@@ -151,7 +155,9 @@ export default function SuperAdminCourseSectionLessonsPage() {
           }}
         >
           <div>
-            <label className="ds-text-caption text-ds-gray-text">Название *</label>
+            <label className="ds-text-caption text-ds-gray-text">
+              {t("labelTitle")}
+            </label>
             <input
               className="mt-1 ds-input w-full"
               value={title}
@@ -160,7 +166,9 @@ export default function SuperAdminCourseSectionLessonsPage() {
             />
           </div>
           <div>
-            <label className="ds-text-caption text-ds-gray-text">Описание</label>
+            <label className="ds-text-caption text-ds-gray-text">
+              {t("labelDescription")}
+            </label>
             <textarea
               className="mt-1 ds-input min-h-[80px] w-full"
               value={description}
@@ -168,7 +176,9 @@ export default function SuperAdminCourseSectionLessonsPage() {
             />
           </div>
           <div>
-            <label className="ds-text-caption text-ds-gray-text">Порядок</label>
+            <label className="ds-text-caption text-ds-gray-text">
+              {t("labelOrder")}
+            </label>
             <input
               className="mt-1 ds-input w-24"
               type="number"
@@ -178,14 +188,14 @@ export default function SuperAdminCourseSectionLessonsPage() {
           </div>
           <div>
             <label className="ds-text-caption text-ds-gray-text">
-              Открыть после урока
+              {t("unlockAfterLesson")}
             </label>
             <select
               className="mt-1 ds-input w-full"
               value={unlockAfterLessonId}
               onChange={(e) => setUnlockAfterLessonId(e.target.value)}
             >
-              <option value="">— нет —</option>
+              <option value="">{t("optionNone")}</option>
               {lessons.map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.order}. {l.title}
@@ -199,18 +209,18 @@ export default function SuperAdminCourseSectionLessonsPage() {
               checked={isPublishedNew}
               onChange={(e) => setIsPublishedNew(e.target.checked)}
             />
-            Опубликован
+            {t("published")}
           </label>
           <div className="flex gap-2 pt-2">
             <button type="submit" className="ui-btn ui-btn--1">
-              Создать
+              {t("create")}
             </button>
             <button
               type="button"
               className="ui-btn ui-btn--4"
               onClick={() => setModal(false)}
             >
-              Отмена
+              {t("cancel")}
             </button>
           </div>
         </form>

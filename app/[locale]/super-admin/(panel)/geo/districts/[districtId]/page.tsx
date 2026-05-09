@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import {
@@ -24,13 +25,14 @@ import {
 const PAGE_SIZE = 20;
 
 export default function Page() {
+  const t = useTranslations("SuperAdminGeoDistrict");
   const { districtId } = useParams() as { districtId: string };
   const [district, setDistrict] = useState<GeoDistrict | null>(null);
   const [distErr, setDistErr] = useState<string | null>(null);
 
   const [err, setErr] = useState<string | null>(null);
   const setApiErr = (e: unknown) =>
-    setErr(e instanceof Error ? e.message : "Ошибка");
+    setErr(e instanceof Error ? e.message : t("errorGeneric"));
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -51,9 +53,9 @@ export default function Page() {
       .then(setDistrict)
       .catch(() => {
         setDistrict(null);
-        setDistErr("Район не найден");
+        setDistErr(t("notFound"));
       });
-  }, [districtId]);
+  }, [districtId, t]);
 
   const loadSchools = useCallback(async () => {
     if (!isApiConfigured() || !districtId) {
@@ -77,7 +79,7 @@ export default function Page() {
     } finally {
       setLoading(false);
     }
-  }, [districtId, page, search, activeFilter]);
+  }, [districtId, page, search, activeFilter, t]);
 
   useEffect(() => {
     void loadSchools();
@@ -90,7 +92,7 @@ export default function Page() {
     return (
       <div className="max-w-4xl">
         <Link href="/super-admin/geo" className="ds-text-caption text-ds-primary">
-          ← Города
+          {t("backCities")}
         </Link>
         <p className="mt-4 text-ds-error">{distErr}</p>
       </div>
@@ -101,23 +103,25 @@ export default function Page() {
     ? `/super-admin/geo/cities/${encodeURIComponent(district.cityId)}`
     : "/super-admin/geo";
 
+  const namePlaceholder = "…";
+
   return (
     <div className="max-w-4xl pb-12">
       <nav className="mb-4 ds-text-caption text-ds-gray-text">
         <Link href="/super-admin/geo" className="text-ds-primary hover:underline">
-          Города
+          {t("navCities")}
         </Link>
         <span className="mx-1.5">/</span>
         <Link href={cityHref} className="text-ds-primary hover:underline">
-          Районы
+          {t("navDistricts")}
         </Link>
         <span className="mx-1.5">/</span>
-        <span className="text-ds-black">{district?.name ?? "…"}</span>
+        <span className="text-ds-black">{district?.name ?? namePlaceholder}</span>
       </nav>
 
       <header className="mb-6">
         <h1 className="ds-text-h2 text-ds-black">
-          Школы: {district?.name ?? "…"}
+          {t("title", { name: district?.name ?? namePlaceholder })}
         </h1>
       </header>
 
@@ -136,11 +140,11 @@ export default function Page() {
             setEditSch(null);
           }}
         >
-          + Школа
+          {t("addSchool")}
         </button>
         <input
           className="ds-input min-w-[160px] flex-1 sm:max-w-xs"
-          placeholder="Поиск…"
+          placeholder={t("searchPlaceholder")}
           value={searchDraft}
           onChange={(e) => setSearchDraft(e.target.value)}
           onKeyDown={(e) => {
@@ -158,7 +162,7 @@ export default function Page() {
             setPage(1);
           }}
         >
-          Найти
+          {t("find")}
         </button>
         <select
           className="ds-input w-auto min-w-[120px]"
@@ -168,31 +172,33 @@ export default function Page() {
             setPage(1);
           }}
         >
-          <option value="all">Все</option>
-          <option value="yes">Активные</option>
-          <option value="no">Неактивные</option>
+          <option value="all">{t("filterAll")}</option>
+          <option value="yes">{t("filterActive")}</option>
+          <option value="no">{t("filterInactive")}</option>
         </select>
       </div>
 
       <div className="overflow-hidden rounded-ds-card border border-ds-gray-border bg-ds-white">
         {loading ? (
-          <p className="p-6 ds-text-caption text-ds-gray-text">Загрузка…</p>
+          <p className="p-6 ds-text-caption text-ds-gray-text">{t("loading")}</p>
         ) : !data?.items.length ? (
           <p className="p-8 text-center ds-text-caption text-ds-gray-text">
-            Школ нет
+            {t("empty")}
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse ds-text-small">
               <thead>
                 <tr className="border-b border-ds-gray-border bg-[#F8F8F8] text-left text-ds-gray-text">
-                  <th className="px-3 py-2 font-medium">Школа</th>
-                  <th className="px-3 py-2 font-medium">№</th>
+                  <th className="px-3 py-2 font-medium">{t("thSchool")}</th>
+                  <th className="px-3 py-2 font-medium">{t("thNumber")}</th>
                   <th className="hidden px-3 py-2 font-medium md:table-cell">
-                    Адрес
+                    {t("thAddress")}
                   </th>
-                  <th className="px-3 py-2 font-medium">Акт.</th>
-                  <th className="px-3 py-2 text-right font-medium">Действия</th>
+                  <th className="px-3 py-2 font-medium">{t("thActive")}</th>
+                  <th className="px-3 py-2 text-right font-medium">
+                    {t("thActions")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -219,13 +225,14 @@ export default function Page() {
                         className="mr-2 ds-text-caption text-ds-gray-text underline"
                         onClick={() => setEditSch(s)}
                       >
-                        Изм.
+                        {t("editShort")}
                       </button>
                       <button
                         type="button"
                         className="ds-text-caption text-ds-error underline"
                         onClick={() => {
-                          if (!confirm(`Удалить «${s.name}»?`)) return;
+                          if (!confirm(t("confirmDelete", { name: s.name })))
+                            return;
                           void (async () => {
                             try {
                               await deleteSchool(s.id);
@@ -236,7 +243,7 @@ export default function Page() {
                           })();
                         }}
                       >
-                        Удал.
+                        {t("deleteShort")}
                       </button>
                     </td>
                   </tr>
@@ -259,7 +266,7 @@ export default function Page() {
 
       <AdminModal
         open={modalNew}
-        title="Новая школа"
+        title={t("modalNew")}
         onClose={() => setModalNew(false)}
       >
         <SchoolFormCard
@@ -279,7 +286,7 @@ export default function Page() {
 
       <AdminModal
         open={Boolean(editSch)}
-        title="Редактировать школу"
+        title={t("modalEdit")}
         onClose={() => setEditSch(null)}
       >
         {editSch && (

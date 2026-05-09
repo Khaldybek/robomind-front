@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { uploadSuperVideo, uploadSuperFile } from "@/lib/api/super-admin/upload";
 import { isApiConfigured } from "@/lib/env";
 
 export default function Page() {
+  const t = useTranslations("SuperAdminUploads");
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [docFile, setDocFile] = useState<File | null>(null);
   const [out, setOut] = useState("");
@@ -13,15 +15,11 @@ export default function Page() {
   return (
     <div className="max-w-4xl space-y-6">
       <header>
-        <h1 className="ds-text-h2 text-ds-black">Загрузки</h1>
-        <p className="mt-2 ds-text-caption text-ds-gray-text">
-          Загрузка медиа в хранилище платформы.
-        </p>
+        <h1 className="ds-text-h2 text-ds-black">{t("title")}</h1>
+        <p className="mt-2 ds-text-caption text-ds-gray-text">{t("lead")}</p>
       </header>
       <p className="rounded-lg border border-ds-gray-border bg-ds-white px-3 py-2 ds-text-caption text-ds-gray-text">
-        Используются <code className="text-ds-black">POST /admin/upload/video</code>{" "}
-        и <code className="text-ds-black">POST /admin/upload/file</code> (поле
-        файла обычно <code className="text-ds-black">file</code>).
+        {t("apiLine")}
       </p>
       {err && (
         <p className="rounded-lg border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
@@ -35,7 +33,7 @@ export default function Page() {
       )}
 
       <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
-        <h2 className="ds-text-h3 text-ds-black">Видео</h2>
+        <h2 className="ds-text-h3 text-ds-black">{t("videoTitle")}</h2>
         <input
           type="file"
           accept="video/*"
@@ -54,12 +52,12 @@ export default function Page() {
               .catch((e) => setErr(String(e)));
           }}
         >
-          Загрузить видео
+          {t("videoBtn")}
         </button>
       </section>
 
       <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
-        <h2 className="ds-text-h3 text-ds-black">Файл (PDF / архив)</h2>
+        <h2 className="ds-text-h3 text-ds-black">{t("fileTitle")}</h2>
         <input
           type="file"
           className="mt-3 block w-full ds-text-caption"
@@ -77,7 +75,7 @@ export default function Page() {
               .catch((e) => setErr(String(e)));
           }}
         >
-          Загрузить файл
+          {t("fileBtn")}
         </button>
       </section>
     </div>

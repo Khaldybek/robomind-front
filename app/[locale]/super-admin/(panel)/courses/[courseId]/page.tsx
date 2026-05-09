@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import {
@@ -23,6 +24,7 @@ import { isApiConfigured } from "@/lib/env";
 import { AdminModal } from "@/components/super-admin/admin-modal";
 
 export default function Page() {
+  const t = useTranslations("SuperAdminCourse");
   const { courseId } = useParams() as { courseId: string };
   const [modules, setModules] = useState<AdminModule[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -61,14 +63,17 @@ export default function Page() {
         href="/super-admin/courses"
         className="ds-text-caption text-ds-primary"
       >
-        ← Курсы
+        {t("backCourses")}
       </Link>
       <h1 className="ds-text-h2 text-ds-black">
-        {course?.title ?? "Курс и модули"}
+        {course?.title ?? t("fallbackTitle")}
       </h1>
       <p className="ds-text-caption text-ds-gray-text">
         {course != null
-          ? `Модулей: ${course.moduleCount} · Студентов: ${course.studentsCount}`
+          ? t("metaCounts", {
+              modules: course.moduleCount,
+              students: course.studentsCount,
+            })
           : null}
       </p>
       <p className="ds-text-caption text-ds-gray-text/80 break-all">{courseId}</p>
@@ -85,7 +90,7 @@ export default function Page() {
 
       <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="ds-text-h3 text-ds-black">Модули курса</h2>
+          <h2 className="ds-text-h3 text-ds-black">{t("sectionsTitle")}</h2>
           <button
             type="button"
             className="ui-btn ui-btn--1"
@@ -94,7 +99,7 @@ export default function Page() {
               setModuleModal(true);
             }}
           >
-            + Модуль
+            {t("addSection")}
           </button>
         </div>
         <ol className="space-y-2">
@@ -111,9 +116,12 @@ export default function Page() {
                   {m.order}. {m.title}
                 </span>
                 <span className="ml-2 ds-text-caption text-ds-gray-text">
-                  {m.isPublished ? "опубл." : "черновик"} · блоков{" "}
-                  {m.contentCount} · прогресс {m.progressCount}
-                  {m.hasQuiz ? " · есть тест" : ""}
+                  {t("sectionRowMeta", {
+                    pub: m.isPublished ? t("publishedShort") : t("draftShort"),
+                    blocks: m.contentCount,
+                    progress: m.progressCount,
+                    quiz: m.hasQuiz ? t("hasQuiz") : "",
+                  })}
                 </span>
               </Link>
               <div className="flex shrink-0 gap-2">
@@ -125,46 +133,46 @@ export default function Page() {
                     setEditMod(m);
                   }}
                 >
-                  Изм.
+                  {t("editShort")}
                 </button>
                 <button
                   type="button"
                   className="rounded-lg border border-ds-error/40 px-3 py-1 ds-text-caption text-ds-error hover:bg-[#FFF5F5]"
                   onClick={async () => {
-                    if (!confirm(`Удалить модуль «${m.title}»?`)) return;
+                    if (!confirm(t("confirmDeleteSection", { title: m.title })))
+                      return;
                     setErr(null);
                     setOk(null);
                     try {
                       await deleteAdminModule(m.id);
-                      setOk("Модуль удалён");
+                      setOk(t("sectionDeleted"));
                       load();
                     } catch (e) {
                       if (e instanceof ApiRequestError && e.status === 409) {
                         setErr(
-                          e.message ||
-                            "Нельзя удалить: есть прогресс или попытки теста.",
+                          e.message || t("deleteSectionConflict"),
                         );
                       } else {
                         setErr(
-                          e instanceof Error ? e.message : "Ошибка удаления",
+                          e instanceof Error ? e.message : t("deleteError"),
                         );
                       }
                     }
                   }}
                 >
-                  Удалить
+                  {t("delete")}
                 </button>
               </div>
             </li>
           ))}
         </ol>
         {modules.length === 0 && (
-          <p className="ds-text-caption text-ds-gray-text">Модулей пока нет.</p>
+          <p className="ds-text-caption text-ds-gray-text">{t("noSections")}</p>
         )}
       </section>
 
       <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
-        <h2 className="ds-text-h3 text-ds-black">Доступ ученику</h2>
+        <h2 className="ds-text-h3 text-ds-black">{t("accessTitle")}</h2>
         <select
           className="mt-3 ds-input"
           value={userId}
@@ -191,12 +199,12 @@ export default function Page() {
               })
                 .then(() => {
                   setErr(null);
-                  setOk("Доступ выдан");
+                  setOk(t("grantOk"));
                 })
                 .catch((e) => setErr(String(e)))
             }
           >
-            Выдать доступ
+            {t("grantBtn")}
           </button>
           <button
             type="button"
@@ -206,12 +214,12 @@ export default function Page() {
               revokeSuperCourseAccess(courseId, userId)
                 .then(() => {
                   setErr(null);
-                  setOk("Доступ отозван");
+                  setOk(t("revokeOk"));
                 })
                 .catch((e) => setErr(String(e)))
             }
           >
-            Отозвать
+            {t("revokeBtn")}
           </button>
         </div>
       </section>
@@ -219,7 +227,7 @@ export default function Page() {
       <AdminModal
         open={moduleModal}
         wide
-        title="Новый модуль"
+        title={t("modalNewSection")}
         onClose={() => setModuleModal(false)}
       >
         <form
@@ -241,14 +249,16 @@ export default function Page() {
                 setOrder("1");
                 setIsPublishedNew(false);
                 setUnlockAfterId("");
-                setOk("Модуль создан");
+                setOk(t("sectionCreated"));
                 load();
               })
               .catch((er) => setErr(String(er)));
           }}
         >
           <div>
-            <label className="ds-text-caption text-ds-gray-text">Название *</label>
+            <label className="ds-text-caption text-ds-gray-text">
+              {t("labelTitle")}
+            </label>
             <input
               className="mt-1 ds-input w-full"
               value={title}
@@ -257,7 +267,9 @@ export default function Page() {
             />
           </div>
           <div>
-            <label className="ds-text-caption text-ds-gray-text">Описание</label>
+            <label className="ds-text-caption text-ds-gray-text">
+              {t("labelDescription")}
+            </label>
             <textarea
               className="mt-1 ds-input min-h-[80px] w-full"
               value={description}
@@ -265,7 +277,9 @@ export default function Page() {
             />
           </div>
           <div>
-            <label className="ds-text-caption text-ds-gray-text">Порядок</label>
+            <label className="ds-text-caption text-ds-gray-text">
+              {t("labelOrder")}
+            </label>
             <input
               className="mt-1 ds-input w-24"
               type="number"
@@ -275,14 +289,14 @@ export default function Page() {
           </div>
           <div>
             <label className="ds-text-caption text-ds-gray-text">
-              Открыть после модуля
+              {t("unlockAfterSection")}
             </label>
             <select
               className="mt-1 ds-input w-full"
               value={unlockAfterId}
               onChange={(e) => setUnlockAfterId(e.target.value)}
             >
-              <option value="">— нет —</option>
+              <option value="">{t("optionNone")}</option>
               {modules.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.order}. {m.title}
@@ -296,18 +310,18 @@ export default function Page() {
               checked={isPublishedNew}
               onChange={(e) => setIsPublishedNew(e.target.checked)}
             />
-            Опубликован
+            {t("published")}
           </label>
           <div className="flex gap-2 pt-2">
             <button type="submit" className="ui-btn ui-btn--1">
-              Создать
+              {t("create")}
             </button>
             <button
               type="button"
               className="ui-btn ui-btn--4"
               onClick={() => setModuleModal(false)}
             >
-              Отмена
+              {t("cancel")}
             </button>
           </div>
         </form>
@@ -316,7 +330,7 @@ export default function Page() {
       <AdminModal
         open={!!editMod}
         wide
-        title="Редактировать модуль"
+        title={t("modalEditSection")}
         onClose={() => setEditMod(null)}
       >
         {editMod && (
@@ -326,7 +340,7 @@ export default function Page() {
             siblings={modules.filter((x) => x.id !== editMod.id)}
             onSaved={() => {
               setEditMod(null);
-              setOk("Сохранено");
+              setOk(t("saved"));
               load();
             }}
             onErr={setErr}
@@ -350,6 +364,7 @@ function EditModuleForm({
   onSaved: () => void;
   onErr: (s: string | null) => void;
 }) {
+  const t = useTranslations("SuperAdminCourse");
   const [title, setTitle] = useState(mod.title);
   const [description, setDescription] = useState(mod.description ?? "");
   const [order, setOrder] = useState(String(mod.order));
@@ -381,7 +396,9 @@ function EditModuleForm({
       }}
     >
       <div>
-        <label className="ds-text-caption text-ds-gray-text">Название</label>
+        <label className="ds-text-caption text-ds-gray-text">
+          {t("labelTitleEdit")}
+        </label>
         <input
           className="mt-1 ds-input w-full"
           value={title}
@@ -390,16 +407,18 @@ function EditModuleForm({
         />
       </div>
       <div>
-        <label className="ds-text-caption text-ds-gray-text">Описание</label>
+        <label className="ds-text-caption text-ds-gray-text">
+          {t("labelDescription")}
+        </label>
         <textarea
           className="mt-1 ds-input min-h-[80px] w-full"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Пусто = сброс"
+          placeholder={t("descPlaceholder")}
         />
       </div>
       <div>
-        <label className="ds-text-caption text-ds-gray-text">Порядок</label>
+        <label className="ds-text-caption text-ds-gray-text">{t("labelOrder")}</label>
         <input
           className="mt-1 ds-input w-24"
           type="number"
@@ -409,7 +428,7 @@ function EditModuleForm({
       </div>
       <div>
         <label className="ds-text-caption text-ds-gray-text">
-          Открыть после модуля
+          {t("unlockAfterSection")}
         </label>
         <select
           className="mt-1 ds-input w-full"
@@ -420,7 +439,7 @@ function EditModuleForm({
           }}
           disabled={clearUnlock}
         >
-          <option value="">— нет —</option>
+          <option value="">{t("optionNone")}</option>
           {siblings.map((m) => (
             <option key={m.id} value={m.id}>
               {m.order}. {m.title}
@@ -435,7 +454,7 @@ function EditModuleForm({
               setClearUnlock(e.target.checked);
             }}
           />
-          Снять условие (null)
+          {t("clearUnlock")}
         </label>
       </div>
       <label className="flex items-center gap-2 ds-text-small">
@@ -444,18 +463,18 @@ function EditModuleForm({
           checked={isPublished}
           onChange={(e) => setIsPublished(e.target.checked)}
         />
-        Опубликован
+        {t("published")}
       </label>
       <div className="flex gap-2 pt-2">
         <button type="submit" className="ui-btn ui-btn--1">
-          Сохранить
+          {t("save")}
         </button>
         <Link
           href={`/super-admin/courses/${encodeURIComponent(courseId)}/sections/${encodeURIComponent(mod.id)}`}
           className="ui-btn ui-btn--4 inline-flex items-center"
           onClick={() => {}}
         >
-          Уроки раздела
+          {t("ctaSectionLessons")}
         </Link>
       </div>
     </form>

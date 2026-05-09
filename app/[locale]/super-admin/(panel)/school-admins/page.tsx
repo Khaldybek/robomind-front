@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import {
@@ -31,6 +32,8 @@ function schoolLabel(s: GeoSchool): string {
 }
 
 function SchoolAdminsContent() {
+  const t = useTranslations("SuperAdminSchoolAdmins");
+  const tc = useTranslations("Common");
   const searchParams = useSearchParams();
   const [schoolIdDraft, setSchoolIdDraft] = useState(
     () => searchParams.get("schoolId")?.trim() ?? "",
@@ -101,7 +104,7 @@ function SchoolAdminsContent() {
   /** Справочники: города (все страницы + поиск по API) */
   useEffect(() => {
     if (!isApiConfigured()) {
-      setGeoErr("Задайте NEXT_PUBLIC_API_BASE_URL");
+      setGeoErr(tc("apiEnvMissing"));
       setCities([]);
       return;
     }
@@ -114,7 +117,7 @@ function SchoolAdminsContent() {
       .catch((e) => {
         setCities([]);
         setGeoErr(
-          e instanceof Error ? e.message : "Не удалось загрузить города",
+          e instanceof Error ? e.message : t("geoCitiesLoadError"),
         );
       })
       .finally(() => setCitiesLoading(false));
@@ -137,7 +140,7 @@ function SchoolAdminsContent() {
       .catch((e) => {
         setDistricts([]);
         setDistrictErr(
-          e instanceof Error ? e.message : "Не удалось загрузить районы",
+          e instanceof Error ? e.message : t("geoDistrictsLoadError"),
         );
       })
       .finally(() => setGeoLoading(false));
@@ -161,7 +164,7 @@ function SchoolAdminsContent() {
       .catch((e) => {
         setSchools([]);
         setSchoolErr(
-          e instanceof Error ? e.message : "Не удалось загрузить школы",
+          e instanceof Error ? e.message : t("geoSchoolsLoadError"),
         );
       })
       .finally(() => setGeoLoading(false));
@@ -219,7 +222,7 @@ function SchoolAdminsContent() {
     })
       .then(setData)
       .catch((e) => {
-        setErr(e instanceof Error ? e.message : "Ошибка");
+        setErr(e instanceof Error ? e.message : t("errorGeneric"));
         setData(null);
       })
       .finally(() => setLoading(false));
@@ -261,14 +264,13 @@ function SchoolAdminsContent() {
 
   return (
     <div className="max-w-4xl space-y-6">
-      <h1 className="ds-text-h2 text-ds-black">Администраторы школ</h1>
+      <h1 className="ds-text-h2 text-ds-black">{t("title")}</h1>
       <p className="ds-text-caption text-ds-gray-text">
-        Выберите школу каскадом (те же API, что в{" "}
+        {t("leadBefore")}{" "}
         <Link href="/super-admin/geo" className="text-ds-primary hover:underline">
-          Гео / школы
+          {t("leadGeoLink")}
         </Link>
-        ): город → район → школа. Для списка админов по-прежнему нужен{" "}
-        <code className="font-mono">schoolId</code> — он подставляется из выбора.
+        {t("leadAfter")}
       </p>
       {err && (
         <p className="rounded-lg border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
@@ -283,17 +285,17 @@ function SchoolAdminsContent() {
 
       <div className="space-y-4 rounded-ds-card border border-ds-gray-border bg-ds-white p-4">
         <p className="ds-text-caption font-medium text-ds-black">
-          Выбор школы
+          {t("pickSchoolTitle")}
         </p>
         <div className="mb-3 max-w-md">
           <label className="ds-text-caption text-ds-gray-text">
-            Поиск города (к API)
+            {t("citySearchLabel")}
           </label>
           <input
             className="mt-1 w-full rounded-lg border border-ds-gray-border px-3 py-2 ds-text-small"
             value={citySearch}
             onChange={(e) => setCitySearch(e.target.value)}
-            placeholder="Начните вводить название…"
+            placeholder={t("citySearchPlaceholder")}
           />
         </div>
         {geoErr && (
@@ -304,19 +306,19 @@ function SchoolAdminsContent() {
               className="rounded border border-ds-error/50 px-2 py-0.5 ds-text-caption"
               onClick={() => setGeoReloadKey((k) => k + 1)}
             >
-              Повторить
+              {t("retry")}
             </button>
             <Link
               href="/super-admin/geo"
               className="ds-text-caption text-ds-primary underline"
             >
-              Гео: города
+              {t("geoCitiesLink")}
             </Link>
           </div>
         )}
         {citiesLoading && (
           <p className="mb-2 ds-text-caption text-ds-gray-text">
-            Загрузка городов…
+            {t("citiesLoading")}
           </p>
         )}
         {!citiesLoading &&
@@ -324,20 +326,19 @@ function SchoolAdminsContent() {
           cities.length === 0 &&
           !citySearchApplied && (
           <p className="mb-3 ds-text-caption text-amber-800">
-            Городов нет в ответе API. Добавьте города в разделе «Гео» или
-            уточните поиск.
+            {t("citiesEmpty")}
           </p>
         )}
         {cityId && (
           <div className="mb-3 max-w-md">
             <label className="ds-text-caption text-ds-gray-text">
-              Поиск района (к API)
+              {t("districtSearchLabel")}
             </label>
             <input
               className="mt-1 w-full rounded-lg border border-ds-gray-border px-3 py-2 ds-text-small"
               value={districtSearch}
               onChange={(e) => setDistrictSearch(e.target.value)}
-              placeholder="Начните вводить название…"
+              placeholder={t("districtSearchPlaceholder")}
             />
           </div>
         )}
@@ -349,15 +350,17 @@ function SchoolAdminsContent() {
               className="rounded border border-ds-error/50 px-2 py-0.5 ds-text-caption"
               onClick={() => setDistrictReloadKey((k) => k + 1)}
             >
-              Повторить
+              {t("retry")}
             </button>
           </div>
         )}
         <div className="grid gap-3 sm:grid-cols-3">
           <div>
             <label className="ds-text-caption text-ds-gray-text">
-              Город
-              {citiesLoading ? " (загрузка…)" : ` (${cities.length})`}
+              {t("labelCity")}
+              {citiesLoading
+                ? t("cityLoadingSuffix")
+                : t("cityCount", { count: cities.length })}
             </label>
             <select
               className="mt-1 w-full rounded-lg border border-ds-gray-border px-3 py-2 ds-text-small"
@@ -384,7 +387,7 @@ function SchoolAdminsContent() {
                 }
               }}
             >
-              <option value="">— выберите город —</option>
+              <option value="">{t("selectCity")}</option>
               {cities.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -394,9 +397,9 @@ function SchoolAdminsContent() {
           </div>
           <div>
             <label className="ds-text-caption text-ds-gray-text">
-              Район
+              {t("labelDistrict")}
               {cityId && !districtErr
-                ? ` (${districts.length})`
+                ? t("districtCount", { count: districts.length })
                 : ""}
             </label>
             <select
@@ -419,7 +422,7 @@ function SchoolAdminsContent() {
                 }
               }}
             >
-              <option value="">— район —</option>
+              <option value="">{t("selectDistrict")}</option>
               {districts.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}
@@ -429,7 +432,8 @@ function SchoolAdminsContent() {
           </div>
           <div>
             <label className="ds-text-caption text-ds-gray-text">
-              Школа {geoLoading && districtId ? "(загрузка…)" : ""}
+              {t("labelSchool")}
+              {geoLoading && districtId ? t("schoolLoading") : ""}
             </label>
             <select
               className="mt-1 w-full rounded-lg border border-ds-gray-border px-3 py-2 ds-text-small"
@@ -446,12 +450,12 @@ function SchoolAdminsContent() {
                 if (v) onPickSchool(v);
               }}
             >
-              <option value="">— школа —</option>
+              <option value="">{t("selectSchool")}</option>
               {schoolId &&
                 !schools.some((s) => s.id === schoolId) &&
                 selectedSchoolLabel && (
                   <option value={schoolId}>
-                    {selectedSchoolLabel} (текущая)
+                    {t("currentSchool", { label: selectedSchoolLabel })}
                   </option>
                 )}
               {schools.map((s) => (
@@ -466,13 +470,13 @@ function SchoolAdminsContent() {
           <div className="max-w-md space-y-2">
             <div>
               <label className="ds-text-caption text-ds-gray-text">
-                Поиск школы в районе (к API)
+                {t("schoolSearchLabel")}
               </label>
               <input
                 className="mt-1 w-full rounded-lg border border-ds-gray-border px-3 py-2 ds-text-small"
                 value={schoolSearch}
                 onChange={(e) => setSchoolSearch(e.target.value)}
-                placeholder="Часть названия…"
+                placeholder={t("schoolSearchPlaceholder")}
               />
             </div>
             {schoolErr && (
@@ -484,7 +488,7 @@ function SchoolAdminsContent() {
         )}
         {(schoolId || selectedSchoolLabel) && (
           <p className="ds-text-caption text-ds-gray-text">
-            Выбрано:{" "}
+            {t("selected")}{" "}
             <span className="font-medium text-ds-black">
               {selectedSchoolLabel || "—"}
             </span>
@@ -498,21 +502,21 @@ function SchoolAdminsContent() {
         )}
         <details className="rounded-lg border border-ds-gray-border bg-[#FAFAFA] px-3 py-2">
           <summary className="cursor-pointer ds-text-caption text-ds-primary">
-            Ввести UUID школы вручную
+            {t("manualUuidSummary")}
           </summary>
           <div className="mt-3 flex flex-wrap items-end gap-3">
             <input
               className="min-w-[240px] flex-1 rounded-lg border border-ds-gray-border px-3 py-2 ds-text-small font-mono"
               value={schoolIdDraft}
               onChange={(e) => setSchoolIdDraft(e.target.value)}
-              placeholder="uuid школы"
+              placeholder={t("manualUuidPlaceholder")}
             />
             <button
               type="button"
               className="rounded-lg bg-ds-primary px-4 py-2 ds-text-small font-medium text-ds-white"
               onClick={applySchoolId}
             >
-              Показать
+              {t("applyManual")}
             </button>
           </div>
         </details>
@@ -522,13 +526,13 @@ function SchoolAdminsContent() {
         <>
           <div className="flex flex-wrap items-end gap-3 rounded-ds-card border border-ds-gray-border bg-ds-white p-4">
             <div className="min-w-[200px] flex-1">
-              <label className="ds-text-caption text-ds-gray-text">Поиск</label>
+              <label className="ds-text-caption text-ds-gray-text">{t("searchLabel")}</label>
               <input
                 className="mt-1 w-full rounded-lg border border-ds-gray-border px-3 py-2 ds-text-small"
                 value={searchDraft}
                 onChange={(e) => setSearchDraft(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && applySearch()}
-                placeholder="Email, ФИО…"
+                placeholder={t("searchPlaceholder")}
               />
             </div>
             <button
@@ -536,10 +540,10 @@ function SchoolAdminsContent() {
               className="rounded-lg bg-ds-primary px-4 py-2 ds-text-small text-ds-white"
               onClick={applySearch}
             >
-              Найти
+              {t("find")}
             </button>
             <div>
-              <label className="ds-text-caption text-ds-gray-text">Статус</label>
+              <label className="ds-text-caption text-ds-gray-text">{t("statusLabel")}</label>
               <select
                 className="mt-1 block rounded-lg border border-ds-gray-border px-3 py-2 ds-text-small"
                 value={activeFilter}
@@ -548,9 +552,9 @@ function SchoolAdminsContent() {
                   setActiveFilter(e.target.value as typeof activeFilter);
                 }}
               >
-                <option value="all">Все</option>
-                <option value="yes">Активные</option>
-                <option value="no">Неактивные</option>
+                <option value="all">{t("statusAll")}</option>
+                <option value="yes">{t("statusActive")}</option>
+                <option value="no">{t("statusInactive")}</option>
               </select>
             </div>
             <button
@@ -561,12 +565,12 @@ function SchoolAdminsContent() {
                 setCreateOpen(true);
               }}
             >
-              + Админ школы
+              {t("addAdmin")}
             </button>
           </div>
 
           {loading && (
-            <p className="ds-text-caption text-ds-gray-text">Загрузка…</p>
+            <p className="ds-text-caption text-ds-gray-text">{t("loading")}</p>
           )}
           {!loading && data && (
             <>
@@ -582,12 +586,14 @@ function SchoolAdminsContent() {
                       </p>
                       <p className="ds-text-caption text-ds-gray-text">
                         {a.lastName} {a.firstName}{" "}
-                        {a.patronymic ?? ""} · ИИН: {a.iin ?? "—"} ·{" "}
-                        {a.isActive ? "активен" : "отключён"}
+                        {a.patronymic ?? ""} · {t("iinLine", { iin: a.iin ?? "—" })} ·{" "}
+                        {a.isActive ? t("active") : t("inactive")}
                       </p>
                       <p className="ds-text-caption text-ds-gray-text">
                         {a.school.name}
-                        {a.school.number != null ? ` №${a.school.number}` : ""}
+                        {a.school.number != null
+                          ? t("numberSuffix", { n: a.school.number })
+                          : ""}
                       </p>
                     </div>
                     <div className="flex gap-2">
@@ -599,32 +605,27 @@ function SchoolAdminsContent() {
                           setEdit(a);
                         }}
                       >
-                        Изменить
+                        {t("edit")}
                       </button>
                       <button
                         type="button"
                         className="rounded-lg border border-ds-error/40 px-3 py-1 ds-text-caption text-ds-error"
                         onClick={async () => {
-                          if (
-                            !confirm(
-                              "Отключить администратора (мягкое удаление)?",
-                            )
-                          )
-                            return;
+                          if (!confirm(t("disableConfirm"))) return;
                           setErr(null);
                           setOk(null);
                           try {
                             await deleteSchoolAdmin(a.id);
-                            setOk("Администратор отключён");
+                            setOk(t("disabledOk"));
                             load();
                           } catch (e) {
                             setErr(
-                              e instanceof Error ? e.message : "Ошибка",
+                              e instanceof Error ? e.message : t("errorGeneric"),
                             );
                           }
                         }}
                       >
-                        Отключить
+                        {t("disable")}
                       </button>
                     </div>
                   </li>
@@ -632,13 +633,17 @@ function SchoolAdminsContent() {
               </ul>
               {data.items.length === 0 && (
                 <p className="ds-text-caption text-ds-gray-text">
-                  Нет записей.
+                  {t("emptyList")}
                 </p>
               )}
               {data.totalPages > 1 && (
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="ds-text-caption text-ds-gray-text">
-                    Стр. {data.page} / {data.totalPages} · всего {data.total}
+                    {t("pageInfo", {
+                      page: data.page,
+                      totalPages: data.totalPages,
+                      total: data.total,
+                    })}
                   </span>
                   <button
                     type="button"
@@ -646,7 +651,7 @@ function SchoolAdminsContent() {
                     className="rounded border px-2 py-1 ds-text-caption disabled:opacity-40"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                   >
-                    Назад
+                    {t("back")}
                   </button>
                   <button
                     type="button"
@@ -656,7 +661,7 @@ function SchoolAdminsContent() {
                       setPage((p) => Math.min(data.totalPages, p + 1))
                     }
                   >
-                    Вперёд
+                    {t("forward")}
                   </button>
                 </div>
               )}
@@ -668,7 +673,7 @@ function SchoolAdminsContent() {
       <AdminModal
         open={createOpen}
         wide
-        title="Новый администратор школы"
+        title={t("modalCreate")}
         onClose={() => setCreateOpen(false)}
       >
         <CreateForm
@@ -676,7 +681,7 @@ function SchoolAdminsContent() {
           schoolTitle={selectedSchoolLabel || undefined}
           onSuccess={() => {
             setCreateOpen(false);
-            setOk("Создан");
+            setOk(t("createdOk"));
             load();
           }}
           onErr={setErr}
@@ -686,7 +691,7 @@ function SchoolAdminsContent() {
       <AdminModal
         open={!!edit}
         wide
-        title="Редактировать"
+        title={t("modalEdit")}
         onClose={() => setEdit(null)}
       >
         {edit && (
@@ -694,7 +699,7 @@ function SchoolAdminsContent() {
             admin={edit}
             onSuccess={() => {
               setEdit(null);
-              setOk("Сохранено");
+              setOk(t("savedOk"));
               load();
             }}
             onErr={setErr}
@@ -716,6 +721,7 @@ function CreateForm({
   onSuccess: () => void;
   onErr: (s: string | null) => void;
 }) {
+  const t = useTranslations("SuperAdminSchoolAdmins");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -731,11 +737,11 @@ function CreateForm({
         e.preventDefault();
         onErr(null);
         if (password.length < 8) {
-          onErr("Пароль не короче 8 символов");
+          onErr(t("errPasswordShort"));
           return;
         }
         if (iin.trim() && !/^\d{12}$/.test(iin.trim())) {
-          onErr("ИИН — 12 цифр");
+          onErr(t("errIin"));
           return;
         }
         setBusy(true);
@@ -751,16 +757,16 @@ function CreateForm({
           .then(onSuccess)
           .catch((e) => {
             if (e instanceof ApiRequestError && e.status === 409) {
-              onErr(e.message || "Email или ИИН уже заняты");
+              onErr(e.message || t("errConflict"));
             } else {
-              onErr(e instanceof Error ? e.message : "Ошибка");
+              onErr(e instanceof Error ? e.message : t("errorGeneric"));
             }
           })
           .finally(() => setBusy(false));
       }}
     >
       <p className="ds-text-caption text-ds-gray-text">
-        Школа:{" "}
+        {t("schoolLine")}{" "}
         {schoolTitle ? (
           <span className="font-medium text-ds-black">{schoolTitle}</span>
         ) : null}{" "}
@@ -770,7 +776,7 @@ function CreateForm({
         className="ds-input w-full"
         type="email"
         required
-        placeholder="Email *"
+        placeholder={t("emailPlaceholder")}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
@@ -778,7 +784,7 @@ function CreateForm({
         className="ds-input w-full"
         type="password"
         required
-        placeholder="Пароль (≥8) *"
+        placeholder={t("passwordPlaceholder")}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
@@ -786,32 +792,32 @@ function CreateForm({
         <input
           className="ds-input"
           required
-          placeholder="Имя *"
+          placeholder={t("firstNamePlaceholder")}
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
         />
         <input
           className="ds-input"
           required
-          placeholder="Фамилия *"
+          placeholder={t("lastNamePlaceholder")}
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
         />
       </div>
       <input
         className="ds-input w-full"
-        placeholder="Отчество"
+        placeholder={t("patronymicPlaceholder")}
         value={patronymic}
         onChange={(e) => setPatronymic(e.target.value)}
       />
       <input
         className="ds-input w-full font-mono"
-        placeholder="ИИН (12 цифр)"
+        placeholder={t("iinPlaceholder")}
         value={iin}
         onChange={(e) => setIin(e.target.value.replace(/\D/g, "").slice(0, 12))}
       />
       <button type="submit" className="ui-btn ui-btn--1 w-full" disabled={busy}>
-        {busy ? "…" : "Создать"}
+        {busy ? "…" : t("create")}
       </button>
     </form>
   );
@@ -826,6 +832,7 @@ function EditForm({
   onSuccess: () => void;
   onErr: (s: string | null) => void;
 }) {
+  const t = useTranslations("SuperAdminSchoolAdmins");
   const [email, setEmail] = useState(admin.email);
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState(admin.firstName);
@@ -842,11 +849,11 @@ function EditForm({
         e.preventDefault();
         onErr(null);
         if (password && password.length < 8) {
-          onErr("Пароль не короче 8 символов");
+          onErr(t("errPasswordShort"));
           return;
         }
         if (iin.trim() && !/^\d{12}$/.test(iin.trim())) {
-          onErr("ИИН — 12 цифр");
+          onErr(t("errIin"));
           return;
         }
         setBusy(true);
@@ -863,9 +870,9 @@ function EditForm({
           .then(onSuccess)
           .catch((e) => {
             if (e instanceof ApiRequestError && e.status === 409) {
-              onErr(e.message || "Конфликт email/ИИН");
+              onErr(e.message || t("errConflictEdit"));
             } else {
-              onErr(e instanceof Error ? e.message : "Ошибка");
+              onErr(e instanceof Error ? e.message : t("errorGeneric"));
             }
           })
           .finally(() => setBusy(false));
@@ -881,7 +888,7 @@ function EditForm({
       <input
         className="ds-input w-full"
         type="password"
-        placeholder="Новый пароль (необязательно)"
+        placeholder={t("newPasswordPlaceholder")}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
@@ -901,13 +908,13 @@ function EditForm({
       </div>
       <input
         className="ds-input w-full"
-        placeholder="Отчество"
+        placeholder={t("patronymicPlaceholder")}
         value={patronymic}
         onChange={(e) => setPatronymic(e.target.value)}
       />
       <input
         className="ds-input w-full font-mono"
-        placeholder="ИИН"
+        placeholder={t("iinShortPlaceholder")}
         value={iin}
         onChange={(e) => setIin(e.target.value.replace(/\D/g, "").slice(0, 12))}
       />
@@ -917,20 +924,23 @@ function EditForm({
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
         />
-        Активен
+        {t("activeLabel")}
       </label>
       <button type="submit" className="ui-btn ui-btn--1 w-full" disabled={busy}>
-        {busy ? "…" : "Сохранить"}
+        {busy ? "…" : t("save")}
       </button>
     </form>
   );
 }
 
 export default function Page() {
+  const t = useTranslations("SuperAdminSchoolAdmins");
   return (
     <Suspense
       fallback={
-        <div className="ds-text-caption text-ds-gray-text py-8">Загрузка…</div>
+        <div className="ds-text-caption text-ds-gray-text py-8">
+          {t("suspenseLoading")}
+        </div>
       }
     >
       <SchoolAdminsContent />
