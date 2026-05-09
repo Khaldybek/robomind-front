@@ -27,11 +27,11 @@ export function StudentShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="ds-main student-app-root relative min-h-screen overflow-hidden">
+    <div className="ds-main student-app-root relative min-h-screen overflow-x-clip overflow-y-visible">
       <div className="st-orb st-orb--a" aria-hidden />
       <div className="st-orb st-orb--b" aria-hidden />
       <div className="st-grid-mask" aria-hidden />
-      <header className="sticky top-0 z-20 border-b border-sky-200/55 bg-white/80 px-4 py-3 shadow-[0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl sm:py-3.5 md:py-3 lg:px-6 lg:py-3.5">
+      <header className="sticky top-0 z-20 border-b border-sky-200/55 bg-white/80 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] shadow-[0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl sm:pb-3.5 sm:pt-[calc(0.875rem+env(safe-area-inset-top,0px))] md:pb-3 md:pt-[calc(0.75rem+env(safe-area-inset-top,0px))] lg:px-6 lg:pb-3.5 lg:pt-[calc(0.875rem+env(safe-area-inset-top,0px))]">
         <div className="ds-container flex max-w-none flex-wrap items-center justify-between gap-4">
           <Link
             href="/dashboard"

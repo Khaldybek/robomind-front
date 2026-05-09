@@ -394,6 +394,7 @@ function buildCoursePartialPatch(
     order: number;
     thumbnailUrl: string;
     ageGroup: string;
+    defaultMaxQuizAttempts: string;
   },
 ): PatchCourseBody {
   const patch: PatchCourseBody = {};
@@ -420,6 +421,17 @@ function buildCoursePartialPatch(
   const ag = state.ageGroup.trim() === "" ? null : state.ageGroup.trim();
   const initialAg = initial.ageGroup ?? null;
   if (ag !== initialAg) patch.ageGroup = ag;
+
+  const dm = state.defaultMaxQuizAttempts.trim();
+  const initialDm = initial.defaultMaxQuizAttempts;
+  if (dm === "") {
+    if (initialDm != null) patch.defaultMaxQuizAttempts = null;
+  } else {
+    const n = Number(dm);
+    if (Number.isInteger(n) && n >= 1 && n <= 99 && n !== initialDm) {
+      patch.defaultMaxQuizAttempts = n;
+    }
+  }
 
   return patch;
 }
@@ -459,6 +471,11 @@ function CourseForm(props: CourseFormProps) {
   );
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [ageGroup, setAgeGroup] = useState(initial?.ageGroup ?? "");
+  const [defaultMaxQuizAttempts, setDefaultMaxQuizAttempts] = useState(
+    initial?.defaultMaxQuizAttempts != null
+      ? String(initial.defaultMaxQuizAttempts)
+      : "",
+  );
   const [busy, setBusy] = useState(false);
   const [formErr, setFormErr] = useState<string | null>(null);
 
@@ -481,6 +498,15 @@ function CourseForm(props: CourseFormProps) {
       setFormErr(t("formErrOrder"));
       return;
     }
+    const dm = defaultMaxQuizAttempts.trim();
+    if (dm !== "") {
+      const n = Number(dm);
+      if (!Number.isInteger(n) || n < 1 || n > 99) {
+        setFormErr(t("formErrDefaultMaxQuiz"));
+        setBusy(false);
+        return;
+      }
+    }
     setBusy(true);
     try {
       if (props.mode === "edit" && initial) {
@@ -492,6 +518,7 @@ function CourseForm(props: CourseFormProps) {
           order: o,
           thumbnailUrl,
           ageGroup,
+          defaultMaxQuizAttempts,
         });
         const hasFile = Boolean(thumbnailFile && thumbnailFile.size > 0);
         const changed =
@@ -514,6 +541,9 @@ function CourseForm(props: CourseFormProps) {
           order: o,
           thumbnailUrl: thumbnailUrl.trim() || undefined,
           ageGroup: ageGroup.trim() || undefined,
+          ...(dm !== ""
+            ? { defaultMaxQuizAttempts: Number(dm) }
+            : {}),
         };
         await props.onSubmit(
           body,
@@ -620,6 +650,23 @@ function CourseForm(props: CourseFormProps) {
           onChange={(e) => setAgeGroup(e.target.value)}
           placeholder={t("formAgePlaceholder")}
         />
+      </div>
+      <div>
+        <label className="ds-text-caption text-ds-gray-text">
+          {t("formDefaultMaxQuizAttempts")}
+        </label>
+        <input
+          type="number"
+          min={1}
+          max={99}
+          className="mt-1 w-28 rounded-lg border border-ds-gray-border px-3 py-2 ds-text-small"
+          value={defaultMaxQuizAttempts}
+          onChange={(e) => setDefaultMaxQuizAttempts(e.target.value)}
+          placeholder={t("formDefaultMaxQuizPlaceholder")}
+        />
+        <p className="mt-1 ds-text-caption text-ds-gray-text">
+          {t("formDefaultMaxQuizHint")}
+        </p>
       </div>
       <button
         type="submit"

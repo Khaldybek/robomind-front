@@ -1,16 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
 import {
-  listSchoolAdminCourseModules,
+  fetchSchoolAdminCourseModule,
   listSchoolAdminLessons,
 } from "@/lib/api/school-admin/courses";
 import type { AdminLessonRow, AdminModule } from "@/lib/api/super-admin/courses-modules";
 import { isApiConfigured } from "@/lib/env";
 
 export default function SchoolAdminCourseSectionLessonsPage() {
+  const t = useTranslations("SchoolAdminSectionLessons");
+  const tc = useTranslations("Common");
   const { courseId, courseModuleId } = useParams() as {
     courseId: string;
     courseModuleId: string;
@@ -29,10 +32,8 @@ export default function SchoolAdminCourseSectionLessonsPage() {
     setLoading(true);
     setErr(null);
     Promise.all([
-      listSchoolAdminCourseModules({ courseId, limit: 100 }).then((r) => {
-        if (!cancelled) {
-          setSection(r.items.find((m) => m.id === courseModuleId) ?? null);
-        }
+      fetchSchoolAdminCourseModule(courseModuleId).then((m) => {
+        if (!cancelled) setSection(m);
       }),
       listSchoolAdminLessons({ courseModuleId, limit: 100 }).then((r) => {
         if (!cancelled) {
@@ -51,46 +52,61 @@ export default function SchoolAdminCourseSectionLessonsPage() {
     };
   }, [courseId, courseModuleId]);
 
+  const lessonHref = (lessonId: string) =>
+    `/school-admin/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lessonId)}?courseModuleId=${encodeURIComponent(courseModuleId)}`;
+
   return (
-    <div>
+    <div className="mx-auto max-w-3xl space-y-5 pb-8">
       <Link
         href={`/school-admin/courses/${encodeURIComponent(courseId)}/modules`}
-        className="ds-text-caption mb-6 inline-block text-ds-primary hover:underline"
+        className="ds-text-caption text-ds-primary hover:underline"
       >
-        ← К разделам курса
+        {t("backToModules")}
       </Link>
-      <h1 className="ds-text-h2 text-ds-black">
-        {section?.title ?? "Раздел"}
-      </h1>
-      <p className="mt-2 text-sm text-ds-gray-text">
-        Проверка домашних заданий по урокам.
-      </p>
-      {loading && (
-        <p className="mt-4 ds-text-caption text-ds-gray-text">Загрузка…</p>
-      )}
-      {err && (
-        <p className="mt-4 ds-text-small text-ds-error" role="alert">
+      <header>
+        <h1 className="ds-text-h2 text-ds-black">
+          {section?.title ?? "—"}
+        </h1>
+        <p className="mt-2 max-w-2xl ds-text-caption leading-relaxed text-ds-gray-text">
+          {t("lead")}
+        </p>
+      </header>
+      {loading ? (
+        <p className="ds-text-caption text-ds-gray-text">{tc("loading")}</p>
+      ) : null}
+      {err ? (
+        <p className="rounded-lg border border-ds-error/25 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error" role="alert">
           {err}
         </p>
-      )}
-      <ul className="mt-6 space-y-2">
+      ) : null}
+      <ul className="space-y-2">
         {lessons.map((lesson) => (
           <li key={lesson.id}>
-            <Link
-              href={`/school-admin/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lesson.id)}/homework`}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-ds-card border border-ds-gray-border bg-ds-white px-4 py-3 hover:border-ds-primary"
-            >
+            <div className="flex flex-col gap-2 rounded-ds-card border border-ds-gray-border bg-ds-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
               <span className="font-medium text-ds-black">
                 {lesson.order}. {lesson.title || lesson.id}
               </span>
-              <span className="ds-text-caption text-ds-primary">ДЗ →</span>
-            </Link>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={lessonHref(lesson.id)}
+                  className="rounded-md border border-ds-gray-border bg-ds-gray-light/40 px-3 py-1.5 text-center text-sm font-medium text-ds-primary transition-colors hover:border-ds-primary/40 hover:bg-ds-primary/5"
+                >
+                  {t("lessonCta")}
+                </Link>
+                <Link
+                  href={`/school-admin/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lesson.id)}/homework`}
+                  className="rounded-md border border-ds-gray-border px-3 py-1.5 text-center text-sm font-medium text-ds-black transition-colors hover:bg-ds-gray-light/60"
+                >
+                  {t("homeworkCta")}
+                </Link>
+              </div>
+            </div>
           </li>
         ))}
       </ul>
-      {!loading && lessons.length === 0 && (
-        <p className="mt-6 text-sm text-ds-gray-text">В этом разделе нет уроков.</p>
-      )}
+      {!loading && lessons.length === 0 && !err ? (
+        <p className="ds-text-caption text-ds-gray-text">{t("emptyLessons")}</p>
+      ) : null}
     </div>
   );
 }

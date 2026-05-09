@@ -27,6 +27,15 @@ import {
 } from "@/lib/api/super-admin/quizzes";
 import { isApiConfigured } from "@/lib/env";
 
+function superAdminQuizTypeLabel(
+  t: (k: "qTypeSingle" | "qTypeMultiple" | "qTypeText") => string,
+  type: QuizQuestionType,
+): string {
+  if (type === "multiple") return t("qTypeMultiple");
+  if (type === "text") return t("qTypeText");
+  return t("qTypeSingle");
+}
+
 const TYPES: ContentBlockType[] = [
   "text",
   "image",
@@ -100,47 +109,91 @@ export default function Page() {
     load();
   }, [load]);
 
-  const metaLine =
-    mod != null
-      ? `${t("metaBlocks", { blocks: mod.contentCount, progress: mod.progressCount })}${
-          mod.hasQuiz
-            ? t("metaQuiz", {
-                prefix: mod.quizId?.slice(0, 8) ?? "",
-              })
-            : ""
-        }`
-      : null;
+  const statsChips =
+    mod != null ? (
+      <div className="mt-2 flex flex-wrap gap-2">
+        <span className="rounded-md border border-ds-gray-border bg-ds-gray-light/50 px-2.5 py-1 text-xs font-medium text-ds-black">
+          {t("chipBlocks", { count: mod.contentCount })}
+        </span>
+        <span className="rounded-md border border-ds-gray-border bg-ds-gray-light/50 px-2.5 py-1 text-xs font-medium text-ds-black">
+          {t("chipProgress", { count: mod.progressCount })}
+        </span>
+        <span
+          className={`rounded-md border px-2.5 py-1 text-xs font-medium ${
+            mod.hasQuiz
+              ? "border-ds-primary/40 bg-ds-primary/10 text-ds-black"
+              : "border-ds-gray-border bg-ds-white text-ds-gray-text"
+          }`}
+        >
+          {mod.hasQuiz ? t("chipQuizOn") : t("chipQuizOff")}
+        </span>
+      </div>
+    ) : null;
+
+  const jumpClass =
+    "rounded-md border border-ds-gray-border bg-ds-white px-3 py-1.5 text-xs font-medium text-ds-black transition-colors hover:border-ds-primary/40 hover:bg-ds-primary/5";
 
   return (
-    <div className="max-w-4xl space-y-6">
-      <Link
-        href={`/super-admin/courses/${encodeURIComponent(courseId)}`}
-        className="ds-text-caption text-ds-primary"
-      >
-        {t("backCourse")}
-      </Link>
-      <h1 className="ds-text-h2 text-ds-black">
-        {mod?.title ?? t("fallbackTitle")}
-      </h1>
-      <p className="ds-text-caption text-ds-gray-text">{metaLine}</p>
-      <p className="ds-text-caption break-all text-ds-gray-text/80">
-        {lessonId}
-      </p>
-      <Link
-        href={`/super-admin/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lessonId)}/homework`}
-        className="inline-block ds-text-caption font-medium text-ds-primary hover:underline"
-      >
-        {t("homeworkLink")}
-      </Link>
+    <div className="mx-auto max-w-5xl pb-10">
+      <header className="rounded-ds-card border border-ds-gray-border bg-ds-white p-4 shadow-sm sm:p-5">
+        <Link
+          href={`/super-admin/courses/${encodeURIComponent(courseId)}`}
+          className="ds-text-caption text-ds-primary hover:underline"
+        >
+          {t("backCourse")}
+        </Link>
+        <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+          <div className="min-w-0 flex-1">
+            <h1 className="ds-text-h2 text-ds-black">
+              {mod?.title ?? t("fallbackTitle")}
+            </h1>
+            {statsChips}
+            <details className="group mt-3">
+              <summary className="cursor-pointer list-none text-xs text-ds-gray-text [&::-webkit-details-marker]:hidden">
+                <span className="underline decoration-dotted underline-offset-2 group-open:text-ds-black">
+                  {t("lessonIdDetails")}
+                </span>
+              </summary>
+              <code className="mt-2 block break-all rounded border border-ds-gray-border bg-ds-gray-light/50 p-2 font-mono text-[11px] leading-relaxed text-ds-gray-dark-2">
+                {lessonId}
+              </code>
+            </details>
+          </div>
+          <Link
+            href={`/super-admin/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lessonId)}/homework`}
+            className="shrink-0 self-start rounded-lg border border-ds-gray-border bg-ds-gray-light/30 px-3 py-2 text-center text-sm font-medium text-ds-primary transition-colors hover:border-ds-primary/40 hover:bg-ds-primary/5 sm:text-left"
+          >
+            {t("homeworkLink")}
+          </Link>
+        </div>
+        <nav
+          className="mt-4 flex flex-wrap gap-2 border-t border-ds-gray-border pt-4"
+          aria-label={t("jumpNavAria")}
+        >
+          <a href="#lesson-blocks" className={jumpClass}>
+            {t("jumpBlocks")}
+          </a>
+          <a href="#lesson-quiz" className={jumpClass}>
+            {t("jumpQuiz")}
+          </a>
+          <a href="#lesson-add" className={jumpClass}>
+            {t("jumpAdd")}
+          </a>
+        </nav>
+      </header>
 
-      {err && (
-        <p className="rounded-lg border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
+      {err ? (
+        <p className="mt-4 rounded-lg border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
           {err}
         </p>
-      )}
+      ) : null}
 
-      <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
-        <h2 className="ds-text-h3 text-ds-black">{t("blocksTitle")}</h2>
+      <div className="mt-5 space-y-5 lg:mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(280px,320px)] lg:gap-6 lg:space-y-0">
+        <section
+          id="lesson-blocks"
+          className="rounded-ds-card border border-ds-gray-border bg-ds-white p-4 shadow-sm sm:p-5 lg:col-start-1 lg:row-start-1"
+        >
+          <h2 className="ds-text-h3 text-ds-black">{t("blocksTitle")}</h2>
         {loading ? (
           <p className="mt-3 ds-text-caption text-ds-gray-text">{t("loading")}</p>
         ) : blocks.length === 0 ? (
@@ -150,7 +203,7 @@ export default function Page() {
             {blocks.map((b) => (
               <li
                 key={b.id}
-                className="flex flex-wrap items-start justify-between gap-2 rounded-lg border border-ds-gray-border px-3 py-2"
+                className="flex flex-wrap items-start justify-between gap-2 rounded-md border border-ds-gray-border bg-ds-gray-light/20 px-3 py-2"
               >
                 <div className="min-w-0 flex-1">
                   <span className="ds-text-caption font-medium text-ds-primary">
@@ -188,20 +241,21 @@ export default function Page() {
             ))}
           </ul>
         )}
-      </section>
+        </section>
 
-      <section className="space-y-4 rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
-        <h2 className="ds-text-h3 text-ds-black">{t("quizTitle")}</h2>
-        <p className="ds-text-caption text-ds-gray-text">
-          {t("quizIntro1")}{" "}
-          <code className="text-xs">GET/POST …/lessons/:lessonId/quiz</code>.{" "}
-          {t("quizIntro2")}{" "}
-          <Link href="/super-admin/ai" className="text-ds-primary underline">
-            {t("quizAiLink")}
-          </Link>{" "}
-          {t("quizIntro3")}{" "}
-          <code className="text-xs">…/quiz/import-generated</code>.
-        </p>
+        <aside
+          id="lesson-quiz"
+          className="rounded-ds-card border border-ds-gray-border bg-ds-white p-4 shadow-sm sm:p-5 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:max-h-[calc(100vh-5rem)] lg:self-start lg:overflow-y-auto lg:sticky lg:top-4"
+        >
+          <h2 className="ds-text-h3 text-ds-black">{t("quizTitle")}</h2>
+          <p className="mt-2 ds-text-caption leading-relaxed text-ds-gray-text">
+            {t("quizLead")}{" "}
+            <Link href="/super-admin/ai" className="font-medium text-ds-primary hover:underline">
+              {t("quizAiLink")}
+            </Link>
+            .
+          </p>
+          <div className="mt-4 space-y-3">
         {loading ? (
           <p className="ds-text-caption text-ds-gray-text">{t("loadingQuiz")}</p>
         ) : quiz == null ? (
@@ -297,26 +351,111 @@ export default function Page() {
               </button>
             </div>
 
-            {quiz.questions.length > 0 && (
-              <ul className="space-y-2">
-                {quiz.questions
-                  .slice()
-                  .sort((a, b) => a.order - b.order)
-                  .map((q) => (
-                    <li
-                      key={q.id}
-                      className="rounded-lg border border-ds-gray-border px-3 py-2 ds-text-caption text-ds-black"
-                    >
-                      {t("questionRow", {
-                        type: q.type,
-                        snippet: q.text.slice(0, 120),
-                        ellipsis: q.text.length > 120 ? "…" : "",
-                        count: q.answers.length,
-                      })}
-                    </li>
-                  ))}
-              </ul>
+            {quiz.questions.length > 0 ? (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-ds-black">
+                  {t("quizQuestionsOverview")}
+                </h3>
+                <ul className="max-h-[min(55vh,560px)] space-y-3 overflow-y-auto pr-1">
+                  {quiz.questions
+                    .slice()
+                    .sort((a, b) => a.order - b.order)
+                    .map((q, qi) => (
+                      <li key={q.id}>
+                        <details className="group rounded-lg border border-ds-gray-border bg-ds-white">
+                          <summary
+                            className="cursor-pointer list-none px-3 py-3 transition-colors hover:bg-ds-gray-light/30 [&::-webkit-details-marker]:hidden"
+                            aria-label={t("quizQuestionSummaryAria", {
+                              n: qi + 1,
+                              type: superAdminQuizTypeLabel(t, q.type),
+                            })}
+                          >
+                            <div className="flex flex-wrap items-start justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                                  <span className="text-xs font-semibold uppercase tracking-wide text-ds-gray-text">
+                                    {t("questionHeading", { n: qi + 1 })}
+                                  </span>
+                                  <span className="text-xs text-ds-primary">
+                                    {superAdminQuizTypeLabel(t, q.type)}
+                                  </span>
+                                </div>
+                                <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ds-black">
+                                  {q.text.trim() ? q.text : "—"}
+                                </p>
+                              </div>
+                              <span className="shrink-0 pt-0.5 text-right text-xs leading-tight">
+                                <span className="text-ds-primary group-open:hidden">
+                                  {t("quizQuestionShowAnswers")}
+                                </span>
+                                <span className="hidden text-ds-gray-text group-open:inline">
+                                  {t("quizQuestionHideAnswers")}
+                                </span>
+                              </span>
+                            </div>
+                          </summary>
+                          <div className="space-y-3 border-t border-ds-gray-border bg-ds-gray-light/15 px-3 py-3">
+                            <p className="whitespace-pre-wrap text-sm leading-relaxed text-ds-black">
+                              {q.text.trim() ? q.text : "—"}
+                            </p>
+                            {q.type === "text" ? (
+                              <p className="ds-text-caption text-ds-gray-text">
+                                {t("quizTextQuestionHint")}
+                              </p>
+                            ) : q.answers.length > 0 ? (
+                              <div>
+                                <p className="text-xs font-semibold text-ds-gray-text">
+                                  {t("quizAnswersHeading")}
+                                </p>
+                                <ul className="mt-2 space-y-1.5">
+                                  {q.answers.map((a) => (
+                                    <li
+                                      key={a.id}
+                                      className={`flex flex-wrap items-baseline gap-x-2 gap-y-0.5 rounded-md px-2 py-1.5 text-sm ${
+                                        a.isCorrect
+                                          ? "border border-ds-primary/30 bg-ds-primary/5 text-ds-black"
+                                          : "bg-ds-gray-light/40 text-ds-black"
+                                      }`}
+                                    >
+                                      <span className="min-w-0 flex-1 leading-snug">
+                                        {a.text || "—"}
+                                      </span>
+                                      {a.isCorrect ? (
+                                        <span className="shrink-0 text-xs font-medium text-ds-primary">
+                                          {t("answerCorrectMark")}
+                                        </span>
+                                      ) : null}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ) : (
+                              <p className="ds-text-caption text-ds-error/90">
+                                {t("quizAnswersMissingHint")}
+                              </p>
+                            )}
+                          </div>
+                        </details>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-ds-gray-border bg-ds-gray-light/30 px-3 py-4">
+                <p className="text-sm text-ds-black">{t("quizQuestionsEmpty")}</p>
+              </div>
             )}
+
+            <details className="rounded-md border border-ds-gray-border bg-ds-gray-light/20 px-2 py-1">
+              <summary className="cursor-pointer list-none text-xs text-ds-gray-text [&::-webkit-details-marker]:hidden">
+                <span className="underline decoration-dotted underline-offset-2">
+                  {t("quizBackendHintSummary")}
+                </span>
+              </summary>
+              <p className="mt-2 border-t border-ds-gray-border pt-2 text-xs leading-relaxed text-ds-gray-dark-2">
+                {t("quizBackendHintBody")}
+              </p>
+            </details>
 
             <form
               className="space-y-3 border-t border-ds-gray-border pt-4"
@@ -448,11 +587,27 @@ export default function Page() {
             </form>
           </div>
         )}
-      </section>
+          </div>
+        </aside>
 
-      <section className="space-y-3 rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
-        <h2 className="ds-text-h3 text-ds-black">{t("uploadTitle")}</h2>
-        <p className="ds-text-caption text-ds-gray-text">{t("uploadLead")}</p>
+        <details
+          id="lesson-add"
+          className="group rounded-ds-card border border-ds-gray-border bg-ds-white shadow-sm lg:col-start-1 lg:row-start-2"
+        >
+          <summary className="cursor-pointer list-none px-4 py-3 sm:px-5 [&::-webkit-details-marker]:hidden">
+            <span className="flex items-center justify-between gap-2">
+              <span className="ds-text-h3 text-ds-black">{t("addMaterialsTitle")}</span>
+              <span className="shrink-0 rounded border border-ds-gray-border bg-ds-gray-light/50 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-ds-gray-text group-open:hidden">
+                {t("jumpAdd")}
+              </span>
+            </span>
+          </summary>
+          <div className="space-y-5 border-t border-ds-gray-border px-4 py-4 sm:px-5 sm:py-5">
+            <section className="space-y-3">
+              <h3 className="text-sm font-semibold text-ds-black">{t("uploadTitle")}</h3>
+              <p className="ds-text-caption leading-relaxed text-ds-gray-text">
+                {t("uploadLeadShort")}
+              </p>
         <form
           className="space-y-3"
           onSubmit={(e) => {
@@ -530,123 +685,136 @@ export default function Page() {
             {upBusy ? t("busy") : t("uploadSubmit")}
           </button>
         </form>
-      </section>
+            </section>
 
-      <form
-        className="space-y-3 rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!isApiConfigured()) return;
-          setErr(null);
-          setBusy(true);
-          const body: Parameters<typeof createModuleContent>[1] = {
-            type,
-            title: title.trim() || undefined,
-            order: Number(order) || 0,
-          };
-          const raw = content.trim();
+            <section className="space-y-3 border-t border-ds-gray-border pt-5">
+              <h3 className="text-sm font-semibold text-ds-black">
+                {t("jsonBlockTitle")}
+              </h3>
+              {type === "image" ? (
+                <p className="ds-text-caption leading-relaxed text-ds-gray-text">
+                  {t("jsonImageHint", { prefix: BACKEND_IMAGE_FILE_URL_PREFIX })}
+                </p>
+              ) : null}
+              <form
+                className="space-y-3"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!isApiConfigured()) return;
+                  setErr(null);
+                  setBusy(true);
+                  const body: Parameters<typeof createModuleContent>[1] = {
+                    type,
+                    title: title.trim() || undefined,
+                    order: Number(order) || 0,
+                  };
+                  const raw = content.trim();
 
-          if (type === "image") {
-            if (!raw) {
-              setErr(
-                t("errImageUrl", { prefix: BACKEND_IMAGE_FILE_URL_PREFIX }),
-              );
-              setBusy(false);
-              return;
-            }
-            if (raw.startsWith("http://") || raw.startsWith("https://")) {
-              setErr(t("errImageExternal"));
-              setBusy(false);
-              return;
-            }
-            if (!isAllowedImageBlockFileUrl(raw)) {
-              setErr(
-                t("errImagePrefix", { prefix: BACKEND_IMAGE_FILE_URL_PREFIX }),
-              );
-              setBusy(false);
-              return;
-            }
-            body.fileUrl = raw;
-          } else if (type === "text" || type === "link" || type === "video") {
-            body.content = raw || undefined;
-          } else if (type === "file") {
-            body.fileUrl = raw || undefined;
-          } else if (type === "livestream") {
-            body.livestreamUrl = raw || undefined;
-            body.livestreamStartsAt =
-              liveAt.trim() || new Date().toISOString();
-          }
+                  if (type === "image") {
+                    if (!raw) {
+                      setErr(
+                        t("errImageUrl", { prefix: BACKEND_IMAGE_FILE_URL_PREFIX }),
+                      );
+                      setBusy(false);
+                      return;
+                    }
+                    if (raw.startsWith("http://") || raw.startsWith("https://")) {
+                      setErr(t("errImageExternal"));
+                      setBusy(false);
+                      return;
+                    }
+                    if (!isAllowedImageBlockFileUrl(raw)) {
+                      setErr(
+                        t("errImagePrefix", {
+                          prefix: BACKEND_IMAGE_FILE_URL_PREFIX,
+                        }),
+                      );
+                      setBusy(false);
+                      return;
+                    }
+                    body.fileUrl = raw;
+                  } else if (type === "text" || type === "link" || type === "video") {
+                    body.content = raw || undefined;
+                  } else if (type === "file") {
+                    body.fileUrl = raw || undefined;
+                  } else if (type === "livestream") {
+                    body.livestreamUrl = raw || undefined;
+                    body.livestreamStartsAt =
+                      liveAt.trim() || new Date().toISOString();
+                  }
 
-          createModuleContent(lessonId, body)
-            .then(() => {
-              setTitle("");
-              setContent("");
-              setOrder("0");
-              load();
-            })
-            .catch((er) => setErr(er instanceof Error ? er.message : String(er)))
-            .finally(() => setBusy(false));
-        }}
-      >
-        <h2 className="ds-text-h3 text-ds-black">{t("jsonBlockTitle")}</h2>
-        <p className="ds-text-caption text-ds-gray-text">
-          {t("jsonImageHint", { prefix: BACKEND_IMAGE_FILE_URL_PREFIX })}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <select
-            className="ds-input"
-            value={type}
-            onChange={(e) => setType(e.target.value as ContentBlockType)}
-          >
-            {TYPES.map((ty) => (
-              <option key={ty} value={ty}>
-                {ty}
-              </option>
-            ))}
-          </select>
-          <input
-            className="ds-input min-w-[200px] flex-1"
-            placeholder={t("placeholderBlockTitle")}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <input
-            className="ds-input w-24"
-            type="number"
-            placeholder={t("placeholderOrder")}
-            value={order}
-            onChange={(e) => setOrder(e.target.value)}
-          />
-        </div>
-        <textarea
-          className="ds-input min-h-[120px] w-full"
-          placeholder={
-            type === "image"
-              ? t("placeholderFileUrlImage", {
-                  prefix: BACKEND_IMAGE_FILE_URL_PREFIX,
-                })
-              : t("placeholderContentMixed")
-          }
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-        />
-        {type === "livestream" && (
-          <input
-            className="ds-input w-full"
-            type="datetime-local"
-            value={liveAt}
-            onChange={(e) => setLiveAt(e.target.value)}
-            placeholder={t("placeholderStream")}
-          />
-        )}
-        <button
-          type="submit"
-          disabled={busy}
-          className="ui-btn ui-btn--1 disabled:opacity-50"
-        >
-          {busy ? t("busy") : t("addBlock")}
-        </button>
-      </form>
+                  createModuleContent(lessonId, body)
+                    .then(() => {
+                      setTitle("");
+                      setContent("");
+                      setOrder("0");
+                      load();
+                    })
+                    .catch((er) =>
+                      setErr(er instanceof Error ? er.message : String(er)),
+                    )
+                    .finally(() => setBusy(false));
+                }}
+              >
+                <div className="flex flex-wrap gap-2">
+                  <select
+                    className="ds-input"
+                    value={type}
+                    onChange={(e) => setType(e.target.value as ContentBlockType)}
+                  >
+                    {TYPES.map((ty) => (
+                      <option key={ty} value={ty}>
+                        {ty}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    className="ds-input min-w-[200px] flex-1"
+                    placeholder={t("placeholderBlockTitle")}
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
+                  <input
+                    className="ds-input w-24"
+                    type="number"
+                    placeholder={t("placeholderOrder")}
+                    value={order}
+                    onChange={(e) => setOrder(e.target.value)}
+                  />
+                </div>
+                <textarea
+                  className="ds-input min-h-[120px] w-full"
+                  placeholder={
+                    type === "image"
+                      ? t("placeholderFileUrlImage", {
+                          prefix: BACKEND_IMAGE_FILE_URL_PREFIX,
+                        })
+                      : t("placeholderContentMixed")
+                  }
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                />
+                {type === "livestream" && (
+                  <input
+                    className="ds-input w-full"
+                    type="datetime-local"
+                    value={liveAt}
+                    onChange={(e) => setLiveAt(e.target.value)}
+                    placeholder={t("placeholderStream")}
+                  />
+                )}
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="ui-btn ui-btn--1 disabled:opacity-50"
+                >
+                  {busy ? t("busy") : t("addBlock")}
+                </button>
+              </form>
+            </section>
+          </div>
+        </details>
+      </div>
     </div>
   );
 }

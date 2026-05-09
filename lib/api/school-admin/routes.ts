@@ -22,6 +22,8 @@ export const SCHOOL_ADMIN_ROUTES = {
     `/admin/users/${encodeURIComponent(userId)}/certificates`,
   USER_QUIZ_ATTEMPTS: (userId: string) =>
     `/admin/users/${encodeURIComponent(userId)}/quiz-attempts`,
+  USER_QUIZ_ATTEMPT_LIMITS: (userId: string) =>
+    `/admin/users/${encodeURIComponent(userId)}/quiz-attempt-limits`,
   USER_DEVICES: (userId: string) =>
     `/admin/users/${encodeURIComponent(userId)}/devices`,
   USER_DEVICE_DELETE: (userId: string, deviceId: string) =>
@@ -44,8 +46,17 @@ export const SCHOOL_ADMIN_ROUTES = {
   COURSE_STUDENTS: (courseId: string) =>
     `/admin/courses/${encodeURIComponent(courseId)}/students`,
 
-  /** GET ?courseModuleId= — уроки секции (роль school_admin при наличии доступа) */
+  /** GET ?courseModuleId= — уроки секции (school_admin: только опубликованная цепочка) */
   LESSONS: "/admin/lessons",
+  LESSON: (lessonId: string) =>
+    `/admin/lessons/${encodeURIComponent(lessonId)}`,
+  LESSON_CONTENTS: (lessonId: string) =>
+    `/admin/lessons/${encodeURIComponent(lessonId)}/contents`,
+  LESSON_QUIZ: (lessonId: string) =>
+    `/admin/lessons/${encodeURIComponent(lessonId)}/quiz`,
+  /** GET — секция курса по id (school_admin: только опубликованный курс и секция) */
+  COURSE_MODULE: (courseModuleId: string) =>
+    `/admin/course-modules/${encodeURIComponent(courseModuleId)}`,
 
   /** GET ?lessonId= — сдачи ДЗ по уроку */
   HOMEWORK_SUBMISSIONS: "/admin/homework-submissions",

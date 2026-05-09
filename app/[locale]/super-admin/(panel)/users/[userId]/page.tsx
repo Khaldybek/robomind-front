@@ -12,8 +12,12 @@ import {
   fetchSuperUserCertificates,
   fetchSuperUserDevices,
   deleteSuperUserDevice,
+  fetchSuperUserQuizAttemptLimitsAdmin,
+  putSuperUserQuizAttemptLimitsAdmin,
+  deleteSuperUserQuizAttemptLimitsAdmin,
   type AdminUser,
   type UserDeviceRow,
+  type SuperUserQuizAttemptLimitOverride,
 } from "@/lib/api/super-admin/users";
 import { isApiConfigured } from "@/lib/env";
 
@@ -31,10 +35,17 @@ export default function Page() {
   const [isActive, setIsActive] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [quizLimits, setQuizLimits] = useState<SuperUserQuizAttemptLimitOverride[]>(
+    [],
+  );
+  const [limitsLoaded, setLimitsLoaded] = useState(false);
+  const [limitsBusy, setLimitsBusy] = useState(false);
+  const [limitsMsg, setLimitsMsg] = useState<string | null>(null);
 
   function refresh() {
     if (!isApiConfigured() || !userId) return;
     setLoaded(false);
+    setLimitsMsg(null);
     fetchSuperUser(userId)
       .then((u) => {
         setUser(u);
@@ -56,6 +67,24 @@ export default function Page() {
   useEffect(() => {
     refresh();
   }, [userId]);
+
+  useEffect(() => {
+    if (!isApiConfigured() || !userId || !user || user.role !== "student") {
+      setQuizLimits([]);
+      setLimitsLoaded(true);
+      return;
+    }
+    setLimitsLoaded(false);
+    fetchSuperUserQuizAttemptLimitsAdmin(userId)
+      .then((rows) => {
+        setQuizLimits(rows);
+        setLimitsLoaded(true);
+      })
+      .catch(() => {
+        setQuizLimits([]);
+        setLimitsLoaded(true);
+      });
+  }, [userId, user]);
 
   if (!loaded) {
     return <p className="ds-text-caption text-ds-gray-text">{t("loading")}</p>;
@@ -171,6 +200,173 @@ export default function Page() {
           </button>
         </div>
       </form>
+
+      {user.role === "student" ? (
+        <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
+          <h2 className="ds-text-h3 mb-2 text-ds-black">{t("sectionQuizLimits")}</h2>
+          <p className="ds-text-caption mb-3 text-ds-gray-text">{t("quizLimitsHint")}</p>
+          {!limitsLoaded ? (
+            <p className="ds-text-caption text-ds-gray-text">{t("loading")}</p>
+          ) : (
+            <>
+              {limitsMsg && (
+                <p className="mb-3 rounded-lg border border-ds-success/30 bg-[#F0FFF4] px-3 py-2 ds-text-small text-ds-success">
+                  {limitsMsg}
+                </p>
+              )}
+              <ul className="space-y-3">
+                {quizLimits.map((row, idx) => (
+                  <li
+                    key={`${idx}-${row.quizId}`}
+                    className="flex flex-wrap items-end gap-2 rounded-lg border border-ds-gray-border bg-ds-gray-light/40 p-3"
+                  >
+                    <div className="min-w-[200px] flex-1">
+                      <label className="ds-text-caption text-ds-gray-text">
+                        {t("quizLimitsQuizId")}
+                      </label>
+                      <input
+                        className="ds-input mt-1 w-full font-mono text-xs"
+                        value={row.quizId}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setQuizLimits((prev) =>
+                            prev.map((r, i) =>
+                              i === idx ? { ...r, quizId: v } : r,
+                            ),
+                          );
+                        }}
+                      />
+                    </div>
+                    <div className="w-28">
+                      <label className="ds-text-caption text-ds-gray-text">
+                        {t("quizLimitsMax")}
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={99}
+                        className="ds-input mt-1 w-full"
+                        value={row.maxAttempts}
+                        onChange={(e) => {
+                          const v = Number(e.target.value);
+                          setQuizLimits((prev) =>
+                            prev.map((r, i) =>
+                              i === idx
+                                ? {
+                                    ...r,
+                                    maxAttempts: Number.isFinite(v)
+                                      ? v
+                                      : r.maxAttempts,
+                                  }
+                                : r,
+                            ),
+                          );
+                        }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="text-ds-error"
+                      onClick={() =>
+                        setQuizLimits((prev) =>
+                          prev.filter((_, i) => i !== idx),
+                        )
+                      }
+                    >
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="ui-btn ui-btn--4"
+                  disabled={limitsBusy}
+                  onClick={() =>
+                    setQuizLimits((prev) => [
+                      ...prev,
+                      { quizId: "", maxAttempts: 3 },
+                    ])
+                  }
+                >
+                  {t("quizLimitsAddRow")}
+                </button>
+                <button
+                  type="button"
+                  className="ui-btn ui-btn--1"
+                  disabled={limitsBusy}
+                  onClick={() => {
+                    void (async () => {
+                      setErr(null);
+                      setLimitsMsg(null);
+                      for (const r of quizLimits) {
+                        const id = r.quizId.trim();
+                        if (!id || id.length < 32) {
+                          setErr(t("quizLimitsInvalid"));
+                          return;
+                        }
+                        if (
+                          !Number.isInteger(r.maxAttempts) ||
+                          r.maxAttempts < 1 ||
+                          r.maxAttempts > 99
+                        ) {
+                          setErr(t("quizLimitsInvalid"));
+                          return;
+                        }
+                      }
+                      setLimitsBusy(true);
+                      try {
+                        await putSuperUserQuizAttemptLimitsAdmin(
+                          userId,
+                          quizLimits,
+                        );
+                        setLimitsMsg(t("quizLimitsSaved"));
+                        refresh();
+                      } catch (e) {
+                        setErr(
+                          e instanceof Error ? e.message : t("errorGeneric"),
+                        );
+                      } finally {
+                        setLimitsBusy(false);
+                      }
+                    })();
+                  }}
+                >
+                  {t("quizLimitsSave")}
+                </button>
+                <button
+                  type="button"
+                  className="ui-btn ui-btn--6"
+                  disabled={limitsBusy}
+                  onClick={() => {
+                    void (async () => {
+                      if (!confirm(t("quizLimitsClearConfirm"))) return;
+                      setErr(null);
+                      setLimitsMsg(null);
+                      setLimitsBusy(true);
+                      try {
+                        await deleteSuperUserQuizAttemptLimitsAdmin(userId);
+                        setQuizLimits([]);
+                        setLimitsMsg(t("quizLimitsCleared"));
+                        refresh();
+                      } catch (e) {
+                        setErr(
+                          e instanceof Error ? e.message : t("errorGeneric"),
+                        );
+                      } finally {
+                        setLimitsBusy(false);
+                      }
+                    })();
+                  }}
+                >
+                  {t("quizLimitsClear")}
+                </button>
+              </div>
+            </>
+          )}
+        </section>
+      ) : null}
 
       <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
         <h2 className="ds-text-h3 mb-4 text-ds-black">{t("devicesTitle")}</h2>

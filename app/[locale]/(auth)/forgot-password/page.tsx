@@ -6,16 +6,16 @@ export default async function ForgotPasswordPage() {
   const tp = await getTranslations("AuthPages");
 
   return (
-    <div className="ds-main min-h-screen py-12">
-      <div className="ds-container mb-8 text-center">
+    <>
+      <div className="mx-auto mb-8 max-w-md text-center">
         <Link
           href="/login"
-          className="ds-text-caption text-ds-gray-text hover:text-ds-primary"
+          className="ds-text-caption text-ds-black/70 transition hover:text-ds-primary"
         >
           {tp("backToLogin")}
         </Link>
       </div>
       <ForgotPasswordForm />
-    </div>
+    </>
   );
 }

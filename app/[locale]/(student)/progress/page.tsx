@@ -60,14 +60,14 @@ export default function ProgressPage() {
               key={id}
               className="student-surface-panel rounded-2xl p-5 sm:p-6"
             >
-              <div className="mb-2 flex justify-between gap-3">
+              <div className="mb-2 flex min-w-0 items-start justify-between gap-3">
                 <Link
                   href={`/courses/${encodeURIComponent(id)}`}
-                  className="text-base font-semibold text-sky-700 hover:text-sky-900 hover:underline"
+                  className="min-w-0 flex-1 break-words text-base font-semibold text-sky-700 hover:text-sky-900 hover:underline"
                 >
                   {p.courseName ?? t("courseFallback", { id })}
                 </Link>
-                <span className="text-base font-bold tabular-nums text-slate-800">
+                <span className="shrink-0 text-base font-bold tabular-nums text-slate-800">
                   {pct}%
                 </span>
               </div>
@@ -77,7 +77,7 @@ export default function ProgressPage() {
                   style={{ width: `${Math.min(100, pct)}%` }}
                 />
               </div>
-              <pre className="mt-4 max-h-32 overflow-auto rounded-xl border border-sky-100/80 bg-sky-50/50 p-3 text-xs text-slate-600">
+              <pre className="mt-4 max-h-32 min-w-0 max-w-full overflow-auto rounded-xl border border-sky-100/80 bg-sky-50/50 p-3 text-xs text-slate-600">
                 {JSON.stringify(p, null, 2)}
               </pre>
             </li>

@@ -197,17 +197,27 @@ body {
   border-bottom-color: color-mix(in srgb, var(--ds-white) 14%, transparent);
 }
 
-/* Контейнер: 97.5% desktop / 91.5% ≤1024px */
+/* Контейнер: 97.5% desktop / 91.5% ≤1024px; горизонтальные отступы + safe-area для узких экранов */
 .ds-container {
   width: 100%;
   max-width: 97.5%;
   margin-left: auto;
   margin-right: auto;
+  box-sizing: border-box;
+  padding-left: calc(clamp(0.75rem, 2.8vw, 1.25rem) + env(safe-area-inset-left, 0px));
+  padding-right: calc(clamp(0.75rem, 2.8vw, 1.25rem) + env(safe-area-inset-right, 0px));
 }
 
 @media (max-width: 1024px) {
   .ds-container {
     max-width: 91.5%;
+  }
+}
+
+@media (min-width: 1025px) {
+  .ds-container {
+    padding-left: calc(clamp(1rem, 1.5vw, 1.5rem) + env(safe-area-inset-left, 0px));
+    padding-right: calc(clamp(1rem, 1.5vw, 1.5rem) + env(safe-area-inset-right, 0px));
   }
 }
 
@@ -952,7 +962,7 @@ body {
 }
 
 /* =============================================================================
-   Landing (4–7 классы): роботы, шестерёнки, лёгкое движение
+   Landing (4–5 классы): роботы, шестерёнки, лёгкое движение
    ============================================================================= */
 @keyframes landing-kid-bob {
   0%,
@@ -1682,12 +1692,15 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.9);
 }
 
-/* Тело шага: чуть уже строка для чтения */
+/* Тело шага: чуть уже строка для чтения + устойчивость к широкому HTML из CMS */
 .lesson-step-prose {
   font-size: 1.0625rem;
   line-height: 1.7;
   letter-spacing: 0.01em;
   color: rgb(51 65 85);
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .lesson-step-prose p {
@@ -1712,6 +1725,34 @@ body {
   color: var(--ds-primary);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.lesson-step-prose :is(img, video, iframe) {
+  max-width: 100%;
+  height: auto;
+}
+
+.lesson-step-prose pre {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lesson-step-prose code {
+  word-break: break-word;
+}
+
+.lesson-step-prose table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.lesson-step-prose th,
+.lesson-step-prose td {
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 @media (min-width: 640px) {
@@ -1756,6 +1797,9 @@ body {
   font-size: 1.125rem;
   line-height: 1.75;
   letter-spacing: 0.01em;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .student-module-kid-prose p {
@@ -1780,6 +1824,34 @@ body {
   color: var(--ds-primary);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.student-module-kid-prose :is(img, video, iframe) {
+  max-width: 100%;
+  height: auto;
+}
+
+.student-module-kid-prose pre {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.student-module-kid-prose code {
+  word-break: break-word;
+}
+
+.student-module-kid-prose table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.student-module-kid-prose th,
+.student-module-kid-prose td {
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .student-module-kid-video-wrap {
@@ -1813,4 +1885,60 @@ body {
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.8) inset,
     0 16px 48px -24px rgba(15, 23, 42, 0.1);
+}
+
+/* Вход / регистрация: смена маршрута */
+@keyframes auth-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-panel-enter {
+  animation: auth-panel-in 0.35s ease-out both;
+}
+
+/* Компактные поля на форме регистрации */
+.auth-register-form .ds-input,
+.auth-register-form select.ds-input {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-panel-enter {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Страница теста ученика — мягкое появление карточек вопросов */
+@keyframes student-quiz-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .student-quiz-card-enter {
+    animation: student-quiz-card-in 0.48s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .student-quiz-card-enter {
+    animation: none;
+  }
 }

@@ -93,14 +93,22 @@ export type ModuleQuizQuestion = {
   [key: string]: unknown;
 };
 
+/** Язык контента квиза в GET `/app/lessons/:id/quiz?lang=` (совпадает с запрошенным `lang`, не «факт» каждой строки при фоллбеке). */
+export type QuizApiDisplayLang = "ru" | "kk";
+
 export type ModuleQuizResponse = {
   id: string;
   lessonId?: string;
   /** @deprecated */
   moduleId?: string;
   title?: string;
+  /** Запрошенный язык отображения (`lang` в query); при отсутствии на бэке может не приходить — трактуем как `ru`. */
+  language?: QuizApiDisplayLang;
   passingScore?: number;
+  /** Эффективный лимит попыток для текущего ученика (бэкенд: override → доступ → дефолт курса → тест). */
   maxAttempts?: number;
+  /** Источник эффективного лимита, если бэкенд отдаёт (например `user_quiz_max_attempt_override`). */
+  maxAttemptsSource?: string;
   timeLimitMinutes?: number;
   shuffleQuestions?: boolean;
   createdAt?: string;
@@ -224,11 +232,17 @@ export async function fetchLessonContent(
 /** @deprecated используйте fetchLessonContent */
 export const fetchModuleContent = fetchLessonContent;
 
-/** GET /app/lessons/:lessonId/quiz */
+/** GET /app/lessons/:lessonId/quiz — опционально `?lang=kk` (для `ru` параметр не передаём: дефолт бэка). */
 export async function fetchLessonQuiz(
   lessonId: string,
+  options?: { lang?: QuizApiDisplayLang },
 ): Promise<ModuleQuizResponse | null> {
-  const res = await apiFetch(STUDENT_ROUTES.LESSON_QUIZ(lessonId));
+  const lang = options?.lang ?? "ru";
+  const path =
+    lang === "kk"
+      ? `${STUDENT_ROUTES.LESSON_QUIZ(lessonId)}?${new URLSearchParams({ lang: "kk" }).toString()}`
+      : STUDENT_ROUTES.LESSON_QUIZ(lessonId);
+  const res = await apiFetch(path);
   if (res.status === 404) return null;
   await throwIfNotOk(res);
   const data = await parseJsonSafe<unknown>(res);
@@ -244,13 +258,35 @@ export async function fetchLessonQuiz(
     }
   }
   if (!q) return null;
+  const raw = q as Record<string, unknown>;
+  const maxFrom =
+    raw.maxAttempts ??
+    raw.max_attempts ??
+    raw.effectiveMaxAttempts ??
+    raw.effective_max_attempts;
+  let maxAttempts: number | undefined;
+  if (maxFrom != null && maxFrom !== "") {
+    const n = Number(maxFrom);
+    if (Number.isFinite(n) && n >= 1) maxAttempts = n;
+  }
+  const srcRaw = raw.maxAttemptsSource ?? raw.max_attempts_source;
+  const maxAttemptsSource =
+    srcRaw != null && String(srcRaw).trim() !== ""
+      ? String(srcRaw)
+      : undefined;
+
   const lid =
     q.lessonId ??
     q.moduleId ??
-    (q as Record<string, unknown>).lesson_id ??
-    (q as Record<string, unknown>).module_id;
+    raw.lesson_id ??
+    raw.module_id;
   const lesson = lid != null ? String(lid) : lessonId;
-  return { ...q, lessonId: lesson };
+  return {
+    ...q,
+    lessonId: lesson,
+    maxAttempts,
+    maxAttemptsSource,
+  };
 }
 
 /** @deprecated используйте fetchLessonQuiz */

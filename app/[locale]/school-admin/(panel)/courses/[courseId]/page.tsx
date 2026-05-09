@@ -11,6 +11,7 @@ import {
   grantCourseAccess,
   grantCourseAccessBulk,
   revokeCourseAccess,
+  patchCourseAccess,
   type AdminCourseRow,
   type CourseSchoolStudentRow,
 } from "@/lib/api/school-admin/courses";
@@ -42,9 +43,18 @@ function readAccessRow(row: unknown): {
   accessType?: string;
   expiresAt?: string | null;
   revokedAt?: string | null;
+  maxQuizAttempts?: number | null;
 } {
   if (!row || typeof row !== "object") return { userId: "" };
   const o = row as Record<string, unknown>;
+  const maxRaw = o.maxQuizAttempts ?? o.max_quiz_attempts;
+  const maxQuizAttempts =
+    maxRaw === null || maxRaw === undefined || maxRaw === ""
+      ? null
+      : (() => {
+          const n = Number(maxRaw);
+          return Number.isFinite(n) && n >= 1 ? n : null;
+        })();
   return {
     userId: String(o.userId ?? o.user_id ?? ""),
     accessType:
@@ -55,6 +65,7 @@ function readAccessRow(row: unknown): {
           : undefined,
     expiresAt: (o.expiresAt ?? o.expires_at) as string | null | undefined,
     revokedAt: (o.revokedAt ?? o.revoked_at) as string | null | undefined,
+    maxQuizAttempts,
   };
 }
 
@@ -85,6 +96,10 @@ export default function SchoolAdminCourseAccessPage() {
     "permanent",
   );
   const [expiresAt, setExpiresAt] = useState("");
+  const [maxQuizAttemptsGrant, setMaxQuizAttemptsGrant] = useState("");
+  const [maxQuizAttemptsBulk, setMaxQuizAttemptsBulk] = useState("");
+  const [patchUserId, setPatchUserId] = useState("");
+  const [patchMaxAttempts, setPatchMaxAttempts] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [accessesRaw, setAccessesRaw] = useState<unknown>(null);
@@ -187,6 +202,16 @@ export default function SchoolAdminCourseAccessPage() {
       setError(t("grantPickStudent"));
       return;
     }
+    const rawM = maxQuizAttemptsGrant.trim();
+    let maxQuizAttempts: number | undefined;
+    if (rawM !== "") {
+      const n = Number(rawM);
+      if (!Number.isInteger(n) || n < 1 || n > 99) {
+        setError(t("maxQuizAttemptsInvalid"));
+        return;
+      }
+      maxQuizAttempts = n;
+    }
     try {
       await grantCourseAccess(courseId, {
         userId,
@@ -195,9 +220,11 @@ export default function SchoolAdminCourseAccessPage() {
           accessType === "temporary" && expiresAt
             ? new Date(expiresAt).toISOString()
             : undefined,
+        ...(maxQuizAttempts != null ? { maxQuizAttempts } : {}),
       });
       setMsg(t("grantSuccess"));
       setUserId("");
+      setMaxQuizAttemptsGrant("");
       load();
     } catch (e) {
       setError(e instanceof Error ? e.message : t("errorGeneric"));
@@ -218,6 +245,17 @@ export default function SchoolAdminCourseAccessPage() {
     }
     setBulkBusy(true);
     try {
+      const rawM = maxQuizAttemptsBulk.trim();
+      let maxQuizAttempts: number | undefined;
+      if (rawM !== "") {
+        const n = Number(rawM);
+        if (!Number.isInteger(n) || n < 1 || n > 99) {
+          setError(t("maxQuizAttemptsInvalid"));
+          setBulkBusy(false);
+          return;
+        }
+        maxQuizAttempts = n;
+      }
       const r = await grantCourseAccessBulk(courseId, {
         userIds: uniq,
         accessType,
@@ -225,6 +263,7 @@ export default function SchoolAdminCourseAccessPage() {
           accessType === "temporary" && expiresAt
             ? new Date(expiresAt).toISOString()
             : undefined,
+        ...(maxQuizAttempts != null ? { maxQuizAttempts } : {}),
       });
       setMsg(
         t("bulkSuccess", {
@@ -233,6 +272,7 @@ export default function SchoolAdminCourseAccessPage() {
         }),
       );
       setBulkText("");
+      setMaxQuizAttemptsBulk("");
       load();
     } catch (e) {
       setError(e instanceof Error ? e.message : t("errorGeneric"));
@@ -399,6 +439,23 @@ export default function SchoolAdminCourseAccessPage() {
                 />
               </div>
             )}
+            <div>
+              <label className="ds-text-small mb-1.5 block font-medium text-ds-black">
+                {t("maxQuizAttemptsLabel")}
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={99}
+                className="ds-input w-full max-w-[200px]"
+                value={maxQuizAttemptsGrant}
+                onChange={(e) => setMaxQuizAttemptsGrant(e.target.value)}
+                placeholder={t("maxQuizAttemptsPlaceholder")}
+              />
+              <p className="ds-text-caption mt-1 text-ds-gray-text">
+                {t("maxQuizAttemptsHint")}
+              </p>
+            </div>
             {error && (
               <p className="rounded-lg border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
                 {error}
@@ -430,6 +487,23 @@ export default function SchoolAdminCourseAccessPage() {
             value={bulkText}
             onChange={(e) => setBulkText(e.target.value)}
           />
+          <div className="mt-4">
+            <label className="ds-text-small mb-1.5 block font-medium text-ds-black">
+              {t("maxQuizAttemptsBulkLabel")}
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={99}
+              className="ds-input w-full max-w-[200px]"
+              value={maxQuizAttemptsBulk}
+              onChange={(e) => setMaxQuizAttemptsBulk(e.target.value)}
+              placeholder={t("maxQuizAttemptsPlaceholder")}
+            />
+            <p className="ds-text-caption mt-1 text-ds-gray-text">
+              {t("maxQuizAttemptsBulkHint")}
+            </p>
+          </div>
           <button
             type="button"
             className="ui-btn ui-btn--4 mt-4 w-full sm:w-auto"
@@ -440,6 +514,112 @@ export default function SchoolAdminCourseAccessPage() {
           </button>
         </section>
       </div>
+
+      <section className="sa-card-in relative z-[1] mt-8 rounded-[22px] border border-white/90 bg-white/80 p-6 shadow-[0_16px_48px_-28px_rgba(0,0,0,0.12)] backdrop-blur-sm">
+        <h2 className="ds-text-h3 text-ds-black">{t("patchAccessTitle")}</h2>
+        <p className="mt-1 text-sm text-ds-gray-text">{t("patchAccessLead")}</p>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="sm:col-span-2 lg:col-span-1">
+            <label className="ds-text-small mb-1.5 block font-medium text-ds-black">
+              {t("patchAccessStudent")}
+            </label>
+            <select
+              className="ds-input w-full"
+              value={patchUserId}
+              onChange={(e) => setPatchUserId(e.target.value)}
+            >
+              <option value="">{t("patchAccessStudentPlaceholder")}</option>
+              {withAccessView.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {[u.lastName, u.firstName].filter(Boolean).join(" ") || u.email || u.id}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="ds-text-small mb-1.5 block font-medium text-ds-black">
+              {t("patchAccessMaxLabel")}
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={99}
+              className="ds-input w-full"
+              value={patchMaxAttempts}
+              onChange={(e) => setPatchMaxAttempts(e.target.value)}
+              placeholder={t("maxQuizAttemptsPlaceholder")}
+            />
+          </div>
+          <div className="flex flex-wrap items-end gap-2">
+            <button
+              type="button"
+              className="ui-btn ui-btn--1"
+              onClick={() => {
+                void (async () => {
+                  setError(null);
+                  setMsg(null);
+                  if (!patchUserId) {
+                    setError(t("patchAccessPickStudent"));
+                    return;
+                  }
+                  const raw = patchMaxAttempts.trim();
+                  if (raw === "") {
+                    setError(t("patchAccessNeedNumber"));
+                    return;
+                  }
+                  const n = Number(raw);
+                  if (!Number.isInteger(n) || n < 1 || n > 99) {
+                    setError(t("maxQuizAttemptsInvalid"));
+                    return;
+                  }
+                  try {
+                    await patchCourseAccess(courseId, patchUserId, {
+                      maxQuizAttempts: n,
+                    });
+                    setMsg(t("patchAccessOk"));
+                    setPatchMaxAttempts("");
+                    load();
+                  } catch (e) {
+                    setError(
+                      e instanceof Error ? e.message : t("errorGeneric"),
+                    );
+                  }
+                })();
+              }}
+            >
+              {t("patchAccessSave")}
+            </button>
+            <button
+              type="button"
+              className="ui-btn ui-btn--6 !border-ds-error/30 !text-ds-error"
+              onClick={() => {
+                void (async () => {
+                  if (!patchUserId) {
+                    setError(t("patchAccessPickStudent"));
+                    return;
+                  }
+                  if (!confirm(t("patchAccessClearConfirm"))) return;
+                  setError(null);
+                  setMsg(null);
+                  try {
+                    await patchCourseAccess(courseId, patchUserId, {
+                      maxQuizAttempts: null,
+                    });
+                    setMsg(t("patchAccessClearOk"));
+                    load();
+                  } catch (e) {
+                    setError(
+                      e instanceof Error ? e.message : t("errorGeneric"),
+                    );
+                  }
+                })();
+              }}
+            >
+              {t("patchAccessClear")}
+            </button>
+          </div>
+        </div>
+      </section>
 
       <section className="sa-card-in relative z-[1] mt-8 rounded-[22px] border border-white/90 bg-white/85 p-6 shadow-[0_16px_48px_-28px_rgba(0,0,0,0.1)] backdrop-blur-sm sm:p-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -531,6 +711,11 @@ export default function SchoolAdminCourseAccessPage() {
                   {a.expiresAt && (
                     <p className="mt-1 text-xs text-ds-gray-text">
                       {t("expiresUntil", { date: a.expiresAt })}
+                    </p>
+                  )}
+                  {a.maxQuizAttempts != null && (
+                    <p className="mt-1 text-xs text-ds-gray-text">
+                      {t("rowMaxQuizAttempts", { n: a.maxQuizAttempts })}
                     </p>
                   )}
                   {revoked && (

@@ -110,6 +110,23 @@ function mapQuiz(raw: Record<string, unknown>): AdminQuiz {
   };
 }
 
+/** Разбор тела ответа GET /admin/lessons/:id/quiz (super_admin / school_admin read). */
+export function parseAdminQuizPayload(data: unknown): AdminQuiz | null {
+  if (data === null || data === undefined) return null;
+  if (
+    typeof data === "object" &&
+    data !== null &&
+    Object.keys(data as Record<string, unknown>).length === 0
+  ) {
+    return null;
+  }
+  return mapQuiz(
+    typeof data === "object" && data !== null
+      ? (data as Record<string, unknown>)
+      : {},
+  );
+}
+
 /** `GET /admin/lessons/:lessonId/quiz` */
 export async function getAdminLessonQuiz(
   lessonId: string,
@@ -118,15 +135,7 @@ export async function getAdminLessonQuiz(
   if (res.status === 404) return null;
   await throwIfNotOk(res);
   const data = await parseJsonSafe<unknown>(res);
-  if (data === null || data === undefined) return null;
-  if (typeof data === "object" && data !== null && Object.keys(data).length === 0) {
-    return null;
-  }
-  return mapQuiz(
-    typeof data === "object" && data !== null
-      ? (data as Record<string, unknown>)
-      : {},
-  );
+  return parseAdminQuizPayload(data);
 }
 
 /** @deprecated */

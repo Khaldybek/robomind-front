@@ -8,6 +8,7 @@ import {
   type AdminUser,
 } from "@/lib/api/super-admin/users";
 import { isApiConfigured } from "@/lib/env";
+import { FormOptionSchoolPicker } from "@/components/super-admin/form-option-school-picker";
 
 const PAGE_SIZE = 20;
 
@@ -19,6 +20,7 @@ export default function Page() {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [schoolId, setSchoolId] = useState("");
+  const [schoolLabel, setSchoolLabel] = useState<string | null>(null);
   const [role, setRole] = useState("");
   const [isActive, setIsActive] = useState<"all" | "yes" | "no">("all");
   const [loading, setLoading] = useState(true);
@@ -52,7 +54,7 @@ export default function Page() {
 
   useEffect(() => {
     load(1);
-  }, []);
+  }, [schoolId]);
 
   return (
     <div className="max-w-5xl space-y-6">
@@ -69,12 +71,6 @@ export default function Page() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && load(1)}
-          />
-          <input
-            className="ds-input font-mono"
-            placeholder={t("schoolIdPlaceholder")}
-            value={schoolId}
-            onChange={(e) => setSchoolId(e.target.value)}
           />
           <select
             className="ds-input"
@@ -104,6 +100,20 @@ export default function Page() {
           >
             {t("refresh")}
           </button>
+        </div>
+        <div className="mt-3">
+          <FormOptionSchoolPicker
+            value={schoolId}
+            selectedLabel={schoolLabel}
+            onSelect={(id, label) => {
+              setSchoolId(id);
+              setSchoolLabel(label);
+            }}
+            onClear={() => {
+              setSchoolId("");
+              setSchoolLabel(null);
+            }}
+          />
         </div>
       </section>
 

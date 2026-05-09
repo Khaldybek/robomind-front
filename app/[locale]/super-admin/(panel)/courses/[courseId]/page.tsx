@@ -12,6 +12,7 @@ import {
   deleteAdminModule,
   grantSuperCourseAccess,
   revokeSuperCourseAccess,
+  patchSuperCourseAccess,
   type AdminModule,
   type AdminCourse,
 } from "@/lib/api/super-admin/courses-modules";
@@ -35,6 +36,8 @@ export default function Page() {
   const [isPublishedNew, setIsPublishedNew] = useState(false);
   const [unlockAfterId, setUnlockAfterId] = useState("");
   const [userId, setUserId] = useState("");
+  const [maxQuizAttemptsGrant, setMaxQuizAttemptsGrant] = useState("");
+  const [maxQuizAttemptsPatch, setMaxQuizAttemptsPatch] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [moduleModal, setModuleModal] = useState(false);
@@ -173,6 +176,9 @@ export default function Page() {
 
       <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
         <h2 className="ds-text-h3 text-ds-black">{t("accessTitle")}</h2>
+        <p className="mt-2 ds-text-caption text-ds-gray-text">
+          {t("accessMaxHint")}
+        </p>
         <select
           className="mt-3 ds-input"
           value={userId}
@@ -187,24 +193,112 @@ export default function Page() {
               </option>
             ))}
         </select>
+        <div className="mt-3">
+          <label className="ds-text-caption text-ds-gray-text">
+            {t("maxQuizAttemptsGrantLabel")}
+          </label>
+          <input
+            type="number"
+            min={1}
+            max={99}
+            className="mt-1 ds-input w-32"
+            value={maxQuizAttemptsGrant}
+            onChange={(e) => setMaxQuizAttemptsGrant(e.target.value)}
+            placeholder={t("maxQuizAttemptsPlaceholder")}
+          />
+        </div>
+        <div className="mt-3">
+          <label className="ds-text-caption text-ds-gray-text">
+            {t("maxQuizAttemptsPatchLabel")}
+          </label>
+          <input
+            type="number"
+            min={1}
+            max={99}
+            className="mt-1 ds-input w-32"
+            value={maxQuizAttemptsPatch}
+            onChange={(e) => setMaxQuizAttemptsPatch(e.target.value)}
+            placeholder={t("maxQuizAttemptsPlaceholder")}
+          />
+          <p className="mt-1 ds-text-caption text-ds-gray-text">
+            {t("maxQuizAttemptsPatchHint")}
+          </p>
+        </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             type="button"
             className="ui-btn ui-btn--1"
-            onClick={() =>
-              userId &&
+            onClick={() => {
+              if (!userId) return;
+              const raw = maxQuizAttemptsGrant.trim();
+              let maxQuizAttempts: number | undefined;
+              if (raw !== "") {
+                const n = Number(raw);
+                if (!Number.isInteger(n) || n < 1 || n > 99) {
+                  setErr(t("maxQuizAttemptsInvalid"));
+                  return;
+                }
+                maxQuizAttempts = n;
+              }
               grantSuperCourseAccess(courseId, {
                 userId,
                 accessType: "permanent",
+                ...(maxQuizAttempts != null ? { maxQuizAttempts } : {}),
               })
                 .then(() => {
                   setErr(null);
                   setOk(t("grantOk"));
+                  setMaxQuizAttemptsGrant("");
                 })
-                .catch((e) => setErr(String(e)))
-            }
+                .catch((e) => setErr(String(e)));
+            }}
           >
             {t("grantBtn")}
+          </button>
+          <button
+            type="button"
+            className="ui-btn ui-btn--4"
+            onClick={() => {
+              if (!userId) return;
+              const raw = maxQuizAttemptsPatch.trim();
+              if (raw === "") {
+                setErr(t("maxQuizAttemptsPatchEmpty"));
+                return;
+              }
+              const n = Number(raw);
+              if (!Number.isInteger(n) || n < 1 || n > 99) {
+                setErr(t("maxQuizAttemptsInvalid"));
+                return;
+              }
+              patchSuperCourseAccess(courseId, userId, { maxQuizAttempts: n })
+                .then(() => {
+                  setErr(null);
+                  setOk(t("patchAccessOk"));
+                  setMaxQuizAttemptsPatch("");
+                })
+                .catch((e) => setErr(String(e)));
+            }}
+          >
+            {t("patchAccessBtn")}
+          </button>
+          <button
+            type="button"
+            className="ui-btn ui-btn--4"
+            onClick={() => {
+              if (!userId) return;
+              if (!confirm(t("patchAccessClearConfirm"))) return;
+              patchSuperCourseAccess(courseId, userId, {
+                maxQuizAttempts: null,
+              })
+                .then(() => {
+                  setErr(null);
+                  setOk(t("patchAccessClearOk"));
+                  setMaxQuizAttemptsPatch("");
+                })
+                .catch((e) => setErr(String(e)));
+            }}
+          >
+            {t("patchAccessClearBtn")}
           </button>
           <button
             type="button"

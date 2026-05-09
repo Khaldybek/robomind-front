@@ -608,6 +608,83 @@ export async function fetchUserQuizAttemptsAdmin(
   );
 }
 
+/** Переопределение лимита попыток: ученик + квиз (приоритет 1 в цепочке). */
+export type UserQuizAttemptLimitOverride = {
+  quizId: string;
+  maxAttempts: number;
+};
+
+function quizLimitsArrayFromPayload(data: unknown): unknown[] {
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === "object") {
+    const o = data as Record<string, unknown>;
+    const items = o.items ?? o.overrides ?? o.limits;
+    if (Array.isArray(items)) return items;
+  }
+  return [];
+}
+
+function normalizeQuizLimitRow(
+  raw: Record<string, unknown>,
+): UserQuizAttemptLimitOverride | null {
+  const quizId = String(raw.quizId ?? raw.quiz_id ?? "").trim();
+  if (!quizId) return null;
+  const m = Number(
+    raw.maxAttempts ??
+      raw.max_attempts ??
+      raw.maxQuizAttempts ??
+      raw.max_quiz_attempts,
+  );
+  if (!Number.isFinite(m)) return null;
+  const v = Math.round(m);
+  if (v < 1 || v > 99) return null;
+  return { quizId, maxAttempts: v };
+}
+
+/** `GET /admin/users/:userId/quiz-attempt-limits` */
+export async function fetchUserQuizAttemptLimitsAdmin(
+  userId: string,
+): Promise<UserQuizAttemptLimitOverride[]> {
+  const res = await apiSchoolAdminFetch(
+    SCHOOL_ADMIN_ROUTES.USER_QUIZ_ATTEMPT_LIMITS(userId),
+  );
+  await throwIfNotOk(res);
+  const data = await parseJsonSafe<unknown>(res);
+  return quizLimitsArrayFromPayload(data)
+    .map((row) =>
+      row && typeof row === "object"
+        ? normalizeQuizLimitRow(row as Record<string, unknown>)
+        : null,
+    )
+    .filter((x): x is UserQuizAttemptLimitOverride => x != null);
+}
+
+/** `PUT /admin/users/:userId/quiz-attempt-limits` — тело: массив `{ quizId, maxAttempts }[]` (или как на бэкенде — см. доку). */
+export async function putUserQuizAttemptLimitsAdmin(
+  userId: string,
+  limits: UserQuizAttemptLimitOverride[],
+): Promise<void> {
+  const res = await apiSchoolAdminFetch(
+    SCHOOL_ADMIN_ROUTES.USER_QUIZ_ATTEMPT_LIMITS(userId),
+    {
+      method: "PUT",
+      body: JSON.stringify(limits),
+    },
+  );
+  await throwIfNotOk(res);
+}
+
+/** `DELETE /admin/users/:userId/quiz-attempt-limits` */
+export async function deleteUserQuizAttemptLimitsAdmin(
+  userId: string,
+): Promise<void> {
+  const res = await apiSchoolAdminFetch(
+    SCHOOL_ADMIN_ROUTES.USER_QUIZ_ATTEMPT_LIMITS(userId),
+    { method: "DELETE" },
+  );
+  await throwIfNotOk(res);
+}
+
 export type UserDeviceRow = {
   id: string;
   userId?: string;

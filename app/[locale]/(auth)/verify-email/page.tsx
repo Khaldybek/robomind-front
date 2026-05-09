@@ -8,11 +8,11 @@ export default async function VerifyEmailPage() {
   const tc = await getTranslations("Common");
 
   return (
-    <div className="ds-main min-h-screen py-12">
-      <div className="ds-container mb-8 text-center">
+    <>
+      <div className="mx-auto mb-8 max-w-md text-center">
         <Link
           href="/"
-          className="ds-text-caption text-ds-gray-text hover:text-ds-primary"
+          className="ds-text-caption text-ds-black/70 transition hover:text-ds-primary"
         >
           {t("backHome")}
         </Link>
@@ -26,6 +26,6 @@ export default async function VerifyEmailPage() {
       >
         <VerifyEmailClient />
       </Suspense>
-    </div>
+    </>
   );
 }

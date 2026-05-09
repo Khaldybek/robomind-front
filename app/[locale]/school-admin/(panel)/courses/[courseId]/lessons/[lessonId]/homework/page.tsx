@@ -16,6 +16,14 @@ function HomeworkInner() {
 
   return (
     <div>
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <Link
+          href={`/school-admin/courses/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lessonId)}`}
+          className="ds-text-caption font-medium text-ds-primary hover:underline"
+        >
+          {t("lessonMaterialsNav")}
+        </Link>
+      </div>
       <Link
         href={`/school-admin/courses/${encodeURIComponent(courseId)}/modules`}
         className="ds-text-caption mb-6 inline-block text-ds-primary hover:underline"

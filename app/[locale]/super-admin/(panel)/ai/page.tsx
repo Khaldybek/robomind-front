@@ -7,18 +7,56 @@ import {
   aiSummarize,
   aiTranscribe,
 } from "@/lib/api/super-admin/ai";
+import { FormOptionLessonPicker } from "@/components/super-admin/form-option-lesson-picker";
 import { isApiConfigured } from "@/lib/env";
 
 export default function Page() {
   const t = useTranslations("SuperAdminAi");
+  const tc = useTranslations("Common");
+  const [lessonId, setLessonId] = useState("");
+  const [lessonLabel, setLessonLabel] = useState<string | null>(null);
+
   return (
-    <div className="max-w-4xl space-y-6">
-      <header>
+    <div className="mx-auto max-w-3xl space-y-6 pb-8">
+      <header className="border-b border-ds-gray-border pb-6">
         <h1 className="ds-text-h2 text-ds-black">{t("title")}</h1>
-        <p className="mt-2 ds-text-caption text-ds-gray-text">{t("lead")}</p>
+        <p className="mt-2 max-w-2xl ds-text-caption leading-relaxed text-ds-gray-text">
+          {t("lead")}
+        </p>
       </header>
-      <QuizSection />
-      <SummarizeSection />
+
+      {!isApiConfigured() ? (
+        <p
+          className="rounded-lg border border-ds-error/25 bg-[#FFF5F5] px-4 py-3 ds-text-small text-ds-error"
+          role="status"
+        >
+          {tc("apiEnvMissing")}
+        </p>
+      ) : null}
+
+      <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 shadow-sm sm:p-6">
+        <h2 className="ds-text-h3 text-ds-black">{t("lessonContextTitle")}</h2>
+        <p className="mt-1.5 max-w-2xl ds-text-caption leading-relaxed text-ds-gray-text">
+          {t("lessonContextLead")}
+        </p>
+        <div className="mt-4">
+          <FormOptionLessonPicker
+            value={lessonId}
+            selectedLabel={lessonLabel}
+            onSelect={(id, label) => {
+              setLessonId(id);
+              setLessonLabel(label);
+            }}
+            onClear={() => {
+              setLessonId("");
+              setLessonLabel(null);
+            }}
+          />
+        </div>
+      </section>
+
+      <QuizSection lessonId={lessonId} />
+      <SummarizeSection lessonId={lessonId} />
       <TranscribeSection />
     </div>
   );
@@ -26,25 +64,29 @@ export default function Page() {
 
 function Block({
   title,
-  endpoint,
+  hint,
   children,
 }: {
   title: string;
-  endpoint: string;
+  hint?: string;
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
+    <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 shadow-sm sm:p-6">
       <h2 className="ds-text-h3 text-ds-black">{title}</h2>
-      <p className="mb-4 mt-1 ds-text-caption text-ds-gray-text">{endpoint}</p>
-      {children}
+      {hint ? (
+        <p className="mt-1.5 max-w-2xl ds-text-caption leading-relaxed text-ds-gray-text">
+          {hint}
+        </p>
+      ) : null}
+      <div className="mt-5 space-y-4">{children}</div>
     </section>
   );
 }
 
-function QuizSection() {
+function QuizSection({ lessonId }: { lessonId: string }) {
   const t = useTranslations("SuperAdminAi");
-  const [moduleId, setModuleId] = useState("");
+  const tc = useTranslations("Common");
   const [moduleText, setModuleText] = useState("");
   const [count, setCount] = useState(5);
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(
@@ -54,52 +96,58 @@ function QuizSection() {
   const [err, setErr] = useState("");
 
   return (
-    <Block title={t("quizTitle")} endpoint={t("quizEndpoint")}>
-      <input
-        className="ds-input"
-        placeholder={t("placeholderLessonId")}
-        value={moduleId}
-        onChange={(e) => setModuleId(e.target.value)}
-      />
+    <Block title={t("quizTitle")} hint={t("quizHint")}>
       <textarea
-        className="ds-input min-h-[100px]"
+        className="ds-input min-h-[120px] w-full resize-y text-sm leading-relaxed"
         placeholder={t("placeholderModuleText")}
         value={moduleText}
         onChange={(e) => setModuleText(e.target.value)}
       />
-      <div className="mt-3 flex flex-wrap gap-3">
-        <label className="ds-text-caption text-ds-black">
-          {t("questionCount")}
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
+        <label className="flex flex-col gap-1.5 ds-text-caption text-ds-black">
+          <span>{t("questionCount")}</span>
           <input
             type="number"
             min={1}
             max={25}
             value={count}
             onChange={(e) => setCount(Number(e.target.value))}
-            className="ml-2 w-20 ds-input"
+            className="ds-input w-full sm:w-24"
           />
         </label>
-        <select
-          className="ds-input w-36"
-          value={difficulty}
-          onChange={(e) =>
-            setDifficulty(e.target.value as "easy" | "medium" | "hard")
-          }
-        >
-          <option value="easy">easy</option>
-          <option value="medium">medium</option>
-          <option value="hard">hard</option>
-        </select>
+        <label className="flex min-w-0 flex-1 flex-col gap-1.5 ds-text-caption text-ds-black sm:max-w-xs">
+          <span>{t("difficultyLabel")}</span>
+          <select
+            className="ds-input w-full"
+            value={difficulty}
+            onChange={(e) =>
+              setDifficulty(e.target.value as "easy" | "medium" | "hard")
+            }
+          >
+            <option value="easy">{t("difficultyEasy")}</option>
+            <option value="medium">{t("difficultyMedium")}</option>
+            <option value="hard">{t("difficultyHard")}</option>
+          </select>
+        </label>
       </div>
       <button
         type="button"
-        className="mt-4 ui-btn ui-btn--1"
+        className="ui-btn ui-btn--1 w-full sm:w-auto"
         onClick={() => {
-          if (!isApiConfigured()) return;
+          if (!isApiConfigured()) {
+            setErr(tc("apiEnvMissing"));
+            return;
+          }
+          const mid = lessonId.trim();
+          const mt = moduleText.trim();
+          if (!mid && (!mt || mt.length < 80)) {
+            setErr(t("errNeedLessonOrModuleText"));
+            return;
+          }
           setErr("");
           aiGenerateQuiz({
-            moduleId: moduleId || undefined,
-            moduleText: moduleText || undefined,
+            moduleId: mid || undefined,
+            moduleText: mt || undefined,
             questionCount: count,
             difficulty,
           })
@@ -109,48 +157,51 @@ function QuizSection() {
       >
         {t("generate")}
       </button>
-      {err && (
-        <p className="mt-3 rounded border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
+      {err ? (
+        <p className="rounded-lg border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
           {err}
         </p>
-      )}
-      {out && (
-        <pre className="mt-3 max-h-80 overflow-auto rounded-lg border border-ds-gray-border bg-ds-gray-light p-4 ds-text-caption whitespace-pre-wrap">
+      ) : null}
+      {out ? (
+        <pre className="max-h-80 overflow-auto rounded-lg border border-ds-gray-border bg-ds-gray-light/80 p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap text-ds-black">
           {out}
         </pre>
-      )}
+      ) : null}
     </Block>
   );
 }
 
-function SummarizeSection() {
+function SummarizeSection({ lessonId }: { lessonId: string }) {
   const t = useTranslations("SuperAdminAi");
-  const [moduleId, setModuleId] = useState("");
+  const tc = useTranslations("Common");
   const [text, setText] = useState("");
   const [out, setOut] = useState("");
   const [err, setErr] = useState("");
 
   return (
-    <Block title={t("summarizeTitle")} endpoint={t("summarizeEndpoint")}>
-      <input
-        className="ds-input"
-        placeholder={t("placeholderLessonId2")}
-        value={moduleId}
-        onChange={(e) => setModuleId(e.target.value)}
-      />
+    <Block title={t("summarizeTitle")} hint={t("summarizeHint")}>
       <textarea
-        className="ds-input min-h-[100px]"
+        className="ds-input min-h-[120px] w-full resize-y text-sm leading-relaxed"
         placeholder={t("placeholderText")}
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
       <button
         type="button"
-        className="mt-1 ui-btn ui-btn--1"
+        className="ui-btn ui-btn--1 w-full sm:w-auto"
         onClick={() => {
-          if (!isApiConfigured()) return;
+          if (!isApiConfigured()) {
+            setErr(tc("apiEnvMissing"));
+            return;
+          }
+          const mid = lessonId.trim();
+          const tx = text.trim();
+          if (!mid && (!tx || tx.length < 40)) {
+            setErr(t("errNeedLessonOrText"));
+            return;
+          }
           setErr("");
-          aiSummarize({ moduleId: moduleId || undefined, text: text || undefined })
+          aiSummarize({ moduleId: mid || undefined, text: tx || undefined })
             .then((r) =>
               setOut(
                 typeof r === "object" && r && "summary" in r
@@ -163,50 +214,62 @@ function SummarizeSection() {
       >
         {t("summarizeBtn")}
       </button>
-      {err && (
-        <p className="mt-3 rounded border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
+      {err ? (
+        <p className="rounded-lg border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
           {err}
         </p>
-      )}
-      {out && (
-        <pre className="mt-3 max-h-60 overflow-auto rounded-lg border border-ds-gray-border bg-ds-gray-light p-4 ds-text-caption whitespace-pre-wrap text-ds-black">
+      ) : null}
+      {out ? (
+        <pre className="max-h-72 overflow-auto rounded-lg border border-ds-gray-border bg-ds-gray-light/80 p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap text-ds-black">
           {out}
         </pre>
-      )}
+      ) : null}
     </Block>
   );
 }
 
 function TranscribeSection() {
   const t = useTranslations("SuperAdminAi");
+  const tc = useTranslations("Common");
   const [file, setFile] = useState<File | null>(null);
   const [lang, setLang] = useState<"ru" | "kk" | "auto">("auto");
   const [out, setOut] = useState("");
   const [err, setErr] = useState("");
 
   return (
-    <Block title={t("transcribeTitle")} endpoint={t("transcribeEndpoint")}>
-      <input
-        type="file"
-        accept="audio/*,video/*"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        className="block w-full ds-text-caption"
-      />
-      <select
-        className="ds-input mt-3 w-40"
-        value={lang}
-        onChange={(e) => setLang(e.target.value as "ru" | "kk" | "auto")}
-      >
-        <option value="auto">auto</option>
-        <option value="ru">ru</option>
-        <option value="kk">kk</option>
-      </select>
+    <Block title={t("transcribeTitle")} hint={t("transcribeHint")}>
+      <div className="rounded-lg border border-dashed border-ds-gray-border bg-ds-gray-light/30 p-4">
+        <label className="block ds-text-caption text-ds-gray-text">
+          <span className="mb-2 block text-ds-black">{t("transcribeFileLabel")}</span>
+          <input
+            type="file"
+            accept="audio/*,video/*"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            className="block w-full cursor-pointer text-sm file:mr-3 file:rounded file:border-0 file:bg-ds-primary file:px-3 file:py-1.5 file:ds-text-caption file:text-ds-white"
+          />
+        </label>
+      </div>
+      <label className="flex max-w-xs flex-col gap-1.5 ds-text-caption text-ds-black">
+        <span>{t("transcribeLangLabel")}</span>
+        <select
+          className="ds-input w-full"
+          value={lang}
+          onChange={(e) => setLang(e.target.value as "ru" | "kk" | "auto")}
+        >
+          <option value="auto">{t("langAuto")}</option>
+          <option value="ru">{t("langRu")}</option>
+          <option value="kk">{t("langKk")}</option>
+        </select>
+      </label>
       <button
         type="button"
-        className="mt-1 ui-btn ui-btn--1"
+        className="ui-btn ui-btn--1 w-full sm:w-auto"
         disabled={!file}
         onClick={() => {
-          if (!file || !isApiConfigured()) return;
+          if (!file || !isApiConfigured()) {
+            if (!isApiConfigured()) setErr(tc("apiEnvMissing"));
+            return;
+          }
           setErr("");
           aiTranscribe(file, lang)
             .then((r) => setOut(JSON.stringify(r, null, 2)))
@@ -215,16 +278,16 @@ function TranscribeSection() {
       >
         {t("transcribeBtn")}
       </button>
-      {err && (
-        <p className="mt-3 rounded border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
+      {err ? (
+        <p className="rounded-lg border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
           {err}
         </p>
-      )}
-      {out && (
-        <pre className="mt-3 max-h-64 overflow-auto rounded-lg border border-ds-gray-border bg-ds-gray-light p-4 ds-text-caption">
+      ) : null}
+      {out ? (
+        <pre className="max-h-64 overflow-auto rounded-lg border border-ds-gray-border bg-ds-gray-light/80 p-4 font-mono text-xs leading-relaxed text-ds-black">
           {out}
         </pre>
-      )}
+      ) : null}
     </Block>
   );
 }

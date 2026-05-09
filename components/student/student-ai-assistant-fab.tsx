@@ -62,7 +62,7 @@ export function StudentAiAssistantFab() {
   return (
     <>
       {open && (
-        <div className="fixed inset-0 z-[100] flex animate-in fade-in duration-200 items-end justify-center p-4 pb-28 sm:items-center sm:pb-4">
+        <div className="fixed inset-0 z-[100] flex animate-in fade-in duration-200 items-end justify-center p-4 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] sm:items-center sm:pb-4">
           <button
             type="button"
             className="absolute inset-0 bg-slate-900/50 backdrop-blur-[3px] transition-opacity"
@@ -136,7 +136,7 @@ export function StudentAiAssistantFab() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`fixed bottom-6 right-6 z-[102] flex h-14 w-14 items-center justify-center rounded-full bg-ds-primary text-white shadow-lg shadow-ds-primary/35 transition-transform hover:scale-105 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-primary active:scale-95 ${
+        className={`fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] right-[calc(1.5rem+env(safe-area-inset-right,0px))] z-[102] flex h-14 w-14 items-center justify-center rounded-full bg-ds-primary text-white shadow-lg shadow-ds-primary/35 transition-transform hover:scale-105 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-primary active:scale-95 ${
           open ? "ring-2 ring-white/80" : ""
         }`}
         aria-expanded={open}

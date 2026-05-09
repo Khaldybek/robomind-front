@@ -4,16 +4,20 @@ import {
   throwIfNotOk,
 } from "@/lib/api/school-admin/client";
 import { SCHOOL_ADMIN_ROUTES } from "@/lib/api/school-admin/routes";
-import type {
-  AdminCourse,
-  AdminCourseList,
-  AdminLessonRow,
-  AdminModule,
-  AdminModuleList,
-  CourseLevel,
-  CourseSort,
-  ModuleSort,
+import {
+  parseAdminContentBlock,
+  type AdminContentBlock,
+  type AdminCourse,
+  type AdminCourseList,
+  type AdminLessonRow,
+  type AdminModule,
+  type AdminModuleList,
+  type CourseLevel,
+  type CourseSort,
+  type ModuleSort,
 } from "@/lib/api/super-admin/courses-modules";
+import type { AdminQuiz } from "@/lib/api/super-admin/quizzes";
+import { parseAdminQuizPayload } from "@/lib/api/super-admin/quizzes";
 
 function num(raw: unknown, d = 0): number {
   const n = Number(raw);
@@ -47,6 +51,12 @@ function mapCourse(raw: Record<string, unknown>): AdminCourse {
           : null,
     moduleCount: num(raw.moduleCount ?? raw.module_count, 0),
     studentsCount: num(raw.studentsCount ?? raw.students_count, 0),
+    defaultMaxQuizAttempts: (() => {
+      const d = raw.defaultMaxQuizAttempts ?? raw.default_max_quiz_attempts;
+      if (d === null || d === undefined || d === "") return null;
+      const v = num(d, 0);
+      return v >= 1 && v <= 99 ? v : null;
+    })(),
   };
 }
 
@@ -297,6 +307,7 @@ export async function grantCourseAccess(
     userId: string;
     accessType: "permanent" | "temporary";
     expiresAt?: string;
+    maxQuizAttempts?: number;
   },
 ): Promise<unknown> {
   const res = await apiSchoolAdminFetch(
@@ -325,6 +336,7 @@ export async function grantCourseAccessBulk(
     userIds: string[];
     accessType: "permanent" | "temporary";
     expiresAt?: string;
+    maxQuizAttempts?: number;
   },
 ): Promise<GrantCourseAccessBulkResult> {
   const res = await apiSchoolAdminFetch(
@@ -363,6 +375,20 @@ export async function revokeCourseAccess(
   await throwIfNotOk(res);
 }
 
+/** `PATCH /admin/courses/:courseId/access/:userId` — в т.ч. `maxQuizAttempts` (1–99 или null). */
+export async function patchCourseAccess(
+  courseId: string,
+  userId: string,
+  body: { maxQuizAttempts?: number | null },
+): Promise<unknown> {
+  const res = await apiSchoolAdminFetch(
+    SCHOOL_ADMIN_ROUTES.COURSE_ACCESS_REVOKE(courseId, userId),
+    { method: "PATCH", body: JSON.stringify(body) },
+  );
+  await throwIfNotOk(res);
+  return parseJsonSafe(res);
+}
+
 /** Ученики школы с доступом к курсу или прогрессом по курсу. */
 export async function fetchCourseStudents(
   courseId: string,
@@ -392,6 +418,58 @@ export async function fetchCourseStudents(
     );
   }
   return [];
+}
+
+/** `GET /admin/course-modules/:courseModuleId` — секция курса (school_admin: 404 при неопубликованном). */
+export async function fetchSchoolAdminCourseModule(
+  courseModuleId: string,
+): Promise<AdminModule> {
+  const res = await apiSchoolAdminFetch(
+    SCHOOL_ADMIN_ROUTES.COURSE_MODULE(courseModuleId),
+  );
+  await throwIfNotOk(res);
+  const data = await parseJsonSafe<Record<string, unknown>>(res);
+  return mapModule(data ?? {});
+}
+
+/** `GET /admin/lessons/:lessonId` — метаданные урока (school_admin: только опубликованная цепочка). */
+export async function getSchoolAdminLesson(
+  lessonId: string,
+): Promise<AdminModule> {
+  const res = await apiSchoolAdminFetch(SCHOOL_ADMIN_ROUTES.LESSON(lessonId));
+  await throwIfNotOk(res);
+  const data = await parseJsonSafe<Record<string, unknown>>(res);
+  return mapModule(data ?? {});
+}
+
+/** `GET /admin/lessons/:lessonId/contents` */
+export async function listSchoolAdminLessonContents(
+  lessonId: string,
+): Promise<AdminContentBlock[]> {
+  const res = await apiSchoolAdminFetch(
+    SCHOOL_ADMIN_ROUTES.LESSON_CONTENTS(lessonId),
+  );
+  await throwIfNotOk(res);
+  const data = await parseJsonSafe<unknown>(res);
+  const arr = Array.isArray(data) ? data : [];
+  return arr.map((x) =>
+    parseAdminContentBlock(
+      typeof x === "object" && x !== null ? (x as Record<string, unknown>) : {},
+    ),
+  );
+}
+
+/** `GET /admin/lessons/:lessonId/quiz` */
+export async function getSchoolAdminLessonQuiz(
+  lessonId: string,
+): Promise<AdminQuiz | null> {
+  const res = await apiSchoolAdminFetch(
+    SCHOOL_ADMIN_ROUTES.LESSON_QUIZ(lessonId),
+  );
+  if (res.status === 404) return null;
+  await throwIfNotOk(res);
+  const data = await parseJsonSafe<unknown>(res);
+  return parseAdminQuizPayload(data);
 }
 
 export type { CourseLevel, CourseSort, ModuleSort };

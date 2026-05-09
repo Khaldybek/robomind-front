@@ -29,6 +29,11 @@ export type AdminCourse = {
   ageGroup: string | null;
   moduleCount: number;
   studentsCount: number;
+  /**
+   * Дефолт лимита попыток теста для учеников курса (1–99).
+   * Эффективный лимит для ученика считает бэкенд по приоритету (override → доступ → дефолт курса → тест).
+   */
+  defaultMaxQuizAttempts: number | null;
 };
 
 export type AdminCourseList = {
@@ -71,6 +76,12 @@ function mapCourse(raw: Record<string, unknown>): AdminCourse {
           : null,
     moduleCount: num(raw.moduleCount ?? raw.module_count, 0),
     studentsCount: num(raw.studentsCount ?? raw.students_count, 0),
+    defaultMaxQuizAttempts: (() => {
+      const d = raw.defaultMaxQuizAttempts ?? raw.default_max_quiz_attempts;
+      if (d === null || d === undefined || d === "") return null;
+      const v = num(d, 0);
+      return v >= 1 && v <= 99 ? v : null;
+    })(),
   };
 }
 
@@ -142,6 +153,8 @@ export type CreateCourseBody = {
   order?: number;
   thumbnailUrl?: string;
   ageGroup?: string;
+  /** 1–99; если не задано — на бэкенде остаётся дефолт схемы БД */
+  defaultMaxQuizAttempts?: number;
 };
 
 export type PatchCourseBody = Partial<{
@@ -152,6 +165,8 @@ export type PatchCourseBody = Partial<{
   order: number;
   thumbnailUrl: string | null;
   ageGroup: string | null;
+  /** null — сбросить дефолт курса (дальше по цепочке приоритетов) */
+  defaultMaxQuizAttempts: number | null;
 }>;
 
 /** Поля курса в `multipart/form-data` (те же имена, что в JSON). Файл — поле `thumbnail`. */
@@ -185,6 +200,19 @@ function appendCourseFormFields(
   }
   if ("ageGroup" in body && body.ageGroup !== undefined) {
     fd.append("ageGroup", body.ageGroup ?? "");
+  }
+  if (
+    "defaultMaxQuizAttempts" in body &&
+    body.defaultMaxQuizAttempts !== undefined
+  ) {
+    if (body.defaultMaxQuizAttempts === null) {
+      fd.append("defaultMaxQuizAttempts", "");
+    } else {
+      fd.append(
+        "defaultMaxQuizAttempts",
+        String(body.defaultMaxQuizAttempts),
+      );
+    }
   }
 }
 
@@ -629,6 +657,12 @@ export type AdminContentBlock = {
   updatedAt: string;
 };
 
+export function parseAdminContentBlock(
+  raw: Record<string, unknown>,
+): AdminContentBlock {
+  return mapContentBlock(raw);
+}
+
 function mapContentBlock(raw: Record<string, unknown>): AdminContentBlock {
   const t = String(raw.type ?? "text") as ContentBlockType;
   const lessonId = String(
@@ -850,6 +884,8 @@ export type GrantCourseAccessBody = {
   accessType: "permanent" | "temporary";
   /** ISO datetime, для `temporary` */
   expiresAt?: string;
+  /** 1–99; лимит попыток тестов на уровне записи доступа */
+  maxQuizAttempts?: number;
 };
 
 export async function grantSuperCourseAccess(
@@ -876,6 +912,7 @@ export async function grantSuperCourseAccessBulk(
     userIds: string[];
     accessType: "permanent" | "temporary";
     expiresAt?: string;
+    maxQuizAttempts?: number;
   },
 ): Promise<GrantSuperCourseAccessBulkResult> {
   const res = await apiSuperAdminFetch(
@@ -912,6 +949,20 @@ export async function revokeSuperCourseAccess(
     { method: "DELETE" },
   );
   await throwIfNotOk(res);
+}
+
+/** `PATCH /admin/courses/:courseId/access/:userId` — в т.ч. `maxQuizAttempts` (1–99 или null). */
+export async function patchSuperCourseAccess(
+  courseId: string,
+  userId: string,
+  body: { maxQuizAttempts?: number | null },
+): Promise<unknown> {
+  const res = await apiSuperAdminFetch(
+    SUPER_ADMIN_ROUTES.COURSE_ACCESS_REVOKE(courseId, userId),
+    { method: "PATCH", body: JSON.stringify(body) },
+  );
+  await throwIfNotOk(res);
+  return parseJsonSafe(res);
 }
 
 /** Студент курса из `GET /admin/courses/:courseId/students` (доступ или прогресс по курсу). */

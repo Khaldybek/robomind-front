@@ -26,6 +26,7 @@ type CardDef = {
 export default function Page() {
   const router = useRouter();
   const t = useTranslations("SuperAdminDashboard");
+  const tc = useTranslations("Common");
   const [stats, setStats] = useState({
     users: 0,
     courses: 0,
@@ -36,7 +37,7 @@ export default function Page() {
 
   useEffect(() => {
     if (!isApiConfigured()) {
-      setErr("API");
+      setErr(tc("apiEnvMissing"));
       return;
     }
     Promise.all([
@@ -77,7 +78,7 @@ export default function Page() {
       </header>
       {err && (
         <p className="rounded-lg border border-ds-error/30 bg-[#FFF5F5] px-3 py-2 ds-text-small text-ds-error">
-          {err} {t("tokenHint")}
+          {err}
         </p>
       )}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -97,7 +98,6 @@ export default function Page() {
       <section className="rounded-ds-card border border-ds-gray-border bg-ds-white p-5 sm:p-6">
         <h2 className="ds-text-h3 text-ds-black">{t("sessionTitle")}</h2>
         <p className="mb-4 mt-1 ds-text-caption text-ds-gray-text">
-          <code className="text-ds-black">POST /auth/logout-all</code>
           {t("sessionLead")}
         </p>
         <button

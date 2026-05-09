@@ -1,6 +1,6 @@
 /**
  * Иллюстрация героя: «живые» роботы и детали на чистом CSS (без canvas).
- * Текст в облачке — из переводов (4–7 классы).
+ * Текст в облачке — из переводов (4–5 классы).
  */
 export function LandingHeroRobots({ bubbleText }: { bubbleText: string }) {
   return (

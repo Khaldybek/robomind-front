@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import {
   fetchCities,
   fetchDistricts,
@@ -104,20 +103,27 @@ export function RegisterForm() {
   }
 
   return (
-    <div className="relative mx-auto max-w-lg overflow-visible pb-24 sm:pb-20">
+    <div className="relative mx-auto w-full max-w-lg overflow-visible pb-24 sm:pb-20">
       <form
         onSubmit={onSubmit}
-        className="relative z-[2] space-y-5 rounded-ds-card border border-ds-gray-border bg-ds-white p-8 pr-6 shadow-sm sm:pr-10"
+        className="auth-register-form relative z-[2] space-y-3 rounded-2xl border border-slate-200/90 bg-white p-4 pr-3.5 shadow-[0_20px_50px_-28px_rgba(15,23,42,0.1)] sm:space-y-3.5 sm:p-5 sm:pr-5"
       >
-      <h1 className="ds-text-h2 text-ds-black">{t("title")}</h1>
-      {geoError && (
-        <p className="ds-text-small text-ds-error" role="alert">
-          {geoError}
-        </p>
-      )}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="sm:col-span-2">
-          <label className="ds-text-small mb-1 block">{t("city")}</label>
+        <h1 className="text-xl font-semibold tracking-tight text-ds-black sm:text-2xl">
+          {t("title")}
+        </h1>
+        {geoError && (
+          <div
+            className="rounded-lg border border-amber-200/90 bg-amber-50/95 px-3 py-2 text-xs leading-snug text-amber-950 sm:text-sm"
+            role="alert"
+          >
+            {geoError}
+          </div>
+        )}
+        <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-3">
+          <div className="sm:col-span-2">
+            <label className="mb-0.5 block text-xs font-medium text-ds-black sm:text-[13px]">
+              {t("city")}
+            </label>
           <select
             className="ds-input"
             value={cityId}
@@ -134,9 +140,11 @@ export function RegisterForm() {
               </option>
             ))}
           </select>
-        </div>
-        <div>
-          <label className="ds-text-small mb-1 block">{t("district")}</label>
+          </div>
+          <div>
+            <label className="mb-0.5 block text-xs font-medium text-ds-black sm:text-[13px]">
+              {t("district")}
+            </label>
           <select
             className="ds-input"
             value={districtId}
@@ -151,9 +159,11 @@ export function RegisterForm() {
               </option>
             ))}
           </select>
-        </div>
-        <div>
-          <label className="ds-text-small mb-1 block">{t("school")}</label>
+          </div>
+          <div>
+            <label className="mb-0.5 block text-xs font-medium text-ds-black sm:text-[13px]">
+              {t("school")}
+            </label>
           <select
             className="ds-input"
             value={schoolId}
@@ -168,80 +178,93 @@ export function RegisterForm() {
               </option>
             ))}
           </select>
+          </div>
         </div>
-      </div>
-      <div>
-        <label className="ds-text-small mb-1 block">{t("iin")}</label>
-        <input
-          className="ds-input"
-          value={iin}
-          onChange={(e) => setIin(e.target.value)}
-          required
-        />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="ds-text-small mb-1 block">{t("lastName")}</label>
+          <label className="mb-0.5 block text-xs font-medium text-ds-black sm:text-[13px]">
+            {t("iin")}
+          </label>
+          <input
+            className="ds-input"
+            value={iin}
+            onChange={(e) => setIin(e.target.value)}
+            required
+          />
+        </div>
+        <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-3">
+          <div>
+            <label className="mb-0.5 block text-xs font-medium text-ds-black sm:text-[13px]">
+              {t("lastName")}
+            </label>
           <input
             className="ds-input"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             required
           />
-        </div>
-        <div>
-          <label className="ds-text-small mb-1 block">{t("firstName")}</label>
+          </div>
+          <div>
+            <label className="mb-0.5 block text-xs font-medium text-ds-black sm:text-[13px]">
+              {t("firstName")}
+            </label>
           <input
             className="ds-input"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             required
           />
-        </div>
-        <div className="sm:col-span-2">
-          <label className="ds-text-small mb-1 block">{t("patronymic")}</label>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-0.5 block text-xs font-medium text-ds-black sm:text-[13px]">
+              {t("patronymic")}
+            </label>
           <input
             className="ds-input"
             value={patronymic}
             onChange={(e) => setPatronymic(e.target.value)}
           />
+          </div>
         </div>
-      </div>
-      <div>
-        <label className="ds-text-small mb-1 block">{t("email")}</label>
-        <input
-          type="email"
-          className="ds-input"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          required
-        />
-      </div>
-      <div>
-        <label className="ds-text-small mb-1 block">{t("password")}</label>
-        <input
-          type="password"
-          className="ds-input"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-      </div>
-      {error && (
-        <p className="ds-text-small text-ds-error" role="alert">
-          {error}
-        </p>
-      )}
-      <div className="flex flex-wrap gap-3">
-        <button type="submit" className="ui-btn ui-btn--1" disabled={pending}>
+        <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-3">
+          <div className="min-w-0">
+            <label className="mb-0.5 block text-xs font-medium text-ds-black sm:text-[13px]">
+              {t("email")}
+            </label>
+            <input
+              type="email"
+              className="ds-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              required
+            />
+          </div>
+          <div className="min-w-0">
+            <label className="mb-0.5 block text-xs font-medium text-ds-black sm:text-[13px]">
+              {t("password")}
+            </label>
+            <input
+              type="password"
+              className="ds-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+              required
+            />
+          </div>
+        </div>
+        {error && (
+          <div
+            className="rounded-lg border border-rose-200/85 bg-rose-50/95 px-3 py-2 text-xs leading-snug text-rose-950 sm:text-sm"
+            role="alert"
+          >
+            {error}
+          </div>
+        )}
+        <button type="submit" className="ui-btn ui-btn--1 w-full" disabled={pending}>
           {pending ? t("submitting") : t("submit")}
         </button>
-        <Link href="/login" className="ui-btn ui-btn--2">
-          {t("haveAccount")}
-        </Link>
-      </div>
-    </form>
+      </form>
       <AuthCardMascot />
     </div>
   );

@@ -17,6 +17,9 @@ export const SUPER_ADMIN_ROUTES = {
   SCHOOL_ADMIN: (id: string) =>
     `/admin/school-admins/${encodeURIComponent(id)}`,
 
+  FORM_OPTIONS_SCHOOLS: "/admin/form-options/schools",
+  FORM_OPTIONS_LESSONS: "/admin/form-options/lessons",
+
   USERS: "/admin/users",
   ME: "/admin/me",
   USER: (id: string) => `/admin/users/${encodeURIComponent(id)}`,
@@ -30,6 +33,10 @@ export const SUPER_ADMIN_ROUTES = {
     `/admin/users/${encodeURIComponent(id)}/devices`,
   USER_DEVICE_DELETE: (userId: string, deviceId: string) =>
     `/admin/users/${encodeURIComponent(userId)}/devices/${encodeURIComponent(deviceId)}`,
+  USER_QUIZ_ATTEMPTS: (userId: string) =>
+    `/admin/users/${encodeURIComponent(userId)}/quiz-attempts`,
+  USER_QUIZ_ATTEMPT_LIMITS: (userId: string) =>
+    `/admin/users/${encodeURIComponent(userId)}/quiz-attempt-limits`,
 
   COURSES: "/admin/courses",
   COURSE: (courseId: string) =>

@@ -323,7 +323,7 @@ export default function ModuleLessonPage() {
                   id={`content-${item.id}`}
                   className="scroll-mt-36 sm:scroll-mt-40"
                 >
-                  <article className="rounded-2xl border border-slate-200/70 bg-white p-6 shadow-[0_16px_48px_-24px_rgba(15,23,42,0.12)] ring-1 ring-slate-100/80 sm:rounded-3xl sm:p-8 lg:p-10">
+                  <article className="max-w-full min-w-0 overflow-x-auto rounded-2xl border border-slate-200/70 bg-white p-6 shadow-[0_16px_48px_-24px_rgba(15,23,42,0.12)] ring-1 ring-slate-100/80 sm:rounded-3xl sm:p-8 lg:p-10">
                     <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-teal-700/85">
                       {t("stepLabel", { n: step })}
                     </p>

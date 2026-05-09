@@ -4,13 +4,23 @@
  */
 export function LandingThemeMotifs({
   labels,
+  sectionClassName,
 }: {
   labels: [string, string, string, string, string];
+  /** Доп. классы для `<section>` (например отступы на auth-странице). */
+  sectionClassName?: string;
 }) {
   const [lCode, lLogic, lLaunch, lBuild, lCircuit] = labels;
 
+  const sectionCls = [
+    "landing-motifs mt-10 lg:mt-12",
+    sectionClassName ?? "",
+  ]
+    .join(" ")
+    .trim();
+
   return (
-    <section className="landing-motifs mt-10 lg:mt-12">
+    <section className={sectionCls}>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
         <li className="landing-motif-card st-card-in rounded-2xl border border-white/85 bg-white/65 p-3 shadow-[0_10px_32px_-20px_rgba(91,124,255,0.2)] backdrop-blur-sm sm:p-4">
           <svg
