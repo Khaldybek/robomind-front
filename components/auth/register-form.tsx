@@ -104,7 +104,7 @@ export function RegisterForm() {
   }
 
   return (
-    <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
+    <div className="relative mx-auto w-full max-w-lg lg:mx-0 lg:ml-auto lg:mr-10 xl:mr-14 2xl:mr-20">
       <form
         onSubmit={onSubmit}
         className="auth-register-form auth-student-form auth-student-glass-panel max-h-[min(78dvh,720px)] w-full space-y-3 overflow-y-auto overflow-x-hidden rounded-[28px] p-5 pr-4 sm:space-y-3.5 sm:p-6 sm:pr-5"
@@ -264,7 +264,7 @@ export function RegisterForm() {
         )}
         <button
           type="submit"
-          className="ui-btn ui-btn--1 w-full rounded-xl py-3.5 text-base font-semibold shadow-md shadow-blue-600/20"
+          className="ui-btn auth-student-submit w-full rounded-xl py-3.5 text-base transition disabled:cursor-not-allowed disabled:opacity-55"
           disabled={pending}
         >
           {pending ? t("submitting") : t("submit")}
@@ -274,7 +274,7 @@ export function RegisterForm() {
           <Link
             href="/login"
             prefetch={false}
-            className="font-bold text-[color:var(--ds-error)] underline-offset-2 hover:underline"
+            className="font-bold text-indigo-700 underline-offset-2 transition hover:text-indigo-900 hover:underline"
           >
             {tp("footerLoginAction")}
           </Link>

@@ -79,29 +79,34 @@ export function AuthExperienceShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-5 lg:pb-10 lg:pt-6">
-        <div className="mx-auto grid min-h-0 w-full max-w-[90rem] flex-1 content-start gap-8 lg:grid-cols-[1.45fr_0.92fr] lg:items-stretch lg:gap-10 lg:min-h-0 xl:gap-12">
-          {/* Иллюстрация: на lg — высота окна минус шапка и отступы */}
-          <div className="order-2 flex w-full justify-center lg:order-1 lg:min-h-0">
-            <div className="relative w-full max-w-full min-h-[min(52vh,22rem)] h-[min(68vh,calc(100dvh-11rem))] sm:min-h-[min(56vh,24rem)] sm:h-[min(74vh,calc(100dvh-10rem))] lg:h-[calc(100dvh-9rem)] lg:max-h-[calc(100dvh-9rem)] lg:min-h-[calc(100dvh-9rem)]">
-              <Image
-                src={STUDENT_AUTH_HERO}
-                alt=""
-                fill
-                priority
-                className="object-contain object-bottom drop-shadow-[0_20px_44px_rgba(99,102,241,0.18)] select-none"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-5 lg:min-h-0 lg:pb-10 lg:pl-6 lg:pr-2 lg:pt-0 xl:pr-4 2xl:pr-5">
+        {/* Иллюстрация как фон: масштаб и сдвиг влево */}
+        <div
+          className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+          aria-hidden
+        >
+          <div className="absolute inset-0 flex items-end justify-center max-lg:pb-[min(14vh,5rem)] lg:justify-start lg:pb-0">
+            <div className="relative h-[min(70dvh,33rem)] w-[min(94vw,24rem)] -translate-x-[22%] sm:h-[min(74dvh,37rem)] sm:w-[min(94vw,28rem)] sm:-translate-x-[18%] lg:h-full lg:max-h-none lg:w-[min(74vw,54rem)] lg:max-w-[56rem] lg:-translate-x-[32%] xl:-translate-x-[38%] 2xl:-translate-x-[42%]">
+              <div className="relative h-full w-full origin-bottom scale-[1.72] max-lg:translate-y-[4%] lg:origin-bottom-left lg:translate-y-0 lg:scale-[1.78]">
+                <Image
+                  src={STUDENT_AUTH_HERO}
+                  alt=""
+                  fill
+                  priority
+                  className="object-contain object-bottom opacity-[0.88] drop-shadow-[0_28px_56px_rgba(99,102,241,0.2)] select-none lg:opacity-[0.92]"
+                  sizes="(max-width: 1024px) 100vw, 80vw"
+                />
+              </div>
             </div>
           </div>
+        </div>
 
-          <div
-            key={pathname}
-            className="auth-panel-enter order-1 flex min-h-[240px] w-full sm:min-h-[280px] lg:order-2 lg:min-h-[calc(100dvh-9rem)] lg:items-center"
-          >
-            <div className="flex w-full flex-1 flex-col items-stretch justify-center">
-              {children}
-            </div>
+        <div
+          key={pathname}
+          className="auth-panel-enter relative z-[1] mx-auto flex min-h-[240px] w-full max-w-[90rem] flex-1 flex-col items-center justify-center sm:min-h-[280px] lg:min-h-0 lg:items-end lg:pr-8 xl:pr-12 2xl:pr-16"
+        >
+          <div className="flex w-full flex-1 flex-col items-center justify-center lg:items-end">
+            {children}
           </div>
         </div>
       </div>

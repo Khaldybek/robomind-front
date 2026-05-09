@@ -1054,17 +1054,21 @@ body {
   );
 }
 
-/** Студент: /login, /register — лаванда → голубой (насыщеннее, читается как «живой» фон). */
+/** Студент: /login, /register — лаванда → голубой; внизу уходит в белый. */
 .student-auth-page {
   background: linear-gradient(
     128deg,
-    #b2aaf0 0%,
-    #9cb4f8 16%,
-    #7fabf5 34%,
-    #6b9ef0 52%,
-    #8eb8f5 72%,
-    #c9dcf9 88%,
-    #e8f0fc 100%
+    #d4c8fa 0%,
+    #c4b4f5 12%,
+    #b0a4ef 24%,
+    #9ca6f2 36%,
+    #8aa8f0 48%,
+    #7ca2ec 58%,
+    #a8c2f6 68%,
+    #dce8fb 78%,
+    #f0f5fd 86%,
+    #fafcfe 94%,
+    #ffffff 100%
   );
 }
 
@@ -1080,6 +1084,37 @@ body {
 .auth-student-form select.ds-input:focus {
   border-color: rgba(99, 102, 241, 0.45);
   box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
+}
+
+/** Основная кнопка на auth-странице: индиго под лавандовый градиент */
+.auth-student-form .auth-student-submit {
+  border: 1px solid rgba(67, 56, 202, 0.45);
+  background: linear-gradient(168deg, #6366f1 0%, #5746e5 42%, #4f46e5 100%);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.25;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 10px 28px -10px rgba(79, 70, 229, 0.55),
+    0 4px 14px -6px rgba(99, 102, 241, 0.28);
+  transition:
+    filter 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.12s ease;
+}
+
+.auth-student-form .auth-student-submit:hover:not(:disabled) {
+  filter: brightness(1.07);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.24) inset,
+    0 14px 36px -10px rgba(67, 56, 202, 0.5),
+    0 6px 16px -6px rgba(99, 102, 241, 0.32);
+}
+
+.auth-student-form .auth-student-submit:active:not(:disabled) {
+  filter: brightness(0.96);
+  transform: translateY(1px);
 }
 
 /** Карточка входа/регистрации: стекло + рамка в тон лавандово-голубому фону */
