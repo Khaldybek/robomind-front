@@ -40,7 +40,7 @@ export function AuthExperienceShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="relative z-[1] flex min-h-[100dvh] flex-col">
-      <header className="shrink-0 border-b border-white/35 bg-transparent px-4 py-3.5 shadow-none sm:px-8 sm:py-4">
+      <header className="relative z-20 shrink-0 border-b border-white/35 bg-transparent px-4 py-3.5 shadow-none sm:px-8 sm:py-4">
         <div className="mx-auto flex max-w-[90rem] flex-wrap items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <AuthBrandLogo
@@ -79,15 +79,15 @@ export function AuthExperienceShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-5 lg:min-h-0 lg:pb-10 lg:pl-6 lg:pr-2 lg:pt-0 xl:pr-4 2xl:pr-5">
-        {/* Иллюстрация как фон: масштаб и сдвиг влево */}
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-6 pt-4 sm:px-6 sm:pb-8 sm:pt-5 lg:min-h-0 lg:pb-10 lg:pl-6 lg:pr-2 lg:pt-0 xl:pr-4 2xl:pr-5">
+        {/* Иллюстрация: только в области под шапкой; z ниже шапки; scale уменьшен чтобы не вылезать вверх */}
         <div
           className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
           aria-hidden
         >
-          <div className="absolute inset-0 flex items-end justify-center max-lg:pb-[min(14vh,5rem)] lg:justify-start lg:pb-0">
+          <div className="absolute inset-x-0 bottom-0 top-0 flex items-end justify-center max-lg:pb-[min(14vh,5rem)] lg:justify-start lg:pb-0 lg:pt-2">
             <div className="relative h-[min(70dvh,33rem)] w-[min(94vw,24rem)] -translate-x-[22%] sm:h-[min(74dvh,37rem)] sm:w-[min(94vw,28rem)] sm:-translate-x-[18%] lg:h-full lg:max-h-none lg:w-[min(74vw,54rem)] lg:max-w-[56rem] lg:-translate-x-[32%] xl:-translate-x-[38%] 2xl:-translate-x-[42%]">
-              <div className="relative h-full w-full origin-bottom scale-[1.72] max-lg:translate-y-[4%] lg:origin-bottom-left lg:translate-y-0 lg:scale-[1.78]">
+              <div className="relative h-full w-full origin-bottom scale-[1.52] max-lg:translate-y-[5%] lg:origin-bottom-left lg:translate-y-0 lg:scale-[1.58]">
                 <Image
                   src={STUDENT_AUTH_HERO}
                   alt=""
