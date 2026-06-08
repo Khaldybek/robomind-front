@@ -20,7 +20,10 @@ export function AiRecommendationsContent({ data }: { data: unknown }) {
   const summary = o.summary;
   const weak = o.weakTopics;
   const materials = o.suggestedMaterials;
-  const repeat = o.repeatModuleIds;
+  const repeat =
+    o.repeatLessonIds ??
+    o.repeatModuleIds ??
+    (o as Record<string, unknown>).repeat_lesson_ids;
   const hasStructured =
     (typeof summary === "string" && summary.trim()) ||
     (Array.isArray(weak) && weak.length > 0) ||

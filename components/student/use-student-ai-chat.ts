@@ -33,16 +33,20 @@ function extractReply(res: AiChatResponse | null): string {
 
 export type StudentAiChatMessage = { role: string; text: string };
 
+export type StudentAiChatMode = "lesson" | "course" | "profile";
+
 export function useStudentAiChat(opts: {
   lessonId?: string;
-  /** @deprecated */
+  /** @deprecated alias for lessonId */
   moduleId?: string;
   courseId?: string | null;
-  mode?: "module" | "profile" | "course";
+  mode?: StudentAiChatMode;
   language?: "ru" | "kk";
 }) {
-  const lessonRef = opts.lessonId ?? opts.moduleId;
-  const { courseId, mode = "module", language } = opts;
+  const lessonRef = (opts.lessonId ?? opts.moduleId)?.trim() || undefined;
+  const courseId = opts.courseId?.trim() || undefined;
+  const mode: StudentAiChatMode = opts.mode ?? "lesson";
+  const { language } = opts;
   const t = useTranslations("StudentAiChat");
   const [messages, setMessages] = useState<StudentAiChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -77,22 +81,28 @@ export function useStudentAiChat(opts: {
           ...(language ? { language } : {}),
         });
       } else if (mode === "course") {
-        if (!courseId?.trim()) {
+        if (!courseId) {
           setError(t("error"));
           setMessages((m) => m.slice(0, -1));
           setInput(text);
           return;
         }
         res = await postAiChatCourse({
-          courseId: courseId.trim(),
+          courseId,
           messages: transcript,
           ...(language ? { language } : {}),
         });
       } else {
+        if (!lessonRef) {
+          setError(t("error"));
+          setMessages((m) => m.slice(0, -1));
+          setInput(text);
+          return;
+        }
         res = await postAiChat({
-          messages: transcript,
           lessonId: lessonRef,
-          ...(courseId ? { courseId } : {}),
+          messages: transcript,
+          ...(language ? { language } : {}),
         });
       }
       const reply = extractReply(res);

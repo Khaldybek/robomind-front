@@ -16,12 +16,16 @@
 | `/courses/.../modules/[moduleId]` | ✅ | Видео (HLS — заглушка), текст, файлы, эфир, «Тест», ссылка на чат |
 | `/courses/.../quiz` | ✅ | Таймер, попытки, сдача (`POST .../submit`) |
 | `/courses/.../quiz/review` | ✅ | Разбор из `sessionStorage` после сдачи |
-| `/courses/[courseId]/chat` | ✅ | ИИ `POST /app/ai/chat`, опционально `?moduleId=` |
+| `/courses/[courseId]/chat` | ✅ | Урок: `POST /app/ai/chat` + `lessonId` (`?lessonId=`); курс: `POST /app/ai/chat-course` |
 | `/progress` | ✅ | `GET /app/users/me/progress` |
 | `/certificates` | ✅ | `GET /app/users/me/certificates`, скачивание по URL из ответа |
 | `/profile` | ✅ | `GET/PATCH /app/users/me` |
 | `/settings` | ✅ | Заглушки: пароль, уведомления; ссылки на forgot / logout |
 
-**ИИ на странице модуля:** кнопка ведёт на `/courses/.../chat?moduleId=...` (аналог встроенного виджета).
+**ИИ на странице урока:** встроенный чат → `POST /app/ai/chat` с `lessonId`; полная страница чата — `/courses/.../chat?lessonId=...`.
+
+**ИИ на странице курса:** `/courses/.../chat` без query → `POST /app/ai/chat-course`.
+
+**FAB / профиль:** общий чат → `POST /app/ai/chat-profile`; рекомендации → `GET /app/ai/recommendations`.
 
 Все защищённые маршруты кроме перечисленных публичных — под `AuthGuard` (наличие access token).

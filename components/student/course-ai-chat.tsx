@@ -237,12 +237,11 @@ export function CourseAiChat({
   const locale = useLocale();
   const aiLang = locale === "ru" ? "ru" : "kk";
   const lessonId = lessonIdProp ?? moduleIdProp;
-  const chat = useStudentAiChat({
-    lessonId,
-    courseId,
-    mode: lessonId ? "module" : "course",
-    language: aiLang,
-  });
+  const chat = useStudentAiChat(
+    lessonId
+      ? { lessonId, mode: "lesson", language: aiLang }
+      : { courseId, mode: "course", language: aiLang },
+  );
 
   const appearance: AiChatAppearance = variant;
 
@@ -268,7 +267,7 @@ export function CourseAiChat({
             </p>
             {lessonId ? (
               <p className="mt-1.5 inline-flex rounded-full bg-sky-100/90 px-2 py-0.5 text-[11px] font-medium text-sky-900">
-                {t("courseWideContext")}
+                {t("lessonContext")}
               </p>
             ) : (
               <p className="mt-1.5 inline-flex rounded-full bg-sky-100/90 px-2 py-0.5 text-[11px] font-medium text-sky-900">
@@ -300,7 +299,7 @@ export function CourseAiChat({
       <p className="mt-2 ds-text-body text-ds-gray-text">{t("lead")}</p>
       {lessonId ? (
         <p className="mt-1 text-sm font-medium text-ds-primary">
-          {t("courseWideContext")}
+          {t("lessonContext")}
         </p>
       ) : (
         <p className="mt-1 text-sm font-medium text-ds-primary">

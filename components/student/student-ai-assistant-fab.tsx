@@ -5,7 +5,7 @@ import { Bot, ExternalLink, Sparkles, X } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { AiChatScrollArea } from "@/components/student/course-ai-chat";
-import { useStudentAiChat } from "@/components/student/use-student-ai-chat";
+import { useStudentAiChat, type StudentAiChatMode } from "@/components/student/use-student-ai-chat";
 
 function parseCourseId(pathname: string | null): string | null {
   if (!pathname) return null;
@@ -35,12 +35,19 @@ export function StudentAiAssistantFab() {
     [pathname],
   );
 
-  const chat = useStudentAiChat({
-    lessonId: lessonId ?? undefined,
-    courseId,
-    mode: lessonId ? "module" : courseId != null ? "course" : "module",
-    language: aiLang,
-  });
+  const chatMode: StudentAiChatMode = lessonId
+    ? "lesson"
+    : courseId
+      ? "course"
+      : "profile";
+
+  const chat = useStudentAiChat(
+    chatMode === "lesson"
+      ? { lessonId: lessonId ?? undefined, mode: "lesson", language: aiLang }
+      : chatMode === "course"
+        ? { courseId, mode: "course", language: aiLang }
+        : { mode: "profile", language: aiLang },
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -96,13 +103,17 @@ export function StudentAiAssistantFab() {
                   <p className="mt-1.5 text-sm leading-snug text-slate-600">
                     {t("lead")}
                   </p>
-                  {courseId ? (
+                  {courseId || lessonId ? (
                     <p className="mt-2 inline-flex items-center rounded-full bg-ds-primary/10 px-2.5 py-1 text-xs font-medium text-ds-primary">
                       {lessonId
-                        ? t("courseWideContext")
+                        ? t("lessonContext")
                         : t("courseContext")}
                     </p>
-                  ) : null}
+                  ) : (
+                    <p className="mt-2 inline-flex items-center rounded-full bg-ds-primary/10 px-2.5 py-1 text-xs font-medium text-ds-primary">
+                      {t("profileContext")}
+                    </p>
+                  )}
                 </div>
                 <button
                   type="button"

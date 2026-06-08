@@ -44,8 +44,10 @@
 | PATCH | `/app/modules/:moduleId/progress` | опц. `watchedSeconds`, `status`, `completed` | запись прогресса |
 | POST | `/app/quizzes/:quizId/attempt` | — | `attemptId`, `startedAt`, `maxScore`, `resumed` |
 | POST | `/app/attempts/:attemptId/submit` | `answers`: объект `questionId` → ответ | баллы, `isPassed`, при успехе прогресс модуля |
-| POST | `/app/ai/chat` | `moduleId`, `messages[]` | ответ ассистента |
-| GET | `/app/ai/recommendations` | query `courseId?` | рекомендации |
+| POST | `/app/ai/chat` | `lessonId`, `messages[]`, опц. `language` | ответ по уроку |
+| POST | `/app/ai/chat-course` | `courseId`, `messages[]`, опц. `language` | ответ по курсу |
+| POST | `/app/ai/chat-profile` | `messages[]`, опц. `language` | общий помощник |
+| GET | `/app/ai/recommendations` | query `courseId?`, `language?` | рекомендации |
 | POST | `/app/ai/grade-text` | текст вопроса, ответы, эталон | оценка |
 | GET | `/app/gamification/me` | — | XP, уровень, стрик, бейджи |
 | GET | `/app/gamification/leaderboard` | query `schoolId?`, `limit?` | топ учеников |
@@ -493,20 +495,59 @@
 
 ### `POST /app/ai/chat`
 
+Контекст: контент **одного урока** (`lesson_contents`). Поле `courseId` **не передавать**.
+
 **Тело:**
 
 ```json
 {
-  "moduleId": "uuid",
+  "lessonId": "uuid",
+  "language": "ru",
   "messages": [
-    { "role": "user", "content": "Объясни, как работает датчик" }
+    { "role": "user", "content": "Объясни, как работает датчик" },
+    { "role": "assistant", "content": "…предыдущий ответ…" }
   ]
 }
 ```
 
-### `GET /app/ai/recommendations?courseId=...`
+**Ответ:** `{ "reply": "…" }`
 
-Рекомендации по обучению.
+### `POST /app/ai/chat-course`
+
+Контекст: весь опубликованный курс (все секции и уроки).
+
+**Тело:**
+
+```json
+{
+  "courseId": "uuid",
+  "language": "kk",
+  "messages": [{ "role": "user", "content": "Что повторить?" }]
+}
+```
+
+**Ответ:** `{ "reply": "…" }`
+
+### `POST /app/ai/chat-profile`
+
+Общий помощник без привязки к уроку/курсу (дашборд, FAB вне контекста курса).
+
+**Тело:**
+
+```json
+{
+  "language": "ru",
+  "messages": [{ "role": "user", "content": "С чего начать сегодня?" }]
+}
+```
+
+**Ответ:** `{ "reply": "…" }`
+
+### `GET /app/ai/recommendations?courseId=...&language=ru|kk`
+
+Рекомендации по обучению (не диалог). Лимит: `AI_RECOMMENDATIONS_DAILY_LIMIT`.
+
+**Ответ:** `weakTopics`, `repeatLessonIds`, `suggestedMaterials`, `summary`.
 
 ### `POST /app/ai/grade-text`
 

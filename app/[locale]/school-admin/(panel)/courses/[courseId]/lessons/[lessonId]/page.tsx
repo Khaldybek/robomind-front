@@ -11,6 +11,7 @@ import {
 } from "@/lib/api/school-admin/courses";
 import type { AdminContentBlock, AdminModule } from "@/lib/api/super-admin/courses-modules";
 import type { AdminQuiz, AdminQuizQuestion } from "@/lib/api/super-admin/quizzes";
+import { LessonContentBlockBody } from "@/components/lesson-content/lesson-content-block-body";
 import { isApiConfigured } from "@/lib/env";
 
 function quizTypeLabel(
@@ -131,31 +132,39 @@ function LessonReadInner() {
             {blocks.length === 0 ? (
               <p className="mt-3 ds-text-caption text-ds-gray-text">{t("noBlocks")}</p>
             ) : (
-              <ul className="mt-3 space-y-2">
+              <ol className="mt-4 list-none space-y-4 p-0">
                 {blocks.map((b) => (
                   <li
                     key={b.id}
-                    className="rounded-md border border-ds-gray-border bg-ds-gray-light/20 px-3 py-2"
+                    className="rounded-ds-card border border-ds-gray-border bg-ds-gray-light/15 p-4 sm:p-5"
                   >
-                    <div className="flex flex-wrap items-baseline gap-2">
+                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                       <span className="text-xs font-semibold uppercase tracking-wide text-ds-primary">
                         {b.type}
                       </span>
                       {b.title ? (
-                        <span className="text-sm font-medium text-ds-black">{b.title}</span>
+                        <span className="ds-text-body font-semibold text-ds-black">
+                          {b.title}
+                        </span>
                       ) : null}
                       <span className="text-xs text-ds-gray-text">
                         {t("orderLabel", { order: b.order })}
                       </span>
                     </div>
-                    {(b.content ?? b.fileUrl ?? b.livestreamUrl) ? (
-                      <p className="mt-1 line-clamp-3 break-all font-mono text-xs leading-relaxed text-ds-gray-dark-2">
-                        {b.content ?? b.fileUrl ?? b.livestreamUrl}
-                      </p>
-                    ) : null}
+                    <div className="mt-4 min-w-0">
+                      <LessonContentBlockBody
+                        block={b}
+                        labels={{
+                          fileMissing: t("fileMissing"),
+                          openLink: t("openLink"),
+                          livestream: t("livestream"),
+                          downloadFile: t("downloadFile"),
+                        }}
+                      />
+                    </div>
                   </li>
                 ))}
-              </ul>
+              </ol>
             )}
           </section>
 

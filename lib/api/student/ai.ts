@@ -13,11 +13,16 @@ export type AiRecommendationsResponse = {
 
 export async function fetchAiRecommendations(
   courseId?: string,
+  language?: "ru" | "kk",
 ): Promise<AiRecommendationsResponse | null> {
-  const q =
-    courseId != null && courseId !== ""
-      ? `?courseId=${encodeURIComponent(courseId)}`
-      : "";
+  const params = new URLSearchParams();
+  if (courseId != null && courseId !== "") {
+    params.set("courseId", courseId);
+  }
+  if (language) {
+    params.set("language", language);
+  }
+  const q = params.toString() ? `?${params.toString()}` : "";
   const res = await apiFetch(`${STUDENT_ROUTES.AI_RECOMMENDATIONS}${q}`);
   await throwIfNotOk(res);
   const raw = await parseJsonSafe<AiRecommendationsResponse>(res);
@@ -38,18 +43,17 @@ export type AiChatMessage = {
 };
 
 export type PostAiChatBody = {
-  lessonId?: string;
-  /** @deprecated */
-  moduleId?: string;
+  lessonId: string;
   messages: AiChatMessage[];
-  [key: string]: unknown;
+  language?: "ru" | "kk";
 };
 
 type LegacyAiChatBody = {
   message: string;
   lessonId?: string;
+  /** @deprecated */
   moduleId?: string;
-  courseId?: string;
+  language?: "ru" | "kk";
 };
 
 export type AiChatResponse = {
@@ -92,25 +96,24 @@ export async function postAiChatCourse(
   return parseJsonSafe<AiChatResponse>(res);
 }
 
+/** POST /app/ai/chat — чат по контенту одного урока (только lessonId, без courseId) */
 export async function postAiChat(
   payload: PostAiChatBody | LegacyAiChatBody,
 ): Promise<AiChatResponse | null> {
-  let body: Record<string, unknown>;
+  let body: PostAiChatBody;
   if ("messages" in payload) {
-    const p = payload as PostAiChatBody & Record<string, unknown>;
-    const lessonId = p.lessonId ?? p.moduleId;
-    body = { messages: p.messages };
-    if (lessonId) body.lessonId = lessonId;
-    if (p.courseId) body.courseId = p.courseId;
-    if (p.language) body.language = p.language;
+    body = payload;
   } else {
     const p = payload as LegacyAiChatBody;
     const lessonId = p.lessonId ?? p.moduleId;
+    if (!lessonId?.trim()) {
+      throw new Error("lessonId is required for POST /app/ai/chat");
+    }
     body = {
+      lessonId: lessonId.trim(),
       messages: [{ role: "user", content: p.message }],
+      ...(p.language ? { language: p.language } : {}),
     };
-    if (lessonId) body.lessonId = lessonId;
-    if (p.courseId) body.courseId = p.courseId;
   }
   const res = await apiFetch(STUDENT_ROUTES.AI_CHAT, {
     method: "POST",
